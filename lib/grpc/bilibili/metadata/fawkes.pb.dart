@@ -8,7 +8,7 @@
 // ignore_for_file: constant_identifier_names
 // ignore_for_file: curly_braces_in_flow_control_structures
 // ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -62,7 +62,6 @@ class FawkesReply extends $pb.GeneratedMessage {
   static FawkesReply create() => FawkesReply._();
   @$core.override
   FawkesReply createEmptyInstance() => create();
-  static $pb.PbList<FawkesReply> createRepeated() => $pb.PbList<FawkesReply>();
   @$core.pragma('dart2js:noInline')
   static FawkesReply getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<FawkesReply>(create);
@@ -141,7 +140,6 @@ class FawkesReq extends $pb.GeneratedMessage {
   static FawkesReq create() => FawkesReq._();
   @$core.override
   FawkesReq createEmptyInstance() => create();
-  static $pb.PbList<FawkesReq> createRepeated() => $pb.PbList<FawkesReq>();
   @$core.pragma('dart2js:noInline')
   static FawkesReq getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FawkesReq>(create);

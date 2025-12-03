@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
@@ -114,7 +114,7 @@ class _DynamicsTabPageState
     return switch (loadingState) {
       Loading() => dynSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? GlobalData().dynamicsWaterfallFlow
                   ? SliverWaterfallFlow(
                       gridDelegate: dynGridDelegate,
@@ -133,7 +133,7 @@ class _DynamicsTabPageState
                             onUnfold: () => controller.onUnfold(item, index),
                           );
                         },
-                        childCount: response!.length,
+                        childCount: response.length,
                       ),
                     )
                   : SliverList.builder(
@@ -151,7 +151,7 @@ class _DynamicsTabPageState
                           onUnfold: () => controller.onUnfold(item, index),
                         );
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     )
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(

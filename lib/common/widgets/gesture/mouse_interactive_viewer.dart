@@ -36,9 +36,9 @@ class MouseInteractiveViewer extends StatefulWidget {
     this.transformationController,
     this.alignment,
     this.trackpadScrollCausesScale = false,
-
     required this.childKey,
     required this.child,
+    required this.onTranslate,
   }) : assert(minScale > 0),
        assert(interactionEndFrictionCoefficient > 0),
        assert(maxScale > 0),
@@ -66,6 +66,7 @@ class MouseInteractiveViewer extends StatefulWidget {
   final GestureScaleUpdateCallback? onInteractionUpdate;
   final TransformationController? transformationController;
   final GlobalKey childKey;
+  final VoidCallback onTranslate;
 
   static const double _kDrag = 0.0000135;
 
@@ -576,16 +577,16 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     final Offset global = event.position;
 
     if (_gestureIsSupported(_GestureType.scale)) {
-      late final shift = HardwareKeyboard.instance.isShiftPressed;
       if (HardwareKeyboard.instance.isControlPressed) {
         _handleMouseWheelScale(event, local, global);
         return;
-      } else if (shift || HardwareKeyboard.instance.isAltPressed) {
+      }
+      final shift = HardwareKeyboard.instance.isShiftPressed;
+      if (shift || HardwareKeyboard.instance.isAltPressed) {
         _handleMouseWheelPanAsScale(event, local, global, shift);
         return;
-      } else {
-        widget.pointerSignalFallback?.call(event);
       }
+      widget.pointerSignalFallback?.call(event);
     }
     widget.onInteractionUpdate?.call(
       ScaleUpdateDetails(
@@ -641,6 +642,8 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
       _transformer.value,
       newFocalPointScene - focalPointScene,
     );
+
+    widget.onTranslate();
   }
 
   void _handleInertiaAnimation() {

@@ -319,7 +319,6 @@ abstract class PageUtils {
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
-      sheetAnimationStyle: const AnimationStyle(curve: Curves.ease),
       constraints: BoxConstraints(
         maxWidth: min(640, context.mediaQueryShortestSide),
       ),
@@ -645,7 +644,7 @@ abstract class PageUtils {
   static void showVideoBottomSheet(
     BuildContext context, {
     required Widget child,
-    required Function isFullScreen,
+    required bool Function() isFullScreen,
     double? padding,
   }) {
     if (!context.mounted) {
@@ -655,25 +654,29 @@ abstract class PageUtils {
       barrierLabel: '',
       barrierDismissible: true,
       pageBuilder: (buildContext, animation, secondaryAnimation) {
-        return Get.context!.isPortrait
-            ? SafeArea(
-                child: Column(
-                  children: [
-                    const Spacer(flex: 3),
-                    Expanded(flex: 7, child: child),
-                    if (isFullScreen() && padding != null)
-                      SizedBox(height: padding),
-                  ],
-                ),
-              )
-            : SafeArea(
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    Expanded(child: child),
-                  ],
-                ),
-              );
+        if (Get.context!.isPortrait) {
+          return SafeArea(
+            child: FractionallySizedBox(
+              heightFactor: 0.7,
+              widthFactor: 1.0,
+              alignment: Alignment.bottomCenter,
+              child: isFullScreen() && padding != null
+                  ? Padding(
+                      padding: EdgeInsets.only(bottom: padding),
+                      child: child,
+                    )
+                  : child,
+            ),
+          );
+        }
+        return SafeArea(
+          child: FractionallySizedBox(
+            widthFactor: 0.5,
+            heightFactor: 1.0,
+            alignment: Alignment.centerRight,
+            child: child,
+          ),
+        );
       },
       transitionDuration: const Duration(milliseconds: 350),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -707,7 +710,7 @@ abstract class PageUtils {
     }
   }
 
-  static void toVideoPage({
+  static Future<void>? toVideoPage({
     VideoType videoType = VideoType.ugc,
     int? aid,
     String? bvid,
@@ -719,7 +722,6 @@ abstract class PageUtils {
     String? title,
     int? progress,
     Map? extraArguments,
-    int? id,
     bool off = false,
   }) {
     final arguments = {
@@ -737,17 +739,15 @@ abstract class PageUtils {
       ...?extraArguments,
     };
     if (off) {
-      Get.offNamed(
+      return Get.offNamed(
         '/videoV',
         arguments: arguments,
-        id: id,
         preventDuplicates: false,
       );
     } else {
-      Get.toNamed(
+      return Get.toNamed(
         '/videoV',
         arguments: arguments,
-        id: id,
         preventDuplicates: false,
       );
     }

@@ -1,6 +1,6 @@
 import 'package:PiliPlus/common/widgets/radio_widget.dart';
 import 'package:PiliPlus/utils/extension.dart';
-import 'package:flutter/foundation.dart';
+import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -19,6 +19,7 @@ Future<void> autoWrapReportDialog(
     context: context,
     builder: (context) {
       return AlertDialog(
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 420),
         title: const Text('举报'),
         titlePadding: const EdgeInsets.only(left: 22, top: 16, right: 22),
         contentPadding: const EdgeInsets.symmetric(vertical: 5),
@@ -127,10 +128,10 @@ Future<void> autoWrapReportDialog(
                 } else {
                   SmartDialog.showToast(data['message'].toString());
                 }
-              } catch (e) {
+              } catch (e, s) {
                 SmartDialog.dismiss();
                 SmartDialog.showToast('提交失败：$e');
-                if (kDebugMode) rethrow;
+                Utils.reportError(e, s);
               }
             },
             child: const Text('确定'),

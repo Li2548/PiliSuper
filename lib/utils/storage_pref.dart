@@ -79,13 +79,13 @@ abstract class Pref {
         defaultValue: 0,
       )];
 
-  static int get themeTypeInt => _setting.get(
+  static int get _themeTypeInt => _setting.get(
     SettingBoxKey.themeMode,
     defaultValue: ThemeType.system.index,
   );
 
   static ThemeMode get themeMode {
-    return switch (themeTypeInt) {
+    return switch (_themeTypeInt) {
       0 => ThemeMode.light,
       1 => ThemeMode.dark,
       _ => ThemeMode.system,
@@ -142,7 +142,7 @@ abstract class Pref {
   static int get picQuality =>
       _setting.get(SettingBoxKey.defaultPicQa, defaultValue: 10);
 
-  static ThemeType get themeType => ThemeType.values[themeTypeInt];
+  static ThemeType get themeType => ThemeType.values[_themeTypeInt];
 
   static DynamicBadgeMode get dynamicBadgeType =>
       DynamicBadgeMode.values[_setting.get(
@@ -220,7 +220,7 @@ abstract class Pref {
 
   static String get defaultDecode => _setting.get(
     SettingBoxKey.defaultDecode,
-    defaultValue: VideoDecodeFormatType.values.last.codes.first,
+    defaultValue: VideoDecodeFormatType.AVC.codes.first,
   );
 
   static String get secondDecode => _setting.get(
@@ -238,10 +238,12 @@ abstract class Pref {
   static String get videoSync =>
       _setting.get(SettingBoxKey.videoSync, defaultValue: 'display-resample');
 
-  static String get defaultCDNService => _setting.get(
-    SettingBoxKey.CDNService,
-    defaultValue: CDNService.backupUrl.code,
-  );
+  static CDNService get defaultCDNService {
+    if (_setting.get(SettingBoxKey.CDNService) case final String cdnName) {
+      return CDNService.values.byName(cdnName);
+    }
+    return CDNService.backupUrl;
+  }
 
   static String get banWordForRecommend =>
       _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
@@ -401,9 +403,6 @@ abstract class Pref {
 
   static bool get showVipDanmaku =>
       _setting.get(SettingBoxKey.showVipDanmaku, defaultValue: true);
-
-  static bool get showSpecialDanmaku =>
-      _setting.get(SettingBoxKey.showSpecialDanmaku, defaultValue: false);
 
   static bool get mergeDanmaku =>
       _setting.get(SettingBoxKey.mergeDanmaku, defaultValue: false);
@@ -569,7 +568,7 @@ abstract class Pref {
       _setting.get(SettingBoxKey.enableLog, defaultValue: true);
 
   static bool get disableAudioCDN =>
-      _setting.get(SettingBoxKey.disableAudioCDN, defaultValue: true);
+      _setting.get(SettingBoxKey.disableAudioCDN, defaultValue: false);
 
   static int get minDurationForRcmd =>
       _setting.get(SettingBoxKey.minDurationForRcmd, defaultValue: 0);
@@ -654,7 +653,7 @@ abstract class Pref {
       _setting.get(SettingBoxKey.customColor, defaultValue: 0);
 
   static bool get dynamicColor =>
-      _setting.get(SettingBoxKey.dynamicColor, defaultValue: true);
+      _setting.get(SettingBoxKey.dynamicColor, defaultValue: !Platform.isIOS);
 
   static bool get autoClearCache =>
       _setting.get(SettingBoxKey.autoClearCache, defaultValue: false);
@@ -865,4 +864,16 @@ abstract class Pref {
 
   static bool get showTrayIcon =>
       _setting.get(SettingBoxKey.showTrayIcon, defaultValue: true);
+
+  static bool get setSystemBrightness =>
+      _setting.get(SettingBoxKey.setSystemBrightness, defaultValue: false);
+
+  static String? get downloadPath => _setting.get(SettingBoxKey.downloadPath);
+
+  static String? get liveCdnUrl => _setting.get(SettingBoxKey.liveCdnUrl);
+
+  static bool get showBatteryLevel => _setting.get(
+    SettingBoxKey.showBatteryLevel,
+    defaultValue: Utils.isMobile,
+  );
 }

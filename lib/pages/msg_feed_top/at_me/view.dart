@@ -1,9 +1,9 @@
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/list_tile.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType;
 import 'package:PiliPlus/http/loading_state.dart';
@@ -85,9 +85,9 @@ class _AtMePageState extends State<AtMePage> {
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, int index) {
                   if (index == response.length - 1) {
                     _atMeController.onLoadMore();
@@ -162,10 +162,11 @@ class _AtMePageState extends State<AtMePage> {
                         ),
                       ],
                     ),
-                    trailing: item.item?.image != null && item.item?.image != ""
+                    trailing: item.item?.image?.isNotEmpty == true
                         ? NetworkImgLayer(
                             width: 45,
                             height: 45,
+                            radius: 8,
                             src: item.item?.image,
                           )
                         : null,

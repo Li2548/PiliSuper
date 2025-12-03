@@ -34,7 +34,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('全部标签'),
-        actions: _controller.accountService.isLogin.value
+        actions: _controller.isLogin
             ? [
                 TextButton(
                   onPressed: _controller.onEdit,
@@ -54,7 +54,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_controller.accountService.isLogin.value)
+            if (_controller.isLogin)
               Obx(() => _buildFavWidget(theme, _controller.favState.value)),
             Expanded(
               child: Obx(
@@ -79,9 +79,9 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? DefaultTabController(
-                length: response!.length,
+                length: response.length,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -191,7 +191,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
               ),
             ),
             const SizedBox(height: 8),
-            if (list?.isNotEmpty == true) ...[
+            if (list != null && list.isNotEmpty) ...[
               SortableWrap(
                 onSortStart: (index) {
                   _controller.isEditing.value = true;
@@ -201,7 +201,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                 },
                 spacing: 12,
                 runSpacing: 8,
-                children: list!
+                children: list
                     .map(
                       (item) => _favTagItem(
                         theme: theme,

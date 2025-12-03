@@ -28,7 +28,8 @@ abstract class SettingBoxKey {
       keyboardControl = 'keyboardControl',
       pauseOnMinimize = 'pauseOnMinimize',
       pgcSkipType = 'pgcSkipType',
-      audioPlayMode = 'audioPlayMode';
+      audioPlayMode = 'audioPlayMode',
+      showBatteryLevel = 'showBatteryLevel';
 
   static const String enableVerticalExpand = 'enableVerticalExpand',
       feedBackEnable = 'feedBackEnable',
@@ -142,7 +143,9 @@ abstract class SettingBoxKey {
       silentDownImg = 'silentDownImg',
       showMemberShop = 'showMemberShop',
       enablePlayAll = 'enablePlayAll',
-      enableTapDm = 'enableTapDm';
+      enableTapDm = 'enableTapDm',
+      setSystemBrightness = 'setSystemBrightness',
+      downloadPath = 'downloadPath';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',
@@ -180,7 +183,6 @@ abstract class SettingBoxKey {
       enableShowLiveDanmaku = 'enableShowLiveDanmaku',
       pipNoDanmaku = 'pipNoDanmaku',
       showVipDanmaku = 'showVipDanmaku',
-      showSpecialDanmaku = 'showSpecialDanmaku',
       mergeDanmaku = 'mergeDanmaku',
       danmakuWeight = 'danmakuWeight',
       danmakuBlockType = 'danmakuBlockType',
@@ -222,7 +224,8 @@ abstract class SettingBoxKey {
       enableGradientBg = 'enableGradientBg',
       navBarSort = 'navBarSort',
       tempPlayerConf = 'tempPlayerConf',
-      reduceLuxColor = 'reduceLuxColor';
+      reduceLuxColor = 'reduceLuxColor',
+      liveCdnUrl = 'liveCdnUrl';
 }
 
 abstract class LocalCacheKey {

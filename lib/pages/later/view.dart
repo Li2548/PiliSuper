@@ -157,7 +157,7 @@ class _LaterPageState extends State<LaterPage>
     return MultiSelectAppBarWidget(
       visible: enableMultiSelect,
       ctr: currCtr(),
-      children: [
+      actions: [
         TextButton(
           style: TextButton.styleFrom(
             visualDensity: VisualDensity.compact,
@@ -169,7 +169,7 @@ class _LaterPageState extends State<LaterPage>
               isCopy: true,
               ctr: ctr,
               mediaId: null,
-              mid: ctr.accountService.mid,
+              mid: ctr.mid,
             );
           },
           child: Text(
@@ -190,7 +190,7 @@ class _LaterPageState extends State<LaterPage>
               isCopy: false,
               ctr: ctr,
               mediaId: null,
-              mid: ctr.accountService.mid,
+              mid: ctr.mid,
             );
           },
           child: Text(

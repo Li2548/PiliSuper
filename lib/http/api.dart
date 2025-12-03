@@ -24,6 +24,8 @@ class Api {
 
   static const String pugvUrl = '/pugv/player/web/playurl';
 
+  static const String tvPlayUrl = '/x/tv/playurl';
+
   // 字幕
   // aid, cid
   static const String playInfo = '/x/player/wbi/v2';
@@ -970,4 +972,6 @@ class Api {
   static const String followedUp = '/x/relation/followings/followed_upper';
 
   static const String sameFollowing = '/x/relation/same/followings';
+
+  static const String seasonStatus = '/pgc/view/web/season/user/status';
 }

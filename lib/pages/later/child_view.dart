@@ -1,5 +1,5 @@
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/later_view_type.dart';
 import 'package:PiliPlus/models/common/video/source_type.dart';
@@ -60,7 +60,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -86,7 +86,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                                     .baseCtr
                                     .counts[LaterViewType.all],
                                 'favTitle': '稍后再看',
-                                'mediaId': _laterController.accountService.mid,
+                                'mediaId': _laterController.mid,
                                 'desc': _laterController.asc.value,
                                 'isContinuePlaying': index != 0,
                               }
@@ -95,7 +95,7 @@ class _LaterViewChildPageState extends State<LaterViewChildPage>
                     },
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _laterController.onReload),
       Error(:var errMsg) => HttpError(

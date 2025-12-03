@@ -392,6 +392,7 @@ class MemberHttp {
   }
 
   // 用户动态
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> memberDynamic({
     String? offset,
     int? mid,
@@ -430,8 +431,8 @@ class MemberHttp {
           return memberDynamic(offset: data.offset, mid: mid);
         }
         return Success(data);
-      } catch (err) {
-        return Error(err.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       Map errMap = const {

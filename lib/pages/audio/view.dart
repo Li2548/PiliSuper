@@ -2,9 +2,9 @@ import 'dart:math' show min;
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -169,7 +169,7 @@ class _AudioPageState extends State<AudioPage> {
           final theme = Theme.of(context);
           final colorScheme = theme.colorScheme;
           return FractionallySizedBox(
-            heightFactor: !context.mediaQuerySize.isPortrait && Utils.isMobile
+            heightFactor: Utils.isMobile && !context.mediaQuerySize.isPortrait
                 ? 1.0
                 : 0.7,
             alignment: Alignment.bottomCenter,

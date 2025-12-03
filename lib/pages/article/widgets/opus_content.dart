@@ -191,12 +191,10 @@ class OpusContent extends StatelessWidget {
                 return Hero(
                   tag: pic.url!,
                   child: GestureDetector(
-                    onTap: () {
-                      PageUtils.imageView(
-                        imgList: [SourceModel(url: pic.url!)],
-                        quality: 60,
-                      );
-                    },
+                    onTap: () => PageUtils.imageView(
+                      imgList: [SourceModel(url: pic.url!)],
+                      quality: 60,
+                    ),
                     child: Center(
                       child: CachedNetworkImage(
                         width: width,
@@ -304,8 +302,8 @@ class OpusContent extends StatelessWidget {
                                     element.linkCard!.card!.music!.jumpUrl,
                                   _ => null,
                                 };
-                            if (url?.isNotEmpty == true) {
-                              PiliScheme.routePushFromUrl(url!);
+                            if (url != null && url.isNotEmpty) {
+                              PiliScheme.routePushFromUrl(url);
                             }
                           } catch (_) {}
                         },

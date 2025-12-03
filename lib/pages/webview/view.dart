@@ -4,7 +4,7 @@ import 'package:PiliPlus/http/ua_type.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/models/common/webview_menu_type.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/cache_manage.dart';
+import 'package:PiliPlus/utils/cache_manager.dart';
 import 'package:PiliPlus/utils/login_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
@@ -243,7 +243,7 @@ class _WebviewPageState extends State<WebviewPage> {
                     builder: (context) {
                       String suggestedFilename = request.suggestedFilename
                           .toString();
-                      String fileSize = CacheManage.formatSize(
+                      String fileSize = CacheManager.formatSize(
                         request.contentLength.toDouble(),
                       );
                       try {
@@ -324,6 +324,7 @@ class _WebviewPageState extends State<WebviewPage> {
                 SnackBar snackBar = SnackBar(
                   content: const Text('当前网页将要打开外部链接，是否打开'),
                   showCloseIcon: true,
+                  persist: false,
                   action: SnackBarAction(
                     label: '打开',
                     onPressed: () => PageUtils.launchURL(url),

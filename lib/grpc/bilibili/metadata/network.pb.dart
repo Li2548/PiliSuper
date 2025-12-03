@@ -8,7 +8,7 @@
 // ignore_for_file: constant_identifier_names
 // ignore_for_file: curly_braces_in_flow_control_structures
 // ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -69,7 +69,6 @@ class NetQuality extends $pb.GeneratedMessage {
   static NetQuality create() => NetQuality._();
   @$core.override
   NetQuality createEmptyInstance() => create();
-  static $pb.PbList<NetQuality> createRepeated() => $pb.PbList<NetQuality>();
   @$core.pragma('dart2js:noInline')
   static NetQuality getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<NetQuality>(create);
@@ -158,7 +157,6 @@ class Network extends $pb.GeneratedMessage {
   static Network create() => Network._();
   @$core.override
   Network createEmptyInstance() => create();
-  static $pb.PbList<Network> createRepeated() => $pb.PbList<Network>();
   @$core.pragma('dart2js:noInline')
   static Network getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Network>(create);

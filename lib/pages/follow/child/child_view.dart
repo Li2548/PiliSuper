@@ -1,13 +1,16 @@
+import 'dart:math';
+
 import 'package:PiliPlus/common/skeleton/msg_feed_top.dart';
 import 'package:PiliPlus/common/widgets/button/more_btn.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/follow_order_type.dart';
 import 'package:PiliPlus/models_new/follow/list.dart';
 import 'package:PiliPlus/pages/follow/child/child_controller.dart';
 import 'package:PiliPlus/pages/follow/controller.dart';
 import 'package:PiliPlus/pages/follow/widgets/follow_item.dart';
+import 'package:PiliPlus/pages/follow_type/follow_same/view.dart';
 import 'package:PiliPlus/pages/share/view.dart' show UserModel;
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -45,37 +48,29 @@ class _FollowChildPageState extends State<FollowChildPage>
     super.build(context);
     final colorScheme = ColorScheme.of(context);
     final padding = MediaQuery.viewPaddingOf(context);
-    Widget sliver = Obx(
-      () => _buildBody(_followController.loadingState.value),
-    );
-    if (_followController.loadSameFollow) {
-      sliver = SliverMainAxisGroup(
-        slivers: [
-          Obx(
-            () => _buildSameFollowing(
-              colorScheme,
-              _followController.sameState.value,
+    Widget child = Padding(
+      padding: EdgeInsets.only(left: padding.left, right: padding.right),
+      child: refreshIndicator(
+        onRefresh: _followController.onRefresh,
+        child: CustomScrollView(
+          controller: _followController.scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            if (_followController.loadSameFollow)
+              Obx(
+                () => _buildSameFollowing(
+                  colorScheme,
+                  _followController.sameState.value,
+                ),
+              ),
+            SliverPadding(
+              padding: EdgeInsets.only(bottom: padding.bottom + 100),
+              sliver: Obx(
+                () => _buildBody(_followController.loadingState.value),
+              ),
             ),
-          ),
-          sliver,
-        ],
-      );
-    }
-    Widget child = refreshIndicator(
-      onRefresh: _followController.onRefresh,
-      child: CustomScrollView(
-        controller: _followController.scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.only(
-              left: padding.left,
-              right: padding.right,
-              bottom: padding.bottom + 100,
-            ),
-            sliver: sliver,
-          ),
-        ],
+          ],
+        ),
       ),
     );
     if (widget.onSelect != null ||
@@ -111,9 +106,9 @@ class _FollowChildPageState extends State<FollowChildPage>
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.builder(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
                     _followController.onLoadMore();
@@ -144,7 +139,7 @@ class _FollowChildPageState extends State<FollowChildPage>
   ) {
     return switch (state) {
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
                 slivers: [
                   SliverToBoxAdapter(
@@ -164,8 +159,9 @@ class _FollowChildPageState extends State<FollowChildPage>
                             ),
                           ),
                           moreTextButton(
-                            onTap: () => Get.toNamed(
-                              '/sameFollowing?mid=${_followController.mid}&name=${widget.controller?.name.value}',
+                            onTap: () => FollowSamePage.toFollowSamePage(
+                              mid: _followController.mid,
+                              name: widget.controller?.name.value,
                             ),
                             color: colorScheme.outline,
                           ),
@@ -174,7 +170,7 @@ class _FollowChildPageState extends State<FollowChildPage>
                     ),
                   ),
                   SliverList.builder(
-                    itemCount: response!.length,
+                    itemCount: min(3, response.length),
                     itemBuilder: (_, index) =>
                         FollowItem(item: response[index]),
                   ),

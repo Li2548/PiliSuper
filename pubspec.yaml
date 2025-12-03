@@ -17,11 +17,11 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 # update when release
-version: 1.1.4+1
+version: 1.1.5+1
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
-  flutter: 3.35.7 # update `.fvmrc` config
+  sdk: ">=3.10.0"
+  flutter: 3.38.3 # update `.fvmrc` config
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -40,7 +40,11 @@ dependencies:
   # 动态取色
   dynamic_color: ^1.8.1
 
-  get: ^4.6.6
+  # get: ^4.7.2
+  get:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/getx.git
+      ref: version_4.7.2
 
   # 网络
   dio: ^5.7.0
@@ -51,7 +55,7 @@ dependencies:
   # 图片
   cached_network_image: ^3.4.1
   # extended_image: ^9.0.7
-  saver_gallery: ^4.0.1
+  saver_gallery: ^4.1.0
 
   # QRCode
   # qr_flutter: ^4.1.0
@@ -124,7 +128,7 @@ dependencies:
     git:
       url: https://github.com/bggRGjQaUbCoE/auto_orientation.git
       ref: master
-  protobuf: ^5.0.0
+  protobuf: ^6.0.0
   # animations: ^2.0.11
 
   # 获取appx信息
@@ -135,7 +139,7 @@ dependencies:
   # 高帧率
   flutter_displaymode: ^0.7.0
   # scheme跳转
-  app_links: ^6.3.2
+  app_links: ^7.0.0
   # 弹幕
   # ns_danmaku:
   #   git:
@@ -186,7 +190,7 @@ dependencies:
   #解压直播消息
   brotli: ^0.6.0
   expandable: ^5.0.1
-  flex_seed_scheme: ^3.4.1
+  flex_seed_scheme: ^4.0.1
   live_photo_maker: ^0.0.6
   fl_chart: ^1.0.0
   synchronized: ^3.3.0
@@ -211,11 +215,17 @@ dependencies:
       path: packages/window_manager
       ref: main
   tray_manager: ^0.5.1
-  file_picker: ^10.3.3
+  # file_picker: ^10.3.3
+  file_picker:
+    git:
+      url: https://github.com/bggRGjQaUbCoE/flutter_file_picker.git
+      ref: mod
   super_sliver_list:
     git:
       url: https://github.com/bggRGjQaUbCoE/super_sliver_list.git
       ref: mod
+  dlna_dart: ^0.1.0
+  battery_plus: ^7.0.0
 
   vector_math: any
   fixnum: any
@@ -229,6 +239,7 @@ dependencies:
   flutter_cache_manager: any
   http2: any
   screen_retriever: any
+  characters: any
 
 dependency_overrides:
   # screen_brightness: ^2.1.
@@ -282,7 +293,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
   # hive_generator: ^2.0.1
-  build_runner: ^2.9.0
+  build_runner: ^2.10.3
   flutter_native_splash: ^2.4.6
 
 flutter_launcher_icons:

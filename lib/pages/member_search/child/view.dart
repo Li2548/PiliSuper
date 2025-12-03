@@ -1,5 +1,5 @@
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/member/search_type.dart';
@@ -70,7 +70,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
     return switch (loadingState) {
       Loading() => _buildLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Builder(
                 builder: (context) {
                   return switch (widget.searchType) {
@@ -84,7 +84,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                           videoItem: response[index],
                         );
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     ),
                     MemberSearchType.dynamic =>
                       GlobalData().dynamicsWaterfallFlow
@@ -100,7 +100,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                                     maxWidth: maxWidth,
                                   );
                                 },
-                                childCount: response!.length,
+                                childCount: response.length,
                               ),
                             )
                           : SliverList.builder(
@@ -113,7 +113,7 @@ class _MemberSearchChildPageState extends State<MemberSearchChildPage>
                                   maxWidth: maxWidth,
                                 );
                               },
-                              itemCount: response!.length,
+                              itemCount: response.length,
                             ),
                   };
                 },

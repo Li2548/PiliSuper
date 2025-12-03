@@ -1,10 +1,10 @@
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/custom_sliver_persistent_header_delegate.dart';
 import 'package:PiliPlus/common/widgets/dynamic_sliver_appbar_medium.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/item.dart';
@@ -46,7 +46,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
       resizeToAvoidBottomInset: false,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          if (_controller.accountService.isLogin.value) {
+          if (_controller.isLogin) {
             CreateDynPanel.onCreateDyn(
               context,
               topic: Pair(
@@ -191,6 +191,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                       '/member?mid=${response.topicCreator!.uid}',
                     ),
                     child: Row(
+                      spacing: 10,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         NetworkImgLayer(
@@ -199,7 +200,6 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                           src: response.topicCreator!.face!,
                           type: ImageType.avatar,
                         ),
-                        const SizedBox(width: 10),
                         Flexible(
                           child: Text(
                             response.topicCreator!.name!,
@@ -321,7 +321,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                   PopupMenuItem(
                     child: const Text('举报'),
                     onTap: () {
-                      if (!_controller.accountService.isLogin.value) {
+                      if (!_controller.isLogin) {
                         SmartDialog.showToast('账号未登录');
                         return;
                       }
@@ -348,7 +348,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
     return switch (loadingState) {
       Loading() => dynSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? GlobalData().dynamicsWaterfallFlow
                   ? SliverWaterfallFlow(
                       gridDelegate: dynGridDelegate,
@@ -368,7 +368,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
 
                           return Text(item.topicType ?? 'err');
                         },
-                        childCount: response!.length,
+                        childCount: response.length,
                       ),
                     )
                   : SliverList.builder(
@@ -386,7 +386,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                           return Text(item.topicType ?? 'err');
                         }
                       },
-                      itemCount: response!.length,
+                      itemCount: response.length,
                     )
             : HttpError(onReload: _controller.onReload),
       Error(:var errMsg) => HttpError(

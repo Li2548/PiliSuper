@@ -1,7 +1,7 @@
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/skeleton/video_card_v.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/video_card/video_card_v.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/pages/common/common_page.dart';
@@ -65,7 +65,7 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
     return switch (loadingState) {
       Loading() => _buildSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -125,8 +125,8 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
                   }
                 },
                 itemCount: controller.lastRefreshAt != null
-                    ? response!.length + 1
-                    : response!.length,
+                    ? response.length + 1
+                    : response.length,
               )
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(

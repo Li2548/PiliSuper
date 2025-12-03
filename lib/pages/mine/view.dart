@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:PiliPlus/common/constants.dart';
+import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/list_tile.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
@@ -116,7 +116,7 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          size: 22,
+                          size: e.size,
                           e.icon,
                           color: primary,
                         ),
@@ -356,7 +356,6 @@ class _MediaPageState extends CommonPageState<MinePage, MineController>
                           value: hasLevel
                               ? levelInfo.currentExp! / levelInfo.nextExp!
                               : 0,
-                          trackGap: hasLevel ? null : 0,
                           backgroundColor: theme.colorScheme.outline.withValues(
                             alpha: 0.4,
                           ),

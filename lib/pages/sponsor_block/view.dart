@@ -3,14 +3,16 @@ import 'dart:math';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/http/constants.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/http/loading_state.dart';
+import 'package:PiliPlus/http/sponsor_block.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
+import 'package:PiliPlus/models_new/sponsor_block/user_info.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:get/get.dart';
@@ -35,7 +37,8 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   bool _blockToast = Pref.blockToast;
   String _blockServer = Pref.blockServer;
   bool _blockTrack = Pref.blockTrack;
-  final Rx<bool?> _serverStatus = Rx<bool?>(null);
+  final _serverStatus = Rxn<bool>();
+  final _userInfo = LoadingState<UserInfo>.loading().obs;
 
   Box setting = GStorage.setting;
 
@@ -43,6 +46,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   void initState() {
     super.initState();
     _checkServerStatus();
+    _getUserInfo();
   }
 
   @override
@@ -51,13 +55,16 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     super.dispose();
   }
 
-  void _checkServerStatus() {
-    Request().get('$_blockServer/api/status/uptime').then((res) {
-      _serverStatus.value =
-          res.statusCode == 200 &&
-          res.data is String &&
-          Utils.isStringNumeric(res.data);
-    });
+  Future<void> _checkServerStatus() async {
+    _serverStatus.value = (await SponsorBlock.uptimeStatus()).isSuccess;
+  }
+
+  Future<void> _getUserInfo() async {
+    _userInfo.value = await SponsorBlock.userInfo(const [
+      'viewCount',
+      'minutesSaved',
+      'segmentCount',
+    ], userId: _userId);
   }
 
   Widget _blockLimitItem(
@@ -270,6 +277,37 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
     },
   );
 
+  Widget _blockUserInfo(
+    ThemeData theme,
+    TextStyle titleStyle,
+    TextStyle subTitleStyle,
+  ) => Obx(
+    () {
+      return ListTile(
+        dense: true,
+        onTap: () {
+          _userInfo.value = LoadingState.loading();
+          _getUserInfo();
+        },
+        title: Text(
+          '您的信息',
+          style: titleStyle,
+        ),
+        subtitle: switch (_userInfo.value) {
+          Loading() => const SizedBox.shrink(),
+          Success<UserInfo>(:final response) => Text(
+            response.toString(),
+            style: subTitleStyle,
+          ),
+          Error(:final errMsg) => Text(
+            errMsg ?? '服务器错误',
+            style: subTitleStyle.copyWith(color: theme.colorScheme.error),
+          ),
+        },
+      );
+    },
+  );
+
   Widget _blockServerItem(
     ThemeData theme,
     TextStyle titleStyle,
@@ -316,6 +354,8 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                       _blockServer = _textController.text;
                       setting.put(SettingBoxKey.blockServer, _blockServer);
                       Request.accountManager.blockServer = _blockServer;
+                      _checkServerStatus();
+                      _getUserInfo();
                       (context as Element).markNeedsBuild();
                     },
                     child: const Text('确定'),
@@ -461,6 +501,10 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           SliverToBoxAdapter(child: _blockToastItem(titleStyle)),
           sliverDivider,
           SliverToBoxAdapter(child: _blockTrackItem(titleStyle, subTitleStyle)),
+          sliverDivider,
+          SliverToBoxAdapter(
+            child: _blockUserInfo(theme, titleStyle, subTitleStyle),
+          ),
           dividerL,
           SliverList.separated(
             itemCount: _blockSettings.length,

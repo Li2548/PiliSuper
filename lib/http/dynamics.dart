@@ -25,6 +25,7 @@ import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
 class DynamicsHttp {
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> followDynamic({
     DynamicsTabType type = DynamicsTabType.all,
     String? offset,
@@ -59,8 +60,8 @@ class DynamicsHttp {
           );
         }
         return Success(data);
-      } catch (err) {
-        return Error(err.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       return Error(code == 4101132 ? '没有数据' : res.data['message']);
@@ -184,7 +185,7 @@ class DynamicsHttp {
                 },
               ...?extraContent,
             ],
-            if (title?.isNotEmpty == true) 'title': title,
+            if (title != null && title.isNotEmpty) 'title': title,
           },
           if (privatePub != null || replyOption != null || publishTime != null)
             "option": {
@@ -242,6 +243,7 @@ class DynamicsHttp {
   }
 
   //
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicItemModel>> dynamicDetail({
     dynamic id,
     dynamic rid,
@@ -267,8 +269,8 @@ class DynamicsHttp {
     if (res.data['code'] == 0) {
       try {
         return Success(DynamicItemModel.fromJson(res.data['data']['item']));
-      } catch (err) {
-        return Error(err.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       return Error(res.data['message']);
@@ -550,7 +552,7 @@ class DynamicsHttp {
     final res = await Request().get(
       Api.dynMention,
       queryParameters: {
-        if (keyword?.isNotEmpty == true) 'keyword': keyword,
+        if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
         'web_location': 333.1365,
       },
     );

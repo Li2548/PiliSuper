@@ -1,5 +1,5 @@
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/search/search_type.dart';
 import 'package:PiliPlus/models/search/result.dart';
@@ -60,8 +60,8 @@ abstract class CommonSearchPanelState<
     return switch (loadingState) {
       Loading() => buildLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
-            ? buildList(theme, response!)
+        response != null && response.isNotEmpty
+            ? buildList(theme, response)
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(
         errMsg: errMsg,

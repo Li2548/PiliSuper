@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/badge.dart';
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/image_preview_type.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -347,25 +347,28 @@ class _ArticlePageState extends CommonDynPageState<ArticlePage> {
                           src: controller.summary.author?.face,
                         ),
                         const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              controller.summary.author?.name ?? '',
-                              style: TextStyle(
-                                fontSize: theme.textTheme.titleSmall!.fontSize,
-                              ),
-                            ),
-                            if (pubTime != null)
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
-                                DateFormatUtils.format(pubTime),
+                                controller.summary.author?.name ?? '',
                                 style: TextStyle(
-                                  color: theme.colorScheme.outline,
                                   fontSize:
-                                      theme.textTheme.labelSmall!.fontSize,
+                                      theme.textTheme.titleSmall!.fontSize,
                                 ),
                               ),
-                          ],
+                              if (pubTime != null)
+                                Text(
+                                  DateFormatUtils.format(pubTime),
+                                  style: TextStyle(
+                                    color: theme.colorScheme.outline,
+                                    fontSize:
+                                        theme.textTheme.labelSmall!.fontSize,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

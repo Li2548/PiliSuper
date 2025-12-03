@@ -1,8 +1,8 @@
 import 'package:PiliPlus/common/widgets/button/icon_button.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/fav.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/fav_order_type.dart';
@@ -320,7 +320,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
             isCopy: true,
             ctr: _favDetailController,
             mediaId: _favDetailController.mediaId,
-            mid: _favDetailController.accountService.mid,
+            mid: _favDetailController.account.mid,
           ),
       child: Text(
         '复制',
@@ -339,7 +339,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
             isCopy: false,
             ctr: _favDetailController,
             mediaId: _favDetailController.mediaId,
-            mid: _favDetailController.accountService.mid,
+            mid: _favDetailController.account.mid,
           ),
       child: Text(
         '移动',
@@ -486,7 +486,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -511,7 +511,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                     ctr: _favDetailController,
                   );
                 },
-                itemCount: response!.length + 1,
+                itemCount: response.length + 1,
               )
             : HttpError(onReload: _favDetailController.onReload),
       Error(:var errMsg) => HttpError(

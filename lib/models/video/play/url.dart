@@ -4,6 +4,7 @@ import 'package:PiliPlus/models/common/video/audio_quality.dart';
 import 'package:PiliPlus/models/common/video/video_quality.dart';
 import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
 import 'package:PiliPlus/utils/extension.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class PlayUrlModel {
   PlayUrlModel({
@@ -87,11 +88,15 @@ class PlayUrlModel {
     //     "clipType": "CLIP_TYPE_ED",
     //   },
     // ];
-    final List? clipInfoList = json['clip_info_list'];
-    if (clipInfoList != null && clipInfoList.isNotEmpty) {
-      this.clipInfoList = clipInfoList
-          .map((e) => SegmentItemModel.fromPgcJson(e, timeLength))
-          .toList();
+    try {
+      final List? clipInfoList = json['clip_info_list'];
+      if (clipInfoList != null && clipInfoList.isNotEmpty) {
+        this.clipInfoList = clipInfoList
+            .map((e) => SegmentItemModel.fromPgcJson(e, timeLength))
+            .toList();
+      }
+    } catch (_) {
+      if (kDebugMode) rethrow;
     }
   }
 }
@@ -107,9 +112,15 @@ class Language {
 
   Language.fromJson(Map<String, dynamic> json) {
     support = json['support'];
-    items = (json['items'] as List?)
-        ?.map((e) => LanguageItem.fromJson(e))
-        .toList();
+    items =
+        (json['items'] as List?)?.map((e) => LanguageItem.fromJson(e)).toList()
+          ?..sort((a, b) {
+            final aHasZh = a.lang?.contains('zh') ?? false;
+            final bHasZh = b.lang?.contains('zh') ?? false;
+            if (aHasZh != bHasZh) return aHasZh ? -1 : 1;
+            if (a.isAi != b.isAi) return a.isAi ? 1 : -1;
+            return 0;
+          });
   }
 }
 
@@ -118,22 +129,18 @@ class LanguageItem {
     this.lang,
     this.title,
     this.subtitleLang,
-    this.videoDetext,
-    this.videoMouthShapeChange,
   });
 
   String? lang;
   String? title;
   String? subtitleLang;
-  bool? videoDetext;
-  bool? videoMouthShapeChange;
+  bool isAi = false;
 
   LanguageItem.fromJson(Map<String, dynamic> json) {
     lang = json['lang'];
-    title = json['title'];
+    isAi = json['production_type'] == 2;
+    title = '${json['title']}${isAi ? '（AI）' : ''}';
     subtitleLang = json['subtitle_lang'];
-    videoDetext = json['video_detext'];
-    videoMouthShapeChange = json['video_mouth_shape_change'];
   }
 }
 
@@ -199,25 +206,20 @@ class Durl {
       ahead: json['ahead'],
       vhead: json['vhead'],
       url: json['url'],
-      backupUrl: json['backup_url'] != null
-          ? List<String>.from(json['backup_url'])
-          : [],
+      backupUrl: (json['backup_url'] as List?)?.fromCast<String>(),
     );
   }
-}
 
-final _ipRegExp = RegExp(r'^https?://\d{1,3}\.\d{1,3}');
-
-bool _isMCDNorPCDN(String url) {
-  return url.contains("szbdyd.com") ||
-      url.contains(".mcdn.bilivideo") ||
-      _ipRegExp.hasMatch(url);
+  Iterable<String> get playUrls sync* {
+    if (url?.isNotEmpty == true) yield url!;
+    if (backupUrl?.isNotEmpty == true) yield* backupUrl!;
+  }
 }
 
 abstract class BaseItem {
   int? id;
   String? baseUrl;
-  String? backupUrl;
+  List<String>? backupUrl;
   int? bandWidth;
   String? mimeType;
   String? codecs;
@@ -248,16 +250,8 @@ abstract class BaseItem {
   BaseItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     baseUrl = json['baseUrl'] ?? json['base_url'];
-    final backupUrls =
-        ((json['backupUrl'] ?? json['backup_url']) as List?)
-            ?.fromCast<String>() ??
-        <String>[];
-    backupUrl = backupUrls.isNotEmpty
-        ? backupUrls.firstWhere(
-            (i) => !_isMCDNorPCDN(i),
-            orElse: () => backupUrls.first,
-          )
-        : null;
+    backupUrl = ((json['backupUrl'] ?? json['backup_url']) as List?)
+        ?.fromCast<String>();
     bandWidth = json['bandWidth'] ?? json['bandwidth'];
     mimeType = json['mime_type'];
     codecs = json['codecs'];
@@ -268,6 +262,11 @@ abstract class BaseItem {
     startWithSap = json['startWithSap'] ?? json['start_with_sap'];
     segmentBase = json['segmentBase'] ?? json['segment_base'];
     codecid = json['codecid'];
+  }
+
+  Iterable<String> get playUrls sync* {
+    if (baseUrl?.isNotEmpty == true) yield baseUrl!;
+    if (backupUrl?.isNotEmpty == true) yield* backupUrl!;
   }
 }
 
@@ -349,6 +348,7 @@ class Volume {
   final num targetOffset;
   final num targetI;
   final num targetTp;
+
   // final MultiSceneArgs? multiSceneArgs;
 
   factory Volume.fromJson(Map<String, dynamic> json) {

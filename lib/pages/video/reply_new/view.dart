@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:math' show max;
 
 import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
-import 'package:PiliPlus/common/widgets/text_field/controller.dart'
+import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart'
     show RichTextType;
-import 'package:PiliPlus/common/widgets/text_field/text_field.dart';
+import 'package:PiliPlus/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
 import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
@@ -20,6 +20,7 @@ import 'package:PiliPlus/pages/video/reply_search_item/view.dart';
 import 'package:PiliPlus/utils/context_ext.dart';
 import 'package:PiliPlus/utils/duration_utils.dart';
 import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
@@ -383,7 +384,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                         ?.screenshot(format: 'image/png');
                     if (res != null) {
                       final file = File(
-                        '${await Utils.temporaryDirectory}/${Utils.generateRandomString(8)}.png',
+                        '$tmpDirPath/${Utils.generateRandomString(8)}.png',
                       );
                       await file.writeAsBytes(res);
                       pathList.add(file.path);

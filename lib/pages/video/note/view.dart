@@ -1,7 +1,7 @@
 import 'package:PiliPlus/common/skeleton/video_reply.dart';
+import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
 import 'package:PiliPlus/models_new/video/video_note_list/list.dart';
@@ -132,7 +132,7 @@ class _NoteListPageState extends State<NoteListPage>
             bottom: MediaQuery.viewPaddingOf(context).bottom + 6,
           ),
           decoration: BoxDecoration(
-            color: theme.colorScheme.onInverseSurface,
+            color: theme.hoverColor,
             border: Border(
               top: BorderSide(
                 width: 0.5,
@@ -187,7 +187,7 @@ class _NoteListPageState extends State<NoteListPage>
         itemCount: 8,
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {
@@ -195,7 +195,7 @@ class _NoteListPageState extends State<NoteListPage>
                   }
                   return _itemWidget(theme, response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
                 separatorBuilder: (context, index) => divider,
               )
             : HttpError(onReload: _controller.onReload),

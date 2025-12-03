@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/dyn/ink_well.dart';
+import 'package:PiliPlus/common/widgets/flutter/dyn/ink_well.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
 import 'package:PiliPlus/models/common/image_type.dart';
@@ -94,9 +94,9 @@ class _UpPanelState extends State<UpPanel> {
             ),
           ),
         ),
-        if (controller.showLiveUp && liveList?.isNotEmpty == true)
+        if (controller.showLiveUp && liveList != null && liveList.isNotEmpty)
           SliverList.builder(
-            itemCount: liveList!.length,
+            itemCount: liveList.length,
             itemBuilder: (context, index) {
               return upItemBuild(theme, liveList[index]);
             },

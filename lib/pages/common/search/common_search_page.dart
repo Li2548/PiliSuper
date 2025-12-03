@@ -7,17 +7,13 @@ import 'package:PiliPlus/pages/common/search/common_search_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-abstract class CommonSearchPage extends StatefulWidget {
-  const CommonSearchPage({super.key});
-}
-
-abstract class CommonSearchPageState<S extends CommonSearchPage, R, T>
+abstract class CommonSearchPageState<S extends StatefulWidget, R, T>
     extends State<S> {
   CommonSearchController<R, T> get controller;
 
   List<Widget>? get extraActions => null;
 
-  List<Widget>? get multiSelectChildren => null;
+  List<Widget>? get multiSelectActions => null;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +84,7 @@ abstract class CommonSearchPageState<S extends CommonSearchPage, R, T>
     if (multiSelect) {
       return MultiSelectAppBarWidget(
         ctr: controller as MultiSelectBase,
-        children: multiSelectChildren,
+        actions: multiSelectActions,
         child: bar,
       );
     }
@@ -99,8 +95,8 @@ abstract class CommonSearchPageState<S extends CommonSearchPage, R, T>
     return switch (loadingState) {
       Loading() => const HttpError(),
       Success(:var response) =>
-        response?.isNotEmpty == true
-            ? buildList(response!)
+        response != null && response.isNotEmpty
+            ? buildList(response)
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(
         errMsg: errMsg,
