@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:ui' as ui show TextHeightBehavior;
-
-import 'package:PiliPlus/common/widgets/flutter/text/paragraph.dart';
+import 'package:PiliSuper/common/widgets/text/paragraph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' hide RenderParagraph;
 

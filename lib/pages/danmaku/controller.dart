@@ -1,13 +1,14 @@
 import 'dart:collection';
 import 'dart:io' show File;
 
-import 'package:PiliPlus/grpc/bilibili/community/service/dm/v1.pb.dart';
-import 'package:PiliPlus/grpc/dm.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/path_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/path_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:path/path.dart' as path;
+import 'package:PiliSuper/grpc/bilibili/community/service/dm/v1.pb.dart';
+import 'package:PiliSuper/grpc/dm.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/services/account_service.dart';
 
 class PlDanmakuController {
   PlDanmakuController(

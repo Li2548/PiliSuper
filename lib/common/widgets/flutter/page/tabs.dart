@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:ui' show SemanticsRole;
-
-import 'package:PiliPlus/common/widgets/flutter/page/page_view.dart';
+import 'package:PiliSuper/common/widgets/page/page_view.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart' hide TabBarView, PageView;
