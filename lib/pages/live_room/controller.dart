@@ -23,7 +23,7 @@ import 'package:PiliSuper/utils/accounts.dart';
 import 'package:PiliSuper/utils/danmaku_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
 import 'package:PiliSuper/utils/extension.dart';
-import 'package:PilSuper/utils/num_utils.dart';
+import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:PiliSuper/utils/video_utils.dart';
