@@ -1,7 +1,7 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/models/member/tags.dart';
-import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/member.dart';
+import 'package:PiliSuper/models/member/tags.dart';
+import 'package:PiliSuper/utils/accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -18,14 +18,15 @@ class FollowController extends GetxController with GetTickerProviderStateMixin {
   @override
   void onInit() {
     super.onInit();
+    final Map? args = Get.arguments;
     final ownerMid = Accounts.main.mid;
-    final mid = Get.parameters['mid'];
-    this.mid = mid != null ? int.parse(mid) : ownerMid;
+    final int? mid = args?['mid'];
+    this.mid = mid ?? ownerMid;
     isOwner = ownerMid == this.mid;
     if (isOwner) {
       queryFollowUpTags();
     } else {
-      final name = Get.parameters['name'];
+      final String? name = args?['name'];
       this.name = RxnString(name);
       if (name == null) {
         _queryUserName();

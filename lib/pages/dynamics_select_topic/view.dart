@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/draggable_sheet/draggable_scrollable_sheet_topic.dart'
+import 'package:PiliSuper/common/widgets/flutter/draggable_sheet/draggable_scrollable_sheet_topic.dart'
     as topic_sheet;
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
-import 'package:PiliPlus/pages/dynamics_select_topic/controller.dart';
-import 'package:PiliPlus/pages/dynamics_select_topic/widgets/item.dart';
-import 'package:PiliPlus/pages/search/controller.dart' show DebounceStreamState;
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:PiliSuper/pages/dynamics_select_topic/controller.dart';
+import 'package:PiliSuper/pages/dynamics_select_topic/widgets/item.dart';
+import 'package:PiliSuper/pages/search/controller.dart'
+    show DebounceStreamState;
+import 'package:PiliSuper/utils/context_ext.dart';
+import 'package:PiliSuper/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
@@ -189,7 +190,7 @@ class _SelectTopicPanelState
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success<List<TopicItem>?>(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? ListView.builder(
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.viewPaddingOf(context).bottom + 100,
@@ -204,7 +205,7 @@ class _SelectTopicPanelState
                     onTap: (item) => Get.back(result: item),
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : _errWidget(),
       Error(:var errMsg) => _errWidget(errMsg),

@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models_new/live/live_follow/item.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/image/image_save.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/models_new/live/live_follow/item.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 // 视频卡片 - 垂直布局
@@ -129,10 +129,11 @@ class LiveCardVFollow extends StatelessWidget {
             '${liveItem.areaName}',
             style: const TextStyle(fontSize: 11, color: Colors.white),
           ),
-          Text(
-            liveItem.textSmall ?? '',
-            style: const TextStyle(fontSize: 11, color: Colors.white),
-          ),
+          if (liveItem.textSmall case final textSmall?)
+            Text(
+              '$textSmall围观',
+              style: const TextStyle(fontSize: 11, color: Colors.white),
+            ),
         ],
       ),
     );

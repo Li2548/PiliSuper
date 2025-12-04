@@ -1,15 +1,15 @@
-import 'package:PiliPlus/common/skeleton/msg_feed_sys_msg_.dart';
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/list_tile.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/msg/msg_sys/data.dart';
-import 'package:PiliPlus/pages/msg_feed_top/sys_msg/controller.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/skeleton/msg_feed_sys_msg_.dart';
+import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/common/widgets/flutter/list_tile.dart';
+import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/msg/msg_sys/data.dart';
+import 'package:PiliSuper/pages/msg_feed_top/sys_msg/controller.dart';
+import 'package:PiliSuper/utils/app_scheme.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -71,9 +71,9 @@ class _SysMsgPageState extends State<SysMsgPage> {
         ),
       ),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
-                itemCount: response!.length,
+                itemCount: response.length,
                 itemBuilder: (context, int index) {
                   if (index == response.length - 1) {
                     _sysMsgController.onLoadMore();

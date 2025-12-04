@@ -1,39 +1,40 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/login.dart';
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/models/home/rcmd/result.dart';
-import 'package:PiliPlus/models/model_hot_video_item.dart';
-import 'package:PiliPlus/models/model_rec_video_item.dart';
-import 'package:PiliPlus/models/pgc_lcf.dart';
-import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
-import 'package:PiliPlus/models_new/popular/popular_precious/data.dart';
-import 'package:PiliPlus/models_new/popular/popular_series_list/list.dart';
-import 'package:PiliPlus/models_new/popular/popular_series_one/data.dart';
-import 'package:PiliPlus/models_new/triple/pgc_triple.dart';
-import 'package:PiliPlus/models_new/triple/ugc_triple.dart';
-import 'package:PiliPlus/models_new/video/video_ai_conclusion/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/video_detail_response.dart';
-import 'package:PiliPlus/models_new/video/video_note_list/data.dart';
-import 'package:PiliPlus/models_new/video/video_play_info/data.dart';
-import 'package:PiliPlus/models_new/video/video_relation/data.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/recommend_filter.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/login.dart';
+import 'package:PiliSuper/http/ua_type.dart';
+import 'package:PiliSuper/models/common/account_type.dart';
+import 'package:PiliSuper/models/common/video/video_type.dart';
+import 'package:PiliSuper/models/home/rcmd/result.dart';
+import 'package:PiliSuper/models/model_hot_video_item.dart';
+import 'package:PiliSuper/models/model_rec_video_item.dart';
+import 'package:PiliSuper/models/pgc_lcf.dart';
+import 'package:PiliSuper/models/video/play/url.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
+import 'package:PiliSuper/models_new/popular/popular_precious/data.dart';
+import 'package:PiliSuper/models_new/popular/popular_series_list/list.dart';
+import 'package:PiliSuper/models_new/popular/popular_series_one/data.dart';
+import 'package:PiliSuper/models_new/triple/pgc_triple.dart';
+import 'package:PiliSuper/models_new/triple/ugc_triple.dart';
+import 'package:PiliSuper/models_new/video/video_ai_conclusion/data.dart';
+import 'package:PiliSuper/models_new/video/video_detail/data.dart';
+import 'package:PiliSuper/models_new/video/video_detail/video_detail_response.dart';
+import 'package:PiliSuper/models_new/video/video_note_list/data.dart';
+import 'package:PiliSuper/models_new/video/video_play_info/data.dart';
+import 'package:PiliSuper/models_new/video/video_relation/data.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/app_sign.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/global_data.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/recommend_filter.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show compute;
 
 /// view层根据 status 判断渲染逻辑
 class VideoHttp {
@@ -187,6 +188,7 @@ class VideoHttp {
   }
 
   // 视频流
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<PlayUrlModel>> videoUrl({
     int? avid,
     String? bvid,
@@ -229,18 +231,19 @@ class VideoHttp {
         switch (videoType) {
           case VideoType.ugc:
             data = PlayUrlModel.fromJson(res.data['data']);
-
+            break;
           case VideoType.pugv:
-            var result = res.data['data'];
+            final result = res.data['data'];
             data = PlayUrlModel.fromJson(result)
               ..lastPlayTime =
                   result?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
-
+            break;
           case VideoType.pgc:
-            var result = res.data['result'];
+            final result = res.data['result'];
             data = PlayUrlModel.fromJson(result['video_info'])
               ..lastPlayTime =
                   result?['play_view_business_info']?['user_status']?['watch_progress']?['current_watch_progress'];
+            break;
         }
         return Success(data);
       } else if (epid != null && videoType == VideoType.ugc) {
@@ -256,8 +259,8 @@ class VideoHttp {
         );
       }
       return Error(_parseVideoErr(res.data['code'], res.data['message']));
-    } catch (err) {
-      return Error(err.toString());
+    } catch (e, s) {
+      return Error('$e\n\n$s');
     }
   }
 
@@ -824,7 +827,13 @@ class VideoHttp {
     }
   }
 
-  static Future playInfo({String? aid, String? bvid, required int cid}) async {
+  static Future playInfo({
+    String? aid,
+    String? bvid,
+    required int cid,
+    dynamic seasonId,
+    dynamic epId,
+  }) async {
     assert(aid != null || bvid != null);
     var res = await Request().get(
       Api.playInfo,
@@ -832,6 +841,8 @@ class VideoHttp {
         'aid': ?aid,
         'bvid': ?bvid,
         'cid': cid,
+        'season_id': ?seasonId,
+        'ep_id': ?epId,
       }),
     );
     if (res.data['code'] == 0) {
@@ -844,32 +855,31 @@ class VideoHttp {
     }
   }
 
+  static String _subtitleTimecode(num seconds) {
+    int h = seconds ~/ 3600;
+    seconds %= 3600;
+    int m = seconds ~/ 60;
+    seconds %= 60;
+    String sms = seconds.toStringAsFixed(3).padLeft(6, '0');
+    return h == 0
+        ? "${m.toString().padLeft(2, '0')}:$sms"
+        : "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:$sms";
+  }
+
+  static String processList(List list) {
+    final sb = StringBuffer('WEBVTT\n\n')
+      ..writeAll(
+        list.map(
+          (item) =>
+              '${item?['sid'] ?? 0}\n${_subtitleTimecode(item['from'])} --> ${_subtitleTimecode(item['to'])}\n${item['content'].trim()}',
+        ),
+        '\n\n',
+      );
+    return sb.toString();
+  }
+
   static Future<String?> vttSubtitles(String subtitleUrl) async {
-    String subtitleTimecode(num seconds) {
-      int h = seconds ~/ 3600;
-      seconds %= 3600;
-      int m = seconds ~/ 60;
-      seconds %= 60;
-      String sms = seconds.toStringAsFixed(3).padLeft(6, '0');
-      return h == 0
-          ? "${m.toString().padLeft(2, '0')}:$sms"
-          : "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:$sms";
-    }
-
-    String processList(List list) {
-      final sb = StringBuffer('WEBVTT\n\n')
-        ..writeAll(
-          list.map(
-            (item) =>
-                '${item?['sid'] ?? 0}\n${subtitleTimecode(item['from'])} --> ${subtitleTimecode(item['to'])}\n${item['content'].trim()}',
-          ),
-          '\n\n',
-        );
-      return sb.toString();
-    }
-
     var res = await Request().get("https:$subtitleUrl");
-
     if (res.data?['body'] case List list) {
       return compute<List, String>(processList, list);
     }
@@ -1045,6 +1055,40 @@ class VideoHttp {
     );
     if (res.data['code'] == 0) {
       return Success(PopularPreciousData.fromJson(res.data['data']));
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<PlayUrlModel>> tvPlayUrl({
+    required int cid,
+    required int objectId, // aid, epid
+    required int playurlType, // ugc 1, pgc 2
+    int? qn,
+  }) async {
+    final accessKey = Accounts.get(AccountType.video).accessKey;
+    final params = {
+      'access_key': ?accessKey,
+      'actionKey': 'appkey',
+      'cid': cid,
+      'fourk': 1,
+      'is_proj': 1,
+      'mobile_access_key': ?accessKey,
+      'object_id': objectId,
+      'mobi_app': 'android',
+      'platform': 'android',
+      'playurl_type': playurlType,
+      'protocol': 0,
+      'qn': qn ?? 80,
+      'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    };
+    AppSign.appSign(params);
+    final res = await Request().get(
+      Api.tvPlayUrl,
+      queryParameters: params,
+    );
+    if (res.data['code'] == 0) {
+      return Success(PlayUrlModel.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }

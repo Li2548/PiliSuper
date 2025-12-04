@@ -1,12 +1,12 @@
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/video_card/video_card_h.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/model_hot_video_item.dart';
-import 'package:PiliPlus/pages/common/common_page.dart';
-import 'package:PiliPlus/pages/rank/zone/controller.dart';
-import 'package:PiliPlus/pages/rank/zone/widget/pgc_rank_item.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/common/widgets/video_card/video_card_h.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/model_hot_video_item.dart';
+import 'package:PiliSuper/pages/common/common_page.dart';
+import 'package:PiliSuper/pages/rank/zone/controller.dart';
+import 'package:PiliSuper/pages/rank/zone/widget/pgc_rank_item.dart';
+import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -55,7 +55,7 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -70,7 +70,7 @@ class _ZonePageState extends CommonPageState<ZonePage, ZoneController>
                   }
                   return PgcRankItem(item: item);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(

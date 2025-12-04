@@ -1,9 +1,12 @@
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/dynamics/vote_model.dart';
-import 'package:PiliPlus/pages/dynamics_create_vote/controller.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'dart:io' show File;
+
+import 'package:PiliSuper/common/widgets/button/icon_button.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/models/dynamics/vote_model.dart';
+import 'package:PiliSuper/pages/dynamics_create_vote/controller.dart';
+import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -414,7 +417,12 @@ class _CreateVotePageState extends State<CreateVotePage> {
             source: ImageSource.gallery,
           );
           if (pickedFile != null) {
-            _controller.onUpload(index, pickedFile);
+            final path = pickedFile.path;
+            _controller.onUpload(index, path).whenComplete(() {
+              if (Utils.isMobile) {
+                File(path).tryDel();
+              }
+            });
           }
         } catch (e) {
           SmartDialog.showToast(e.toString());

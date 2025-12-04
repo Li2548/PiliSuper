@@ -8,7 +8,7 @@
 // ignore_for_file: constant_identifier_names
 // ignore_for_file: curly_braces_in_flow_control_structures
 // ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -76,7 +76,6 @@ class PlayerArgs extends $pb.GeneratedMessage {
   static PlayerArgs create() => PlayerArgs._();
   @$core.override
   PlayerArgs createEmptyInstance() => create();
-  static $pb.PbList<PlayerArgs> createRepeated() => $pb.PbList<PlayerArgs>();
   @$core.pragma('dart2js:noInline')
   static PlayerArgs getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<PlayerArgs>(create);

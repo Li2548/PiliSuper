@@ -2,35 +2,35 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
-import 'package:PiliPlus/models_new/live/live_superchat/item.dart';
-import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
-import 'package:PiliPlus/pages/live_room/controller.dart';
-import 'package:PiliPlus/pages/live_room/superchat/superchat_card.dart';
-import 'package:PiliPlus/pages/live_room/superchat/superchat_panel.dart';
-import 'package:PiliPlus/pages/live_room/widgets/bottom_control.dart';
-import 'package:PiliPlus/pages/live_room/widgets/chat_panel.dart';
-import 'package:PiliPlus/pages/live_room/widgets/header_control.dart';
-import 'package:PiliPlus/pages/video/widgets/player_focus.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
-import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
-import 'package:PiliPlus/plugin/pl_player/view.dart';
-import 'package:PiliPlus/services/service_locator.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/button/icon_button.dart';
+import 'package:PiliSuper/common/widgets/custom_icon.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/common/widgets/keep_alive_wrapper.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/models/common/image_type.dart';
+import 'package:PiliSuper/models_new/live/live_room_info_h5/data.dart';
+import 'package:PiliSuper/models_new/live/live_superchat/item.dart';
+import 'package:PiliSuper/pages/danmaku/dnamaku_model.dart';
+import 'package:PiliSuper/pages/live_room/controller.dart';
+import 'package:PiliSuper/pages/live_room/superchat/superchat_card.dart';
+import 'package:PiliSuper/pages/live_room/superchat/superchat_panel.dart';
+import 'package:PiliSuper/pages/live_room/widgets/bottom_control.dart';
+import 'package:PiliSuper/pages/live_room/widgets/chat_panel.dart';
+import 'package:PiliSuper/pages/live_room/widgets/header_control.dart';
+import 'package:PiliSuper/pages/video/widgets/player_focus.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_status.dart';
+import 'package:PiliSuper/plugin/pl_player/utils/fullscreen.dart';
+import 'package:PiliSuper/plugin/pl_player/view.dart';
+import 'package:PiliSuper/services/service_locator.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
+import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -143,7 +143,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   void dispose() {
     videoPlayerServiceHandler?.onVideoDetailDispose(heroTag);
     WidgetsBinding.instance.removeObserver(this);
-    if (Utils.isMobile) {
+    if (Platform.isAndroid && !plPlayerController.setSystemBrightness) {
       ScreenBrightnessPlatform.instance.resetApplicationScreenBrightness();
     }
     PlPlayerController.setPlayCallBack(null);
@@ -184,7 +184,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
   @override
   Widget build(BuildContext context) {
     Widget child;
-    if (plPlayerController.isPipMode) {
+    if (Platform.isAndroid && Floating().isPipMode) {
       child = videoPlayerPanel(
         isFullScreen,
         width: maxWidth,
@@ -214,6 +214,9 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     Alignment alignment = Alignment.center,
     bool needDm = true,
   }) {
+    if (!plPlayerController.isLive) {
+      return const SizedBox.shrink();
+    }
     if (!isFullScreen && !plPlayerController.isDesktopPip) {
       _liveRoomController.fsSC.value = null;
     }
@@ -230,11 +233,14 @@ class _LiveRoomPageState extends State<LiveRoomPage>
             alignment: alignment,
             plPlayerController: plPlayerController,
             headerControl: LiveHeaderControl(
+              key: _liveRoomController.headerKey,
               title: roomInfoH5?.roomInfo?.title,
               upName: roomInfoH5?.anchorInfo?.baseInfo?.uname,
               plPlayerController: plPlayerController,
               onSendDanmaku: _liveRoomController.onSendDanmaku,
               onPlayAudio: _liveRoomController.queryLiveUrl,
+              isPortrait: isPortrait,
+              liveController: _liveRoomController,
             ),
             bottomControl: BottomControl(
               plPlayerController: plPlayerController,
@@ -342,6 +348,10 @@ class _LiveRoomPageState extends State<LiveRoomPage>
     return PopScope(
       canPop: !isFullScreen,
       onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (plPlayerController.controlsLock.value) {
+          plPlayerController.onLockControl(false);
+          return;
+        }
         if (isFullScreen) {
           plPlayerController.triggerFullScreen(status: false);
         }
@@ -352,7 +362,7 @@ class _LiveRoomPageState extends State<LiveRoomPage>
 
   Widget get childWhenDisabled {
     return Obx(() {
-      final isFullScreen = this.isFullScreen;
+      final isFullScreen = this.isFullScreen || plPlayerController.isDesktopPip;
       return Stack(
         clipBehavior: Clip.none,
         children: [
@@ -366,12 +376,12 @@ class _LiveRoomPageState extends State<LiveRoomPage>
                     ?.roomInfo
                     ?.appBackground;
                 Widget child;
-                if (appBackground?.isNotEmpty == true) {
+                if (appBackground != null && appBackground.isNotEmpty) {
                   child = CachedNetworkImage(
                     fit: BoxFit.cover,
                     width: maxWidth,
                     height: maxHeight,
-                    imageUrl: appBackground!.http2https,
+                    imageUrl: appBackground.http2https,
                   );
                 } else {
                   child = Image.asset(
@@ -484,62 +494,65 @@ class _LiveRoomPageState extends State<LiveRoomPage>
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
       titleTextStyle: const TextStyle(color: Colors.white),
-      title: Obx(
-        () {
-          RoomInfoH5Data? roomInfoH5 = _liveRoomController.roomInfoH5.value;
-          if (roomInfoH5 == null) {
-            return const SizedBox.shrink();
-          }
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => Get.toNamed('/member?mid=${roomInfoH5.roomInfo?.uid}'),
-            child: Row(
-              spacing: 10,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NetworkImgLayer(
-                  width: 34,
-                  height: 34,
-                  type: ImageType.avatar,
-                  src: roomInfoH5.anchorInfo!.baseInfo!.face,
-                ),
-                Column(
-                  spacing: 1,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      roomInfoH5.anchorInfo!.baseInfo!.uname!,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    Obx(() {
-                      final liveTime = _liveRoomController.liveTime.value;
-                      final textLarge = roomInfoH5.watchedShow?.textLarge;
-                      String text = '';
-                      if (textLarge != null) {
-                        text += textLarge;
-                      }
-                      if (liveTime != null) {
-                        if (text.isNotEmpty) {
-                          text += '  ';
-                        }
-                        final duration = DurationUtils.formatDurationBetween(
-                          liveTime * 1000,
-                          DateTime.now().millisecondsSinceEpoch,
-                        );
-                        text += duration.isEmpty ? '刚刚开播' : '开播$duration';
-                      }
-                      if (text.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-                      return Text(text, style: const TextStyle(fontSize: 12));
-                    }),
-                  ],
-                ),
-              ],
+      title: isFullScreen || plPlayerController.isDesktopPip
+          ? null
+          : Obx(
+              () {
+                RoomInfoH5Data? roomInfoH5 =
+                    _liveRoomController.roomInfoH5.value;
+                if (roomInfoH5 == null) {
+                  return const SizedBox.shrink();
+                }
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () =>
+                      Get.toNamed('/member?mid=${roomInfoH5.roomInfo?.uid}'),
+                  child: Row(
+                    spacing: 10,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      NetworkImgLayer(
+                        width: 34,
+                        height: 34,
+                        type: ImageType.avatar,
+                        src: roomInfoH5.anchorInfo!.baseInfo!.face,
+                      ),
+                      Expanded(
+                        child: Column(
+                          spacing: 1,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              spacing: 10,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    roomInfoH5.anchorInfo!.baseInfo!.uname!,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                _liveRoomController.onlineWidget,
+                              ],
+                            ),
+                            Row(
+                              spacing: 10,
+                              children: [
+                                _liveRoomController.watchedWidget,
+                                _liveRoomController.timeWidget,
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
       actions: [
         // IconButton(
         //   tooltip: '刷新',
@@ -976,7 +989,10 @@ class _LiveDanmakuState extends State<LiveDanmaku> {
     );
   }
 
-  double get _fontSize => !widget.isFullScreen || widget.isPipMode
+  double get _fontSize =>
+      plPlayerController.isDesktopPip ||
+          !widget.isFullScreen ||
+          widget.isPipMode
       ? 15 * plPlayerController.danmakuFontScale
       : 15 * plPlayerController.danmakuFontScaleFS;
 

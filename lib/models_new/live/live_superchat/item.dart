@@ -1,5 +1,5 @@
-import 'package:PiliPlus/models_new/live/live_superchat/user_info.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/models_new/live/live_superchat/user_info.dart';
+import 'package:PiliSuper/utils/utils.dart';
 
 class SuperChatItem {
   int id;
@@ -39,4 +39,32 @@ class SuperChatItem {
     message: json['message'],
     userInfo: UserInfo.fromJson(json['user_info'] as Map<String, dynamic>),
   );
+
+  SuperChatItem copyWith({
+    int? id,
+    int? uid,
+    int? price,
+    String? backgroundColor,
+    String? backgroundBottomColor,
+    String? backgroundPriceColor,
+    String? messageFontColor,
+    int? endTime,
+    String? message,
+    UserInfo? userInfo,
+    bool? expired,
+  }) {
+    return SuperChatItem(
+      id: id ?? this.id,
+      uid: uid ?? this.uid,
+      price: price ?? this.price,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      backgroundBottomColor:
+          backgroundBottomColor ?? this.backgroundBottomColor,
+      backgroundPriceColor: backgroundPriceColor ?? this.backgroundPriceColor,
+      messageFontColor: messageFontColor ?? this.messageFontColor,
+      endTime: endTime ?? this.endTime,
+      message: message ?? this.message,
+      userInfo: userInfo ?? this.userInfo,
+    );
+  }
 }

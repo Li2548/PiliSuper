@@ -1,18 +1,18 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/search/search_type.dart';
-import 'package:PiliPlus/models/search/result.dart';
-import 'package:PiliPlus/models/search/suggest.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_topic_pub_search/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
-import 'package:PiliPlus/models_new/search/search_rcmd/data.dart';
-import 'package:PiliPlus/models_new/search/search_trending/data.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/search/search_type.dart';
+import 'package:PiliSuper/models/search/result.dart';
+import 'package:PiliSuper/models/search/suggest.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_topic_pub_search/data.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliSuper/models_new/search/search_rcmd/data.dart';
+import 'package:PiliSuper/models_new/search/search_trending/data.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/request_utils.dart';
+import 'package:PiliSuper/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -43,6 +43,7 @@ class SearchHttp {
   }
 
   // 分类搜索
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<R>> searchByType<R extends SearchNumData>({
     required SearchType searchType,
     required String keyword,
@@ -62,7 +63,7 @@ class SearchHttp {
       'search_type': searchType.name,
       'keyword': keyword,
       'page': page,
-      if (order?.isNotEmpty == true) 'order': order,
+      if (order != null && order.isNotEmpty) 'order': order,
       'duration': ?duration,
       'tids': ?tids,
       'order_sort': ?orderSort,
@@ -83,7 +84,7 @@ class SearchHttp {
           if (gaiaVtoken != null) 'cookie': 'x-bili-gaia-vtoken=$gaiaVtoken',
           'origin': 'https://search.bilibili.com',
           'referer':
-              'https://search.bilibili.com/${searchType.name}?keyword=${Uri.encodeQueryComponent(keyword)}',
+              'https://search.bilibili.com/${searchType.name}?keyword=${Uri.encodeFull(keyword)}',
         },
       ),
     );
@@ -118,9 +119,8 @@ class SearchHttp {
             //   break;
           }
           return Success(data);
-        } catch (err) {
-          debugPrint(err.toString());
-          return Error(err.toString());
+        } catch (e, s) {
+          return Error('$e\n\n$s');
         }
       } else {
         return Error(resData['message'], code: resData['code']);
@@ -130,6 +130,7 @@ class SearchHttp {
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<SearchAllData>> searchAll({
     required String keyword,
     required page,
@@ -145,7 +146,7 @@ class SearchHttp {
     var params = await WbiSign.makSign({
       'keyword': keyword,
       'page': page,
-      if (order?.isNotEmpty == true) 'order': order,
+      if (order != null && order.isNotEmpty) 'order': order,
       'duration': ?duration,
       'tids': ?tids,
       'order_sort': ?orderSort,
@@ -164,9 +165,8 @@ class SearchHttp {
     if (res.data['code'] == 0) {
       try {
         return Success(SearchAllData.fromJson(res.data['data']));
-      } catch (err) {
-        debugPrint(err.toString());
-        return Error(err.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       return Error(res.data['message'] ?? '没有相关数据');

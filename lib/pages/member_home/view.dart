@@ -1,23 +1,23 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/button/more_btn.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/space/space/data.dart';
-import 'package:PiliPlus/models_new/space/space/tab2.dart';
-import 'package:PiliPlus/pages/member/controller.dart';
-import 'package:PiliPlus/pages/member_article/widget/item.dart';
-import 'package:PiliPlus/pages/member_audio/widgets/item.dart';
-import 'package:PiliPlus/pages/member_coin_arc/view.dart';
-import 'package:PiliPlus/pages/member_comic/widgets/item.dart';
-import 'package:PiliPlus/pages/member_contribute/controller.dart';
-import 'package:PiliPlus/pages/member_home/widgets/fav_item.dart';
-import 'package:PiliPlus/pages/member_home/widgets/video_card_v_member_home.dart';
-import 'package:PiliPlus/pages/member_like_arc/view.dart';
-import 'package:PiliPlus/pages/member_pgc/widgets/pgc_card_v_member_pgc.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/button/more_btn.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/space/space/data.dart';
+import 'package:PiliSuper/models_new/space/space/tab2.dart';
+import 'package:PiliSuper/pages/member/controller.dart';
+import 'package:PiliSuper/pages/member_article/widget/item.dart';
+import 'package:PiliSuper/pages/member_audio/widgets/item.dart';
+import 'package:PiliSuper/pages/member_coin_arc/view.dart';
+import 'package:PiliSuper/pages/member_comic/widgets/item.dart';
+import 'package:PiliSuper/pages/member_contribute/controller.dart';
+import 'package:PiliSuper/pages/member_home/widgets/fav_item.dart';
+import 'package:PiliSuper/pages/member_home/widgets/video_card_v_member_home.dart';
+import 'package:PiliSuper/pages/member_like_arc/view.dart';
+import 'package:PiliSuper/pages/member_pgc/widgets/pgc_card_v_member_pgc.dart';
+import 'package:PiliSuper/utils/context_ext.dart';
+import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
@@ -181,14 +181,13 @@ class _MemberHomeState extends State<MemberHome>
                       param1: 'opus',
                       count: res.article!.count!,
                     ),
-                    SliverGrid.builder(
-                      gridDelegate: gridDelegate,
-                      itemBuilder: (context, index) {
-                        return MemberArticleItem(
-                          item: res.article!.item![index],
-                        );
-                      },
-                      itemCount: isVertical ? 1 : res.article!.item!.length,
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 98,
+                        child: MemberArticleItem(
+                          item: res.article!.item!.first,
+                        ),
+                      ),
                     ),
                   ],
                   if (res.audios?.item?.isNotEmpty == true) ...[
@@ -206,7 +205,7 @@ class _MemberHomeState extends State<MemberHome>
                           item: res.audios!.item![index],
                         );
                       },
-                      itemCount: isVertical ? 1 : min(2, res.audios!.count!),
+                      itemCount: isVertical ? 1 : min(3, res.audios!.count!),
                     ),
                   ],
                   if (res.comic?.item?.isNotEmpty == true) ...[
@@ -222,7 +221,7 @@ class _MemberHomeState extends State<MemberHome>
                       itemBuilder: (context, index) {
                         return MemberComicItem(item: res.comic!.item![index]);
                       },
-                      itemCount: isVertical ? 1 : min(2, res.comic!.count!),
+                      itemCount: isVertical ? 1 : min(3, res.comic!.count!),
                     ),
                   ],
                   if (res.season?.item?.isNotEmpty == true) ...[

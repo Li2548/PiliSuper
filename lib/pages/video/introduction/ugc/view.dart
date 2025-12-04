@@ -1,31 +1,33 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
-import 'package:PiliPlus/models_new/video/video_detail/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
-import 'package:PiliPlus/models_new/video/video_tag/data.dart';
-import 'package:PiliPlus/pages/mine/controller.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/pages/video/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/season.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/selectable_text.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/common/widgets/pendant_avatar.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/common/widgets/stat/stat.dart';
+import 'package:PiliSuper/http/sponsor_block.dart';
+import 'package:PiliSuper/models/common/image_type.dart';
+import 'package:PiliSuper/models/common/stat_type.dart';
+import 'package:PiliSuper/models_new/video/video_detail/data.dart';
+import 'package:PiliSuper/models_new/video/video_detail/staff.dart';
+import 'package:PiliSuper/models_new/video/video_tag/data.dart';
+import 'package:PiliSuper/pages/mine/controller.dart';
+import 'package:PiliSuper/pages/search/widgets/search_text.dart';
+import 'package:PiliSuper/pages/video/controller.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/action_item.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/page.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/season.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/selectable_text.dart';
+import 'package:PiliSuper/utils/app_scheme.dart';
+import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/duration_utils.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/feed_back.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/num_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/request_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -603,6 +605,11 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     caseSensitive: false,
   );
 
+  static final youtubeRegExp = RegExp(
+    r'(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-z0-9_\-]{11})',
+    caseSensitive: false,
+  );
+
   TextSpan buildContent(ThemeData theme, VideoDetailData content) {
     if (content.descV2.isNullOrEmpty) {
       return const TextSpan();
@@ -625,12 +632,57 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     text: matchStr,
                     style: TextStyle(color: theme.colorScheme.primary),
                     recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        try {
-                          PageUtils.handleWebview(matchStr);
-                        } catch (err) {
-                          SmartDialog.showToast(err.toString());
+                      ..onTap = () async {
+                        if (videoDetailCtr
+                            .plPlayerController
+                            .enableSponsorBlock) {
+                          final duration =
+                              videoDetailCtr.data.timeLength ??
+                              videoDetailCtr
+                                  .plPlayerController
+                                  .duration
+                                  .value
+                                  .inMilliseconds;
+                          if (duration > 0) {
+                            final ytbId = youtubeRegExp
+                                .firstMatch(matchStr)
+                                ?.group(1);
+                            if (ytbId != null) {
+                              final bvid = videoDetailCtr.bvid;
+                              final cid = videoDetailCtr.cid.value;
+
+                              SmartDialog.showLoading();
+                              final hasPortVideo =
+                                  (await SponsorBlock.getPortVideo(
+                                    bvid: bvid,
+                                    cid: cid,
+                                  )).dataOrNull ==
+                                  ytbId;
+                              SmartDialog.dismiss();
+
+                              if (!mounted) return;
+                              final confirmed = await showConfirmDialog(
+                                context: context,
+                                title: '空降助手：搬运视频同步',
+                                content:
+                                    '${hasPortVideo ? "" : "是否将"}该视频${hasPortVideo ? "已" : ""}绑定到此YouTube视频($ytbId)',
+                              );
+                              if (!hasPortVideo && confirmed) {
+                                final res = await SponsorBlock.postPortVideo(
+                                  bvid: bvid,
+                                  cid: cid,
+                                  ytbId: ytbId,
+                                  videoDuration: (duration / 1000).round(),
+                                );
+                                SmartDialog.showToast(
+                                  '提交搬运视频${res.isSuccess ? "成功" : "失败: $res"}',
+                                );
+                                return;
+                              }
+                            }
+                          }
                         }
+                        PageUtils.handleWebview(matchStr);
                       },
                   ),
                 );

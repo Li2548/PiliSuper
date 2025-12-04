@@ -1,8 +1,8 @@
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/models_new/follow/data.dart';
-import 'package:PiliPlus/models_new/follow/list.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliSuper/http/member.dart';
+import 'package:PiliSuper/models_new/follow/data.dart';
+import 'package:PiliSuper/models_new/follow/list.dart';
+import 'package:PiliSuper/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/utils/accounts.dart';
 import 'package:get/get.dart';
 
 abstract class FollowTypeController
@@ -20,9 +20,9 @@ abstract class FollowTypeController
 
   void init() {
     final ownerMid = Accounts.main.mid;
-    final mid = Get.parameters['mid'];
-    this.mid = mid != null ? int.parse(mid) : ownerMid;
-    final name = Get.parameters['name'];
+    final Map? args = Get.arguments;
+    mid = args?['mid'] ?? ownerMid;
+    final String? name = args?['name'];
     this.name = RxnString(name);
     if (name == null) {
       queryUserName();

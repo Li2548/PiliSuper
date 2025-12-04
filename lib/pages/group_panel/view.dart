@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/models/member/tags.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/member.dart';
+import 'package:PiliSuper/models/member/tags.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/feed_back.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -122,6 +122,7 @@ class _GroupPanelState extends State<GroupPanel> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         AppBar(
           backgroundColor: Colors.transparent,
@@ -139,22 +140,16 @@ class _GroupPanelState extends State<GroupPanel> {
         ),
         Padding(
           padding: EdgeInsets.only(
-            left: 20,
             right: 20,
             top: 12,
             bottom: MediaQuery.viewPaddingOf(context).bottom + 12,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FilledButton.tonal(
-                onPressed: onSave,
-                style: FilledButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                ),
-                child: Obx(() => Text(showDefaultBtn.value ? '保存至默认分组' : '保存')),
-              ),
-            ],
+          child: FilledButton.tonal(
+            onPressed: onSave,
+            style: FilledButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+            ),
+            child: Obx(() => Text(showDefaultBtn.value ? '保存至默认分组' : '保存')),
           ),
         ),
       ],

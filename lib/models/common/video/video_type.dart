@@ -1,4 +1,4 @@
-import 'package:PiliPlus/http/api.dart';
+import 'package:PiliSuper/http/api.dart';
 
 enum VideoType {
   ugc(
@@ -13,7 +13,8 @@ enum VideoType {
     type: 10,
     replyType: 33,
     api: Api.pugvUrl,
-  );
+  )
+  ;
 
   final int type;
   final String api;

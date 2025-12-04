@@ -8,7 +8,7 @@
 // ignore_for_file: constant_identifier_names
 // ignore_for_file: curly_braces_in_flow_control_structures
 // ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -101,7 +101,6 @@ class Device extends $pb.GeneratedMessage {
   static Device create() => Device._();
   @$core.override
   Device createEmptyInstance() => create();
-  static $pb.PbList<Device> createRepeated() => $pb.PbList<Device>();
   @$core.pragma('dart2js:noInline')
   static Device getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Device>(create);
@@ -284,7 +283,6 @@ class DeviceType extends $pb.GeneratedMessage {
   static DeviceType create() => DeviceType._();
   @$core.override
   DeviceType createEmptyInstance() => create();
-  static $pb.PbList<DeviceType> createRepeated() => $pb.PbList<DeviceType>();
   @$core.pragma('dart2js:noInline')
   static DeviceType getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<DeviceType>(create);
@@ -323,7 +321,6 @@ class MobiApp extends $pb.GeneratedMessage {
   static MobiApp create() => MobiApp._();
   @$core.override
   MobiApp createEmptyInstance() => create();
-  static $pb.PbList<MobiApp> createRepeated() => $pb.PbList<MobiApp>();
   @$core.pragma('dart2js:noInline')
   static MobiApp getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MobiApp>(create);
@@ -362,7 +359,6 @@ class Platform extends $pb.GeneratedMessage {
   static Platform create() => Platform._();
   @$core.override
   Platform createEmptyInstance() => create();
-  static $pb.PbList<Platform> createRepeated() => $pb.PbList<Platform>();
   @$core.pragma('dart2js:noInline')
   static Platform getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Platform>(create);

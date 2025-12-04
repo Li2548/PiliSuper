@@ -1,21 +1,21 @@
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/fav_order_type.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
-import 'package:PiliPlus/models_new/fav/fav_detail/data.dart';
-import 'package:PiliPlus/models_new/fav/fav_detail/media.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/pages/common/multi_select/base.dart';
-import 'package:PiliPlus/pages/common/multi_select/multi_select_controller.dart';
-import 'package:PiliPlus/pages/fav_sort/view.dart';
-import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/http/fav.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/fav_order_type.dart';
+import 'package:PiliSuper/models/common/video/source_type.dart';
+import 'package:PiliSuper/models_new/fav/fav_detail/data.dart';
+import 'package:PiliSuper/models_new/fav/fav_detail/media.dart';
+import 'package:PiliSuper/models_new/fav/fav_folder/list.dart';
+import 'package:PiliSuper/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/pages/common/multi_select/base.dart';
+import 'package:PiliSuper/pages/common/multi_select/multi_select_controller.dart';
+import 'package:PiliSuper/pages/fav_sort/view.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/services.dart' show ValueChanged;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -86,7 +86,7 @@ class FavDetailController
   @override
   bool get isOwner => _isOwner.value ?? false;
 
-  AccountService accountService = Get.find<AccountService>();
+  late final account = Accounts.main;
 
   late double dx = 0;
   late final RxBool isPlayAll = Pref.enablePlayAll.obs;
@@ -130,7 +130,7 @@ class FavDetailController
     if (isRefresh) {
       FavDetailData data = response.response;
       folderInfo.value = data.info!;
-      _isOwner.value = data.info?.mid == accountService.mid;
+      _isOwner.value = data.info?.mid == account.mid;
     }
     return false;
   }
@@ -173,7 +173,7 @@ class FavDetailController
   }
 
   Future<void> onFav(bool isFav) async {
-    if (!accountService.isLogin.value) {
+    if (!account.isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }

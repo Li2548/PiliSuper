@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart' show ThreeDotItem;
-import 'package:PiliPlus/grpc/bilibili/app/im/v1.pbenum.dart'
+import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/grpc/bilibili/app/im/v1.pb.dart' show ThreeDotItem;
+import 'package:PiliSuper/grpc/bilibili/app/im/v1.pbenum.dart'
     show IMSettingType, ThreeDotItemType;
-import 'package:PiliPlus/pages/common/common_whisper_controller.dart';
-import 'package:PiliPlus/pages/contact/view.dart';
-import 'package:PiliPlus/pages/whisper_settings/view.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
+import 'package:PiliSuper/pages/common/common_whisper_controller.dart';
+import 'package:PiliSuper/pages/contact/view.dart';
+import 'package:PiliSuper/pages/whisper_settings/view.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -218,9 +217,7 @@ extension ThreeDotItemTypeExt on ThreeDotItemType {
           ),
         );
       case ThreeDotItemType.THREE_DOT_ITEM_TYPE_UP_HELPER:
-        dynamic talkerId = PiliScheme.uriDigitRegExp
-            .firstMatch(item.url)
-            ?.group(1);
+        dynamic talkerId = RegExp(r'/(\d{3,})').firstMatch(item.url)?.group(1);
         if (talkerId != null) {
           talkerId = int.parse(talkerId);
           Get.toNamed(
@@ -251,6 +248,22 @@ extension FileExt on File {
     try {
       await delete(recursive: recursive);
     } catch (_) {}
+  }
+}
+
+extension DirectoryExt on Directory {
+  Future<void> tryDel({bool recursive = false}) async {
+    try {
+      await delete(recursive: recursive);
+    } catch (_) {}
+  }
+
+  Future<bool> lengthGte(int length) async {
+    int count = 0;
+    await for (var _ in list()) {
+      if (++count == length) return true;
+    }
+    return false;
   }
 }
 

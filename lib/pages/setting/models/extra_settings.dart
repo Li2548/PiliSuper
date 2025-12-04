@@ -1,39 +1,42 @@
 import 'dart:io';
 import 'dart:math' show pi, max;
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart'
+import 'package:PiliSuper/common/widgets/custom_icon.dart';
+import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/image/custom_grid_view.dart'
     show CustomGridView, ImageModel;
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
-import 'package:PiliPlus/grpc/reply.dart';
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/models/common/audio_normalization.dart';
-import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
-import 'package:PiliPlus/models/common/member/tab_type.dart';
-import 'package:PiliPlus/models/common/reply/reply_sort_type.dart';
-import 'package:PiliPlus/models/common/settings_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliPlus/models/common/super_resolution_type.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliPlus/pages/home/controller.dart';
-import 'package:PiliPlus/pages/hot/controller.dart';
-import 'package:PiliPlus/pages/main/controller.dart';
-import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
-import 'package:PiliPlus/pages/setting/widgets/slide_dialog.dart';
-import 'package:PiliPlus/pages/video/reply/widgets/reply_item_grpc.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/cache_manage.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/update.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/pendant_avatar.dart';
+import 'package:PiliSuper/grpc/reply.dart';
+import 'package:PiliSuper/http/fav.dart';
+import 'package:PiliSuper/models/common/audio_normalization.dart';
+import 'package:PiliSuper/models/common/dynamic/dynamics_type.dart';
+import 'package:PiliSuper/models/common/member/tab_type.dart';
+import 'package:PiliSuper/models/common/reply/reply_sort_type.dart';
+import 'package:PiliSuper/models/common/settings_type.dart';
+import 'package:PiliSuper/models/common/sponsor_block/skip_type.dart';
+import 'package:PiliSuper/models/common/super_resolution_type.dart';
+import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/pages/common/slide/common_slide_page.dart';
+import 'package:PiliSuper/pages/home/controller.dart';
+import 'package:PiliSuper/pages/hot/controller.dart';
+import 'package:PiliSuper/pages/main/controller.dart';
+import 'package:PiliSuper/pages/setting/models/model.dart';
+import 'package:PiliSuper/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliSuper/pages/setting/widgets/slide_dialog.dart';
+import 'package:PiliSuper/pages/video/reply/widgets/reply_item_grpc.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/services/download/download_service.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/cache_manager.dart';
+import 'package:PiliSuper/utils/feed_back.dart';
+import 'package:PiliSuper/utils/image_utils.dart';
+import 'package:PiliSuper/utils/path_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/update.dart';
+import 'package:PiliSuper/utils/utils.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,7 +46,7 @@ import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 List<SettingsModel> get extraSettings => [
-  if (Utils.isDesktop)
+  if (Utils.isDesktop) ...[
     SettingsModel(
       settingsType: SettingsType.sw1tch,
       title: '退出时最小化',
@@ -56,6 +59,63 @@ List<SettingsModel> get extraSettings => [
         } catch (_) {}
       },
     ),
+    SettingsModel(
+      settingsType: SettingsType.normal,
+      title: '缓存路径',
+      getSubtitle: () => downloadPath,
+      leading: const Icon(Icons.storage),
+      onTap: (setState) {
+        showDialog(
+          context: Get.context!,
+          builder: (context) {
+            return AlertDialog(
+              clipBehavior: Clip.hardEdge,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    onTap: () {
+                      Get.back();
+                      Utils.copyText(downloadPath);
+                    },
+                    dense: true,
+                    title: const Text('复制', style: TextStyle(fontSize: 14)),
+                  ),
+                  ListTile(
+                    onTap: () {
+                      Get.back();
+                      final defPath = defDownloadPath;
+                      if (downloadPath == defPath) return;
+                      downloadPath = defPath;
+                      setState();
+                      Get.find<DownloadService>().initDownloadList();
+                      GStorage.setting.delete(SettingBoxKey.downloadPath);
+                    },
+                    dense: true,
+                    title: const Text('重置', style: TextStyle(fontSize: 14)),
+                  ),
+                  ListTile(
+                    onTap: () async {
+                      Get.back();
+                      final path = await FilePicker.platform.getDirectoryPath();
+                      if (path == null || path == downloadPath) return;
+                      downloadPath = path;
+                      setState();
+                      Get.find<DownloadService>().initDownloadList();
+                      GStorage.setting.put(SettingBoxKey.downloadPath, path);
+                    },
+                    dense: true,
+                    title: const Text('设置新路径', style: TextStyle(fontSize: 14)),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ),
+  ],
   SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '空降助手',
@@ -475,13 +535,6 @@ List<SettingsModel> get extraSettings => [
     leading: Icon(MdiIcons.gradientHorizontal),
     setKey: SettingBoxKey.showVipDanmaku,
     defaultVal: true,
-  ),
-  const SettingsModel(
-    settingsType: SettingsType.sw1tch,
-    title: '显示高级弹幕',
-    leading: Icon(MdiIcons.paletteAdvanced),
-    setKey: SettingBoxKey.showSpecialDanmaku,
-    defaultVal: false,
   ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
@@ -1104,7 +1157,7 @@ List<SettingsModel> get extraSettings => [
     title: '最大缓存大小',
     getSubtitle: () {
       final num = Pref.maxCacheSize;
-      return '当前最大缓存大小: 「${num == 0 ? '无限' : CacheManage.formatSize(Pref.maxCacheSize)}」';
+      return '当前最大缓存大小: 「${num == 0 ? '无限' : CacheManager.formatSize(Pref.maxCacheSize)}」';
     },
     onTap: (setState) {
       showDialog(

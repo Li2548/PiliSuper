@@ -1,9 +1,9 @@
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/pages/fan/view.dart';
-import 'package:PiliPlus/pages/follow/child/child_view.dart';
-import 'package:PiliPlus/pages/follow_search/view.dart';
-import 'package:PiliPlus/pages/share/view.dart' show UserModel;
-import 'package:PiliPlus/services/account_service.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/pages/fan/view.dart';
+import 'package:PiliSuper/pages/follow/child/child_view.dart';
+import 'package:PiliSuper/pages/follow_search/view.dart';
+import 'package:PiliSuper/pages/share/view.dart' show UserModel;
+import 'package:PiliSuper/utils/accounts.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,7 +18,7 @@ class ContactPage extends StatefulWidget {
 
 class _ContactPageState extends State<ContactPage>
     with SingleTickerProviderStateMixin {
-  AccountService accountService = Get.find<AccountService>();
+  late final mid = Accounts.main.mid;
   late final _controller = TabController(length: 2, vsync: this);
 
   @override
@@ -50,7 +50,7 @@ class _ContactPageState extends State<ContactPage>
               UserModel? userModel = await Navigator.of(context).push(
                 GetPageRoute(
                   page: () => FollowSearchPage(
-                    mid: accountService.mid,
+                    mid: mid,
                     isFromSelect: widget.isFromSelect,
                   ),
                 ),
@@ -68,7 +68,7 @@ class _ContactPageState extends State<ContactPage>
         controller: _controller,
         children: [
           FollowChildPage(
-            mid: accountService.mid,
+            mid: mid,
             onSelect: widget.isFromSelect ? onSelect : null,
           ),
           FansPage(

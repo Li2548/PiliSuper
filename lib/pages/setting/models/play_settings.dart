@@ -1,20 +1,20 @@
 import 'dart:io';
 
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/models/common/settings_type.dart';
-import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
-import 'package:PiliPlus/pages/main/controller.dart';
-import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
-import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
-import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
-import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart'
+import 'package:PiliSuper/common/widgets/custom_icon.dart';
+import 'package:PiliSuper/models/common/settings_type.dart';
+import 'package:PiliSuper/models/common/video/subtitle_pref_type.dart';
+import 'package:PiliSuper/pages/main/controller.dart';
+import 'package:PiliSuper/pages/setting/models/model.dart';
+import 'package:PiliSuper/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliSuper/plugin/pl_player/models/bottom_progress_behavior.dart';
+import 'package:PiliSuper/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliSuper/plugin/pl_player/utils/fullscreen.dart'
     show allowRotateScreen;
-import 'package:PiliPlus/services/service_locator.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/services/service_locator.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -67,6 +67,13 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.showFsScreenshotBtn,
     defaultVal: true,
   ),
+  SettingsModel(
+    settingsType: SettingsType.sw1tch,
+    title: '全屏显示电池电量',
+    leading: const Icon(Icons.battery_3_bar),
+    setKey: SettingBoxKey.showBatteryLevel,
+    defaultVal: Utils.isMobile,
+  ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '双击快退/快进',
@@ -82,6 +89,14 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableSlideVolumeBrightness,
     defaultVal: true,
   ),
+  if (Platform.isAndroid)
+    const SettingsModel(
+      settingsType: SettingsType.sw1tch,
+      title: '调节系统亮度',
+      leading: Icon(Icons.brightness_6_outlined),
+      setKey: SettingBoxKey.setSystemBrightness,
+      defaultVal: false,
+    ),
   const SettingsModel(
     settingsType: SettingsType.sw1tch,
     title: '中间滑动进入/退出全屏',

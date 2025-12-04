@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/list_tile.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/view_sliver_safe_area.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/login_devices/device.dart';
-import 'package:PiliPlus/pages/login_devices/controller.dart';
+import 'package:PiliSuper/common/widgets/flutter/list_tile.dart';
+import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/common/widgets/view_sliver_safe_area.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/login_devices/device.dart';
+import 'package:PiliSuper/pages/login_devices/controller.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 
@@ -57,12 +57,12 @@ class LloginDevicesPageState extends State<LoginDevicesPage> {
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
       Success<List<LoginDevice>?>(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemBuilder: (context, index) {
                   return _buildItem(colorScheme, response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
                 separatorBuilder: (_, _) => divider,
               )
             : HttpError(onReload: _controller.onReload),

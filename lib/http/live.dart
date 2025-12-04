@@ -1,29 +1,29 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/login.dart';
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/models/common/live_search_type.dart';
-import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
-import 'package:PiliPlus/models_new/live/live_area_list/area_list.dart';
-import 'package:PiliPlus/models_new/live/live_dm_block/data.dart';
-import 'package:PiliPlus/models_new/live/live_dm_block/shield_info.dart';
-import 'package:PiliPlus/models_new/live/live_dm_info/data.dart';
-import 'package:PiliPlus/models_new/live/live_emote/data.dart';
-import 'package:PiliPlus/models_new/live/live_emote/datum.dart';
-import 'package:PiliPlus/models_new/live/live_feed_index/data.dart';
-import 'package:PiliPlus/models_new/live/live_follow/data.dart';
-import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
-import 'package:PiliPlus/models_new/live/live_room_play_info/data.dart';
-import 'package:PiliPlus/models_new/live/live_search/data.dart';
-import 'package:PiliPlus/models_new/live/live_second_list/data.dart';
-import 'package:PiliPlus/models_new/live/live_superchat/data.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/app_sign.dart';
-import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/login.dart';
+import 'package:PiliSuper/http/ua_type.dart';
+import 'package:PiliSuper/models/common/account_type.dart';
+import 'package:PiliSuper/models/common/live_search_type.dart';
+import 'package:PiliSuper/models_new/live/live_area_list/area_item.dart';
+import 'package:PiliSuper/models_new/live/live_area_list/area_list.dart';
+import 'package:PiliSuper/models_new/live/live_dm_block/data.dart';
+import 'package:PiliSuper/models_new/live/live_dm_block/shield_info.dart';
+import 'package:PiliSuper/models_new/live/live_dm_info/data.dart';
+import 'package:PiliSuper/models_new/live/live_emote/data.dart';
+import 'package:PiliSuper/models_new/live/live_emote/datum.dart';
+import 'package:PiliSuper/models_new/live/live_feed_index/data.dart';
+import 'package:PiliSuper/models_new/live/live_follow/data.dart';
+import 'package:PiliSuper/models_new/live/live_room_info_h5/data.dart';
+import 'package:PiliSuper/models_new/live/live_room_play_info/data.dart';
+import 'package:PiliSuper/models_new/live/live_search/data.dart';
+import 'package:PiliSuper/models_new/live/live_second_list/data.dart';
+import 'package:PiliSuper/models_new/live/live_superchat/data.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/accounts/account.dart';
+import 'package:PiliSuper/utils/app_sign.dart';
+import 'package:PiliSuper/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
 abstract final class LiveHttp {
@@ -203,11 +203,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveFeedIndex,
       queryParameters: params,
@@ -289,11 +285,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveSecondList,
       queryParameters: params,
@@ -339,11 +331,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveAreaList,
       queryParameters: params,
@@ -376,11 +364,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.getLiveFavTag,
       queryParameters: params,
@@ -418,11 +402,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      data,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(data);
     var res = await Request().post(
       Api.setLiveFavTag,
       data: data,
@@ -458,11 +438,7 @@ abstract final class LiveHttp {
       'statistics': Constants.statisticsApp,
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveRoomAreaList,
       queryParameters: params,
@@ -501,11 +477,7 @@ abstract final class LiveHttp {
       'ts': DateTime.now().millisecondsSinceEpoch ~/ 1000,
       'type': type.name,
     };
-    AppSign.appSign(
-      params,
-      Constants.appKey,
-      Constants.appSec,
-    );
+    AppSign.appSign(params);
     var res = await Request().get(
       Api.liveSearch,
       queryParameters: params,
@@ -647,8 +619,9 @@ abstract final class LiveHttp {
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<SuperChatData>> superChatMsg(
-    dynamic roomId,
+    Object roomId,
   ) async {
     var res = await Request().get(
       Api.superChatMsg,
@@ -659,8 +632,8 @@ abstract final class LiveHttp {
     if (res.data['code'] == 0) {
       try {
         return Success(SuperChatData.fromJson(res.data['data']));
-      } catch (e) {
-        return Error(e.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       return Error(res.data['message']);

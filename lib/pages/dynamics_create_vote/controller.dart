@@ -1,13 +1,12 @@
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/http/dynamics.dart';
-import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/models/dynamics/vote_model.dart';
-import 'package:PiliPlus/models_new/upload_bfs/data.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/http/dynamics.dart';
+import 'package:PiliSuper/http/msg.dart';
+import 'package:PiliSuper/models/dynamics/vote_model.dart';
+import 'package:PiliSuper/models_new/upload_bfs/data.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 
 class CreateVoteController extends GetxController {
   CreateVoteController(this.voteId);
@@ -109,9 +108,9 @@ class CreateVoteController extends GetxController {
     }
   }
 
-  Future<void> onUpload(int index, XFile pickedFile) async {
+  Future<void> onUpload(int index, String path) async {
     var res = await MsgHttp.uploadBfs(
-      path: pickedFile.path,
+      path: path,
       category: 'daily',
       biz: 'vote',
     );

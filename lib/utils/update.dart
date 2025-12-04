@@ -1,15 +1,15 @@
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/build_config.dart';
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliSuper/build_config.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/ua_type.dart';
+import 'package:PiliSuper/utils/accounts/account.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -35,9 +35,9 @@ abstract class Update {
         }
         return;
       }
-      int latest =
-          DateTime.parse(res.data[0]['created_at']).millisecondsSinceEpoch ~/
-          1000;
+      final data = res.data[0];
+      final int latest =
+          DateTime.parse(data['created_at']).millisecondsSinceEpoch ~/ 1000;
       if (BuildConfig.buildTime >= latest) {
         if (!isAuto) {
           SmartDialog.showToast('已是最新版本');
@@ -48,7 +48,7 @@ abstract class Update {
           builder: (context) {
             final ThemeData theme = Theme.of(context);
             Widget downloadBtn(String text, {String? ext}) => TextButton(
-              onPressed: () => onDownload(res.data[0], ext: ext),
+              onPressed: () => onDownload(data, ext: ext),
               child: Text(text),
             );
             return AlertDialog(
@@ -60,11 +60,11 @@ abstract class Update {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${res.data[0]['tag_name']}',
+                        '${data['tag_name']}',
                         style: const TextStyle(fontSize: 20),
                       ),
                       const SizedBox(height: 8),
-                      Text('${res.data[0]['body']}'),
+                      Text('${data['body']}'),
                       TextButton(
                         onPressed: () => PageUtils.launchURL(
                           '${Constants.sourceCodeUrl}/commits/main',

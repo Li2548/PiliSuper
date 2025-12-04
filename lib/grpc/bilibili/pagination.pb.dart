@@ -8,7 +8,7 @@
 // ignore_for_file: constant_identifier_names
 // ignore_for_file: curly_braces_in_flow_control_structures
 // ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -62,8 +62,6 @@ class FeedPagination extends $pb.GeneratedMessage {
   static FeedPagination create() => FeedPagination._();
   @$core.override
   FeedPagination createEmptyInstance() => create();
-  static $pb.PbList<FeedPagination> createRepeated() =>
-      $pb.PbList<FeedPagination>();
   @$core.pragma('dart2js:noInline')
   static FeedPagination getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<FeedPagination>(create);
@@ -143,8 +141,6 @@ class FeedPaginationReply extends $pb.GeneratedMessage {
   static FeedPaginationReply create() => FeedPaginationReply._();
   @$core.override
   FeedPaginationReply createEmptyInstance() => create();
-  static $pb.PbList<FeedPaginationReply> createRepeated() =>
-      $pb.PbList<FeedPaginationReply>();
   @$core.pragma('dart2js:noInline')
   static FeedPaginationReply getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<FeedPaginationReply>(create);
@@ -220,7 +216,6 @@ class Pagination extends $pb.GeneratedMessage {
   static Pagination create() => Pagination._();
   @$core.override
   Pagination createEmptyInstance() => create();
-  static $pb.PbList<Pagination> createRepeated() => $pb.PbList<Pagination>();
   @$core.pragma('dart2js:noInline')
   static Pagination getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<Pagination>(create);
@@ -288,8 +283,6 @@ class PaginationReply extends $pb.GeneratedMessage {
   static PaginationReply create() => PaginationReply._();
   @$core.override
   PaginationReply createEmptyInstance() => create();
-  static $pb.PbList<PaginationReply> createRepeated() =>
-      $pb.PbList<PaginationReply>();
   @$core.pragma('dart2js:noInline')
   static PaginationReply getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<PaginationReply>(create);

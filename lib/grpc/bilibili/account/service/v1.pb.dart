@@ -8,7 +8,7 @@
 // ignore_for_file: constant_identifier_names
 // ignore_for_file: curly_braces_in_flow_control_structures
 // ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -63,7 +63,6 @@ class Color extends $pb.GeneratedMessage {
   static Color create() => Color._();
   @$core.override
   Color createEmptyInstance() => create();
-  static $pb.PbList<Color> createRepeated() => $pb.PbList<Color>();
   @$core.pragma('dart2js:noInline')
   static Color getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Color>(create);
@@ -130,7 +129,6 @@ class ColorsInfo extends $pb.GeneratedMessage {
   static ColorsInfo create() => ColorsInfo._();
   @$core.override
   ColorsInfo createEmptyInstance() => create();
-  static $pb.PbList<ColorsInfo> createRepeated() => $pb.PbList<ColorsInfo>();
   @$core.pragma('dart2js:noInline')
   static ColorsInfo getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<ColorsInfo>(create);
@@ -187,7 +185,6 @@ class NameRender extends $pb.GeneratedMessage {
   static NameRender create() => NameRender._();
   @$core.override
   NameRender createEmptyInstance() => create();
-  static $pb.PbList<NameRender> createRepeated() => $pb.PbList<NameRender>();
   @$core.pragma('dart2js:noInline')
   static NameRender getDefault() => _defaultInstance ??=
       $pb.GeneratedMessage.$_defaultFor<NameRender>(create);

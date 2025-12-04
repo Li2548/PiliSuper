@@ -1,4 +1,4 @@
-import 'package:PiliPlus/http/init.dart';
+import 'package:PiliSuper/http/init.dart';
 import 'package:dio/dio.dart';
 import 'package:http2/http2.dart';
 
@@ -10,6 +10,9 @@ class RetryInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.requestOptions.responseType == ResponseType.stream) {
+      return handler.next(err);
+    }
     if (err.response != null) {
       final options = err.requestOptions;
       if (options.followRedirects && options.maxRedirects > 0) {

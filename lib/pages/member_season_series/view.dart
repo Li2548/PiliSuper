@@ -1,13 +1,13 @@
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/member/contribute_type.dart';
-import 'package:PiliPlus/models_new/space/space_season_series/season.dart'
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/common/widgets/view_safe_area.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/member/contribute_type.dart';
+import 'package:PiliSuper/models_new/space/space_season_series/season.dart'
     show SpaceSsModel;
-import 'package:PiliPlus/pages/member_season_series/controller.dart';
-import 'package:PiliPlus/pages/member_season_series/widget/season_series_card.dart';
-import 'package:PiliPlus/pages/member_video/view.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliSuper/pages/member_season_series/controller.dart';
+import 'package:PiliSuper/pages/member_season_series/widget/season_series_card.dart';
+import 'package:PiliSuper/pages/member_video/view.dart';
+import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -56,7 +56,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -92,7 +92,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
                     },
                   );
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _controller.onReload),
       Error(:var errMsg) => HttpError(

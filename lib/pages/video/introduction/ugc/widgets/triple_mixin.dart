@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' show pi;
 
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -20,7 +20,7 @@ mixin TripleMixin on GetxController, TickerProvider {
   bool get hasTriple => hasLike.value && hasCoin && hasFav.value;
 
   void actionTriple();
-  Future<void> actionLikeVideo();
+  void actionLikeVideo();
 
   // no need for pugv
   AnimationController? _tripleAnimCtr;

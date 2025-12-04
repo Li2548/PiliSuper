@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/grpc/bilibili/app/im/v1.pb.dart'
     show IMSettingType, Setting;
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/pages/whisper_block/view.dart';
-import 'package:PiliPlus/pages/whisper_settings/controller.dart';
-import 'package:PiliPlus/pages/whisper_settings/widgets/item.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/pages/whisper_block/view.dart';
+import 'package:PiliSuper/pages/whisper_settings/controller.dart';
+import 'package:PiliSuper/pages/whisper_settings/widgets/item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -18,7 +18,7 @@ class WhisperSettingsPage extends StatefulWidget {
   });
 
   final IMSettingType imSettingType;
-  final ValueChanged<PbMap<int, Setting>>? onUpdate;
+  final ValueChanged<Map<int, Setting>>? onUpdate;
 
   @override
   State<WhisperSettingsPage> createState() => _WhisperSettingsPageState();
@@ -47,10 +47,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
     PbMap<int, Setting> response,
     Setting item,
   ) async {
-    PbMap<int, Setting> settings = PbMap<int, Setting>(
-      response.keyFieldType,
-      response.valueFieldType,
-    )..[key] = item;
+    final settings = {key: item};
     final res = await _controller.onSet(settings);
     if (res) {
       widget.onUpdate?.call(settings);
@@ -102,10 +99,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
                         item.redirect.selectedSummary = e.text;
                         e.selected = true;
                         _controller.loadingState.refresh();
-                        PbMap<int, Setting> settings = PbMap<int, Setting>(
-                          response.keyFieldType,
-                          response.valueFieldType,
-                        )..[key] = item;
+                        final settings = {key: item};
                         final res = await _controller.onSet(settings);
                         if (!res) {
                           for (var j in item.redirect.windowSelect.item) {

@@ -1,16 +1,16 @@
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models_new/live/live_area_list/area_item.dart';
-import 'package:PiliPlus/models_new/live/live_area_list/area_list.dart';
-import 'package:PiliPlus/pages/live_area/controller.dart';
-import 'package:PiliPlus/pages/live_area_detail/view.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/utils/extension.dart';
+import 'package:PiliSuper/common/widgets/button/icon_button.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/common/widgets/keep_alive_wrapper.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/image_type.dart';
+import 'package:PiliSuper/models_new/live/live_area_list/area_item.dart';
+import 'package:PiliSuper/models_new/live/live_area_list/area_list.dart';
+import 'package:PiliSuper/pages/live_area/controller.dart';
+import 'package:PiliSuper/pages/live_area_detail/view.dart';
+import 'package:PiliSuper/pages/search/widgets/search_text.dart';
+import 'package:PiliSuper/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sortable_wrap/sortable_wrap.dart';
 import 'package:get/get.dart';
@@ -34,7 +34,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('全部标签'),
-        actions: _controller.accountService.isLogin.value
+        actions: _controller.isLogin
             ? [
                 TextButton(
                   onPressed: _controller.onEdit,
@@ -54,7 +54,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_controller.accountService.isLogin.value)
+            if (_controller.isLogin)
               Obx(() => _buildFavWidget(theme, _controller.favState.value)),
             Expanded(
               child: Obx(
@@ -79,9 +79,9 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? DefaultTabController(
-                length: response!.length,
+                length: response.length,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -191,7 +191,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
               ),
             ),
             const SizedBox(height: 8),
-            if (list?.isNotEmpty == true) ...[
+            if (list != null && list.isNotEmpty) ...[
               SortableWrap(
                 onSortStart: (index) {
                   _controller.isEditing.value = true;
@@ -201,7 +201,7 @@ class _LiveAreaPageState extends State<LiveAreaPage> {
                 },
                 spacing: 12,
                 runSpacing: 8,
-                children: list!
+                children: list
                     .map(
                       (item) => _favTagItem(
                         theme: theme,

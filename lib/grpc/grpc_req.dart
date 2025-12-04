@@ -1,20 +1,20 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/device.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/fawkes.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/locale.pb.dart';
-import 'package:PiliPlus/grpc/bilibili/metadata/network.pb.dart' as network;
-import 'package:PiliPlus/grpc/bilibili/rpc.pb.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/grpc/bilibili/metadata.pb.dart';
+import 'package:PiliSuper/grpc/bilibili/metadata/device.pb.dart';
+import 'package:PiliSuper/grpc/bilibili/metadata/fawkes.pb.dart';
+import 'package:PiliSuper/grpc/bilibili/metadata/locale.pb.dart';
+import 'package:PiliSuper/grpc/bilibili/metadata/network.pb.dart' as network;
+import 'package:PiliSuper/grpc/bilibili/rpc.pb.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/login_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -50,7 +50,6 @@ class GrpcReq {
         platform: _device,
       ).writeToBuffer(),
     );
-    options = Options(headers: headers, responseType: ResponseType.bytes);
   }
 
   static final Map<String, String> headers = {
@@ -112,7 +111,7 @@ class GrpcReq {
     'x-bili-exps-bin': '',
   };
 
-  static Options options = Options(
+  static final Options options = Options(
     headers: headers,
     responseType: ResponseType.bytes,
   );
@@ -147,8 +146,8 @@ class GrpcReq {
       options: options,
     );
 
-    if (response.data is Map) {
-      return Error(response.data['message']);
+    if (response.data case final Map map) {
+      return Error(map['message']);
     }
 
     if (response.headers.value('Grpc-Status') == '0') {
@@ -171,9 +170,9 @@ class GrpcReq {
           final msgBytes = base64Decode(msg);
           try {
             final grpcMsg = Status.fromBuffer(msgBytes);
-            final details = grpcMsg.details.map(
-              (e) => Status.fromBuffer(e.value),
-            );
+            final details = grpcMsg.details
+                .map((e) => Status.fromBuffer(e.value))
+                .toList();
             code = details.firstOrNull?.code;
             // UNKNOWN : -400 : msg
             final errMsg = details.map((e) => e.message).join('\n');

@@ -1,15 +1,15 @@
-import 'package:PiliPlus/common/widgets/appbar/appbar.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/models/common/later_view_type.dart';
-import 'package:PiliPlus/models_new/later/data.dart';
-import 'package:PiliPlus/models_new/later/list.dart';
-import 'package:PiliPlus/pages/fav_detail/view.dart';
-import 'package:PiliPlus/pages/later/base_controller.dart';
-import 'package:PiliPlus/pages/later/controller.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
+import 'package:PiliSuper/common/widgets/appbar/appbar.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/common/widgets/view_safe_area.dart';
+import 'package:PiliSuper/models/common/later_view_type.dart';
+import 'package:PiliSuper/models_new/later/data.dart';
+import 'package:PiliSuper/models_new/later/list.dart';
+import 'package:PiliSuper/pages/fav_detail/view.dart';
+import 'package:PiliSuper/pages/later/base_controller.dart';
+import 'package:PiliSuper/pages/later/controller.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/request_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -157,7 +157,7 @@ class _LaterPageState extends State<LaterPage>
     return MultiSelectAppBarWidget(
       visible: enableMultiSelect,
       ctr: currCtr(),
-      children: [
+      actions: [
         TextButton(
           style: TextButton.styleFrom(
             visualDensity: VisualDensity.compact,
@@ -169,7 +169,7 @@ class _LaterPageState extends State<LaterPage>
               isCopy: true,
               ctr: ctr,
               mediaId: null,
-              mid: ctr.accountService.mid,
+              mid: ctr.mid,
             );
           },
           child: Text(
@@ -190,7 +190,7 @@ class _LaterPageState extends State<LaterPage>
               isCopy: false,
               ctr: ctr,
               mediaId: null,
-              mid: ctr.accountService.mid,
+              mid: ctr.mid,
             );
           },
           child: Text(

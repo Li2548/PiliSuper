@@ -1,30 +1,31 @@
-import 'package:PiliPlus/common/widgets/pair.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/reply.dart';
-import 'package:PiliPlus/models/common/dynamic/dynamics_type.dart';
-import 'package:PiliPlus/models/common/reply/reply_option_type.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models/dynamics/up.dart';
-import 'package:PiliPlus/models/dynamics/vote_model.dart';
-import 'package:PiliPlus/models_new/article/article_info/data.dart';
-import 'package:PiliPlus/models_new/article/article_list/data.dart';
-import 'package:PiliPlus/models_new/article/article_view/data.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_mention/data.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_mention/group.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_reserve/data.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_reserve_info/data.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_topic_feed/topic_card_list.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/top_details.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_topic_top/topic_item.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/utils.dart';
-import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:PiliSuper/common/widgets/pair.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/reply.dart';
+import 'package:PiliSuper/models/common/dynamic/dynamics_type.dart';
+import 'package:PiliSuper/models/common/reply/reply_option_type.dart';
+import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/models/dynamics/up.dart';
+import 'package:PiliSuper/models/dynamics/vote_model.dart';
+import 'package:PiliSuper/models_new/article/article_info/data.dart';
+import 'package:PiliSuper/models_new/article/article_list/data.dart';
+import 'package:PiliSuper/models_new/article/article_view/data.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_mention/data.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_mention/group.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_reserve/data.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_reserve_info/data.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_topic_feed/topic_card_list.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_topic_top/top_details.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_topic_top/topic_item.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
 class DynamicsHttp {
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> followDynamic({
     DynamicsTabType type = DynamicsTabType.all,
     String? offset,
@@ -59,8 +60,8 @@ class DynamicsHttp {
           );
         }
         return Success(data);
-      } catch (err) {
-        return Error(err.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       return Error(code == 4101132 ? '没有数据' : res.data['message']);
@@ -184,7 +185,7 @@ class DynamicsHttp {
                 },
               ...?extraContent,
             ],
-            if (title?.isNotEmpty == true) 'title': title,
+            if (title != null && title.isNotEmpty) 'title': title,
           },
           if (privatePub != null || replyOption != null || publishTime != null)
             "option": {
@@ -242,6 +243,7 @@ class DynamicsHttp {
   }
 
   //
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicItemModel>> dynamicDetail({
     dynamic id,
     dynamic rid,
@@ -267,8 +269,8 @@ class DynamicsHttp {
     if (res.data['code'] == 0) {
       try {
         return Success(DynamicItemModel.fromJson(res.data['data']['item']));
-      } catch (err) {
-        return Error(err.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       return Error(res.data['message']);
@@ -550,7 +552,7 @@ class DynamicsHttp {
     final res = await Request().get(
       Api.dynMention,
       queryParameters: {
-        if (keyword?.isNotEmpty == true) 'keyword': keyword,
+        if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
         'web_location': 333.1365,
       },
     );

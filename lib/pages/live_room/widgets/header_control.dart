@@ -1,16 +1,19 @@
 import 'dart:io';
 
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/widgets/common_btn.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/marquee.dart';
+import 'package:PiliSuper/pages/live_room/controller.dart';
+import 'package:PiliSuper/pages/video/widgets/header_control.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/plugin/pl_player/widgets/common_btn.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
-class LiveHeaderControl extends StatelessWidget {
+class LiveHeaderControl extends StatefulWidget {
   const LiveHeaderControl({
     super.key,
     required this.title,
@@ -18,6 +21,8 @@ class LiveHeaderControl extends StatelessWidget {
     required this.plPlayerController,
     required this.onSendDanmaku,
     required this.onPlayAudio,
+    required this.isPortrait,
+    required this.liveController,
   });
 
   final String? title;
@@ -25,43 +30,73 @@ class LiveHeaderControl extends StatelessWidget {
   final PlPlayerController plPlayerController;
   final VoidCallback onSendDanmaku;
   final VoidCallback onPlayAudio;
+  final bool isPortrait;
+  final LiveRoomController liveController;
+
+  @override
+  State<LiveHeaderControl> createState() => _LiveHeaderControlState();
+}
+
+class _LiveHeaderControlState extends State<LiveHeaderControl>
+    with TimeBatteryMixin {
+  @override
+  late final plPlayerController = widget.plPlayerController;
+
+  @override
+  bool get horizontalScreen => true;
+
+  @override
+  bool get isFullScreen => plPlayerController.isFullScreen.value;
+
+  @override
+  bool get isPortrait => widget.isPortrait;
 
   @override
   Widget build(BuildContext context) {
-    final isFullScreen = plPlayerController.isFullScreen.value;
+    final isFullScreen = this.isFullScreen;
+    showCurrTimeIfNeeded(isFullScreen);
+    final liveController = widget.liveController;
     Widget child;
-    if (title != null) {
-      child = Text(
-        title!,
-        maxLines: 1,
+    child = Obx(
+      () => MarqueeText(
+        key: titleKey,
+        liveController.title.value,
+        spacing: 30,
+        velocity: 30,
         style: const TextStyle(
           fontSize: 15,
           height: 1,
           color: Colors.white,
         ),
+      ),
+    );
+    if (isFullScreen) {
+      child = Column(
+        spacing: 5,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          child,
+          Row(
+            spacing: 10,
+            children: [
+              if (widget.upName case final upName?)
+                Text(
+                  upName,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              liveController.watchedWidget,
+              liveController.onlineWidget,
+              liveController.timeWidget,
+            ],
+          ),
+        ],
       );
-      if (isFullScreen && upName != null) {
-        child = Column(
-          spacing: 5,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            child,
-            Text(
-              upName!,
-              maxLines: 1,
-              style: const TextStyle(
-                fontSize: 12,
-                height: 1,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        );
-      }
-      child = Expanded(child: child);
-    } else {
-      child = const Spacer();
     }
+    child = Expanded(child: child);
     return AppBar(
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
@@ -69,32 +104,42 @@ class LiveHeaderControl extends StatelessWidget {
       automaticallyImplyLeading: false,
       titleSpacing: 14,
       title: Row(
-        spacing: 10,
         children: [
-          if (isFullScreen)
+          if (isFullScreen || plPlayerController.isDesktopPip)
             ComBtn(
+              height: 30,
               tooltip: '返回',
               icon: const Icon(FontAwesomeIcons.arrowLeft, size: 15),
-              onTap: () => plPlayerController.triggerFullScreen(status: false),
+              onTap: () {
+                if (plPlayerController.isDesktopPip) {
+                  plPlayerController.exitDesktopPip();
+                } else {
+                  plPlayerController.triggerFullScreen(status: false);
+                }
+              },
             ),
           child,
+          ...?timeBatteryWidgets,
+          const SizedBox(width: 10),
           ComBtn(
+            height: 30,
             tooltip: '发弹幕',
             icon: const Icon(
               size: 18,
               Icons.comment_outlined,
               color: Colors.white,
             ),
-            onTap: onSendDanmaku,
+            onTap: widget.onSendDanmaku,
           ),
           Obx(
             () {
               final onlyPlayAudio = plPlayerController.onlyPlayAudio.value;
               return ComBtn(
+                height: 30,
                 tooltip: '仅播放音频',
                 onTap: () {
                   plPlayerController.onlyPlayAudio.value = !onlyPlayAudio;
-                  onPlayAudio();
+                  widget.onPlayAudio();
                 },
                 icon: onlyPlayAudio
                     ? const Icon(
@@ -112,6 +157,7 @@ class LiveHeaderControl extends StatelessWidget {
           ),
           if (Platform.isAndroid || (Utils.isDesktop && !isFullScreen))
             ComBtn(
+              height: 30,
               tooltip: '画中画',
               onTap: () async {
                 if (Utils.isDesktop) {
@@ -120,7 +166,7 @@ class LiveHeaderControl extends StatelessWidget {
                 }
                 if (await Floating().isPipAvailable) {
                   plPlayerController
-                    ..hiddenControls(false)
+                    ..showControls.value = false
                     ..enterPip();
                 }
               },
@@ -131,11 +177,25 @@ class LiveHeaderControl extends StatelessWidget {
               ),
             ),
           ComBtn(
+            height: 30,
             tooltip: '定时关闭',
             onTap: () => PageUtils.scheduleExit(context, isFullScreen, true),
             icon: const Icon(
               size: 18,
               Icons.schedule,
+              color: Colors.white,
+            ),
+          ),
+          ComBtn(
+            height: 30,
+            tooltip: '播放信息',
+            onTap: () => HeaderControlState.showPlayerInfo(
+              context,
+              plPlayerController: plPlayerController,
+            ),
+            icon: const Icon(
+              size: 18,
+              Icons.info_outline,
               color: Colors.white,
             ),
           ),

@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/grpc/audio.dart';
-import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/grpc/audio.dart';
+import 'package:PiliSuper/grpc/bilibili/app/listener/v1.pb.dart'
     show
         DetailItem,
         PlayURLResp,
@@ -10,27 +10,29 @@ import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart'
         PlaylistSource,
         PlayInfo,
         ThumbUpReq_ThumbType,
-        ListOrder;
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/pages/common/common_intro_controller.dart'
+        ListOrder,
+        DashItem,
+        ResponseUrl;
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/ua_type.dart';
+import 'package:PiliSuper/pages/common/common_intro_controller.dart'
     show FavMixin;
-import 'package:PiliPlus/pages/dynamics_repost/view.dart';
-import 'package:PiliPlus/pages/main_reply/view.dart';
-import 'package:PiliPlus/pages/video/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/triple_mixin.dart';
-import 'package:PiliPlus/pages/video/pay_coins/view.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
-import 'package:PiliPlus/services/service_locator.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
-import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:PiliSuper/pages/dynamics_repost/view.dart';
+import 'package:PiliSuper/pages/main_reply/view.dart';
+import 'package:PiliSuper/pages/video/controller.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/triple_mixin.dart';
+import 'package:PiliSuper/pages/video/pay_coins/view.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_status.dart';
+import 'package:PiliSuper/services/service_locator.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/global_data.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/video_utils.dart';
 import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -226,7 +228,7 @@ class AudioController extends GetxController
           (e) => e.id <= cacheAudioQa,
           (a, b) => a.id > b.id ? a : b,
         );
-        _onOpenMedia(VideoUtils.getCdnUrl(audio));
+        _onOpenMedia(VideoUtils.getCdnUrl(audio.playUrls));
       } else if (playInfo.hasPlayUrl()) {
         final playUrl = playInfo.playUrl;
         final durls = playUrl.durl;
@@ -235,7 +237,7 @@ class AudioController extends GetxController
         }
         final durl = durls.first;
         position.value = Duration.zero;
-        _onOpenMedia(VideoUtils.getDurlCdnUrl(durl));
+        _onOpenMedia(VideoUtils.getCdnUrl(durl.playUrls));
       }
     }
   }
@@ -339,6 +341,12 @@ class AudioController extends GetxController
     );
     if (res.isSuccess) {
       hasLike.value = newVal;
+      try {
+        audioItem.value!.stat
+          ..hasLike_7 = newVal
+          ..like += newVal ? 1 : -1;
+        audioItem.refresh();
+      } catch (_) {}
       SmartDialog.showToast(res.data.message);
     } else {
       res.toast();
@@ -362,6 +370,12 @@ class AudioController extends GetxController
       if (data.coinOk && !hasCoin) {
         coinNum.value = 2;
         GlobalData().afterCoin(2);
+        try {
+          audioItem.value!.stat
+            ..hasCoin_8 = true
+            ..coin += 2;
+          audioItem.refresh();
+        } catch (_) {}
       }
       hasFav.value = true;
       if (!hasCoin) {
@@ -412,10 +426,22 @@ class AudioController extends GetxController
       thumbUp: coinWithLike,
     );
     if (res.isSuccess) {
-      if (coinWithLike) {
+      final updateLike = !hasLike.value && coinWithLike;
+      if (updateLike) {
         hasLike.value = true;
       }
       coinNum.value += coin;
+      try {
+        final stat = audioItem.value!.stat
+          ..hasCoin_8 = true
+          ..coin += coin;
+        if (updateLike) {
+          stat
+            ..hasLike_7 = true
+            ..like += 1;
+        }
+        audioItem.refresh();
+      } catch (_) {}
       GlobalData().afterCoin(coin);
     } else {
       res.toast();
@@ -600,7 +626,9 @@ class AudioController extends GetxController
     final audioItem = playlist![index];
     final item = audioItem.item;
     oid = item.oid;
-    this.subId = subId ?? item.subId;
+    this.subId =
+        subId ??
+        (item.subId.isNotEmpty ? item.subId : [audioItem.parts.first.subId]);
     itemType = item.itemType;
     _queryPlayUrl().then((res) {
       if (res) {
@@ -633,9 +661,12 @@ class AudioController extends GetxController
 
   @override
   void updateFavCount(int count) {
-    audioItem
-      ..value?.stat.favourite += count
-      ..refresh();
+    try {
+      audioItem.value!.stat
+        ..hasFav = count > 0
+        ..favourite += count;
+      audioItem.refresh();
+    } catch (_) {}
   }
 
   Future<void> loadPrev(BuildContext context) async {
@@ -677,5 +708,19 @@ class AudioController extends GetxController
     player = null;
     animController.dispose();
     super.onClose();
+  }
+}
+
+extension on DashItem {
+  Iterable<String> get playUrls sync* {
+    yield baseUrl;
+    yield* backupUrl;
+  }
+}
+
+extension on ResponseUrl {
+  Iterable<String> get playUrls sync* {
+    yield url;
+    yield* backupUrl;
   }
 }

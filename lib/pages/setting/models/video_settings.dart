@@ -1,19 +1,19 @@
 import 'dart:io';
 
-import 'package:PiliPlus/models/common/settings_type.dart';
-import 'package:PiliPlus/models/common/video/audio_quality.dart';
-import 'package:PiliPlus/models/common/video/cdn_type.dart';
-import 'package:PiliPlus/models/common/video/live_quality.dart';
-import 'package:PiliPlus/models/common/video/video_decode_type.dart';
-import 'package:PiliPlus/models/common/video/video_quality.dart';
-import 'package:PiliPlus/pages/setting/models/model.dart';
-import 'package:PiliPlus/pages/setting/widgets/ordered_multi_select_dialog.dart';
-import 'package:PiliPlus/pages/setting/widgets/select_dialog.dart';
-import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:PiliSuper/models/common/settings_type.dart';
+import 'package:PiliSuper/models/common/video/audio_quality.dart';
+import 'package:PiliSuper/models/common/video/cdn_type.dart';
+import 'package:PiliSuper/models/common/video/live_quality.dart';
+import 'package:PiliSuper/models/common/video/video_decode_type.dart';
+import 'package:PiliSuper/models/common/video/video_quality.dart';
+import 'package:PiliSuper/pages/setting/models/model.dart';
+import 'package:PiliSuper/pages/setting/widgets/ordered_multi_select_dialog.dart';
+import 'package:PiliSuper/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliSuper/plugin/pl_player/models/hwdec_type.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/video_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -54,9 +54,9 @@ List<SettingsModel> get videoSettings => [
     title: 'CDN 设置',
     leading: const Icon(MdiIcons.cloudPlusOutline),
     getSubtitle: () =>
-        '当前使用：${CDNService.fromCode(VideoUtils.cdnService).desc}，部分 CDN 可能失效，如无法播放请尝试切换',
+        '当前使用：${VideoUtils.cdnService.desc}，部分 CDN 可能失效，如无法播放请尝试切换',
     onTap: (setState) async {
-      String? result = await showDialog(
+      CDNService? result = await showDialog(
         context: Get.context!,
         builder: (context) {
           return const CdnSelectDialog();
@@ -64,7 +64,57 @@ List<SettingsModel> get videoSettings => [
       );
       if (result != null) {
         VideoUtils.cdnService = result;
-        await GStorage.setting.put(SettingBoxKey.CDNService, result);
+        await GStorage.setting.put(SettingBoxKey.CDNService, result.name);
+        setState();
+      }
+    },
+  ),
+  SettingsModel(
+    settingsType: SettingsType.normal,
+    title: '直播 CDN 设置',
+    leading: const Icon(MdiIcons.cloudPlusOutline),
+    getSubtitle: () => '当前使用：${Pref.liveCdnUrl ?? "默认"}',
+    onTap: (setState) async {
+      String? result = await showDialog<String>(
+        context: Get.context!,
+        builder: (context) {
+          String host = Pref.liveCdnUrl ?? '';
+          return AlertDialog(
+            title: const Text('输入CDN host'),
+            content: TextFormField(
+              initialValue: host,
+              autofocus: true,
+              onChanged: (value) => host = value,
+            ),
+            actions: [
+              TextButton(
+                onPressed: Get.back,
+                child: Text(
+                  '取消',
+                  style: TextStyle(
+                    color: ColorScheme.of(context).outline,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Get.back(result: host),
+                child: const Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
+      if (result != null) {
+        if (result.isEmpty) {
+          result = null;
+          await GStorage.setting.delete(SettingBoxKey.liveCdnUrl);
+        } else {
+          if (!result.startsWith('http')) {
+            result = 'https://$result';
+          }
+          await GStorage.setting.put(SettingBoxKey.liveCdnUrl, result);
+        }
+        VideoUtils.liveCdnUrl = result;
         setState();
       }
     },
@@ -83,7 +133,7 @@ List<SettingsModel> get videoSettings => [
     subtitle: '直接采用备用 URL，可解决部分视频无声',
     leading: const Icon(MdiIcons.musicNotePlus),
     setKey: SettingBoxKey.disableAudioCDN,
-    defaultVal: true,
+    defaultVal: false,
     onChanged: (value) {
       VideoUtils.disableAudioCDN = value;
     },

@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/grpc/bilibili/app/im/v1.pb.dart'
+import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/grpc/bilibili/app/im/v1.pb.dart'
     show KeywordBlockingItem;
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/pages/whisper_block/controller.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/pages/search/widgets/search_text.dart';
+import 'package:PiliSuper/pages/whisper_block/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_svg/svg.dart';
@@ -39,7 +39,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -75,7 +75,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                         child: Wrap(
                           spacing: 12,
                           runSpacing: 12,
-                          children: response!
+                          children: response
                               .map(
                                 (e) => SearchText(
                                   text: e.keyword,
@@ -110,12 +110,13 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                   ),
                 ],
               )
-            : SizedBox.expand(
+            : Align(
+                alignment: const Alignment(0, -0.5),
                 child: Column(
+                  spacing: 6,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Spacer(),
                     SvgPicture.asset("assets/images/error.svg", height: 156),
-                    const SizedBox(height: 6),
                     const Text(
                       '还未添加屏蔽词',
                       style: TextStyle(
@@ -123,9 +124,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
                     const Text('添加后，将不再接受包含屏蔽词的消息'),
-                    const SizedBox(height: 6),
                     FilledButton.tonal(
                       onPressed: _onAdd,
                       style: FilledButton.styleFrom(
@@ -139,7 +138,6 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                         ],
                       ),
                     ),
-                    const Spacer(flex: 2),
                   ],
                 ),
               ),
@@ -183,6 +181,7 @@ class _WhisperBlockPageState extends State<WhisperBlockPage> {
                   ),
                   GestureDetector(
                     onTap: Get.back,
+                    behavior: HitTestBehavior.opaque,
                     child: Icon(
                       Icons.clear,
                       color: theme.colorScheme.onSurfaceVariant,

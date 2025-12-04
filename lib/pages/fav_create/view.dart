@@ -1,11 +1,13 @@
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/fav_utils.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'dart:io' show File;
+
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/http/fav.dart';
+import 'package:PiliSuper/http/msg.dart';
+import 'package:PiliSuper/models_new/fav/fav_folder/list.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/fav_utils.dart';
+import 'package:PiliSuper/utils/image_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -118,8 +120,8 @@ class _CreateFavPageState extends State<CreateFavPage> {
       if (pickedFile != null && mounted) {
         String imgPath = pickedFile.path;
         if (Utils.isMobile) {
-          CroppedFile? croppedFile = await ImageCropper.platform.cropImage(
-            sourcePath: pickedFile.path,
+          final croppedFile = await ImageCropper.platform.cropImage(
+            sourcePath: imgPath,
             uiSettings: [
               AndroidUiSettings(
                 toolbarTitle: '裁剪',
@@ -141,6 +143,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
             ],
           );
           if (croppedFile != null) {
+            File(imgPath).tryDel();
             imgPath = croppedFile.path;
           }
         }
@@ -156,6 +159,9 @@ class _CreateFavPageState extends State<CreateFavPage> {
             } else {
               SmartDialog.showToast(res['msg']);
             }
+          }
+          if (Utils.isMobile) {
+            File(imgPath).tryDel();
           }
         });
       }
@@ -185,11 +191,8 @@ class _CreateFavPageState extends State<CreateFavPage> {
                           builder: (_) {
                             return AlertDialog(
                               clipBehavior: Clip.hardEdge,
-                              contentPadding: const EdgeInsets.fromLTRB(
-                                0,
-                                12,
-                                0,
-                                12,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12,
                               ),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,

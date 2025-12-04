@@ -1,22 +1,25 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
+import 'package:PiliSuper/common/widgets/view_safe_area.dart';
+import 'package:PiliSuper/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/models/common/fav_type.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
-import 'package:PiliPlus/pages/audio/view.dart';
-import 'package:PiliPlus/pages/live/view.dart';
-import 'package:PiliPlus/pages/rank/view.dart';
-import 'package:PiliPlus/pages/subscription_detail/view.dart';
-import 'package:PiliPlus/pages/video/reply_reply/view.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/url_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/http/search.dart';
+import 'package:PiliSuper/models/common/fav_type.dart';
+import 'package:PiliSuper/models/common/video/source_type.dart';
+import 'package:PiliSuper/pages/audio/view.dart';
+import 'package:PiliSuper/pages/fan/view.dart';
+import 'package:PiliSuper/pages/follow/view.dart';
+import 'package:PiliSuper/pages/follow_type/followed/view.dart';
+import 'package:PiliSuper/pages/live/view.dart';
+import 'package:PiliSuper/pages/rank/view.dart';
+import 'package:PiliSuper/pages/subscription_detail/view.dart';
+import 'package:PiliSuper/pages/video/reply_reply/view.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/request_utils.dart';
+import 'package:PiliSuper/utils/url_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -486,13 +489,13 @@ abstract final class PiliScheme {
       }) {
         switch (type) {
           case 'follow':
-            Get.toNamed('/follow?mid=$mid');
+            FollowPage.toFollowPage(mid: mid);
             break;
           case 'fans':
-            Get.toNamed('/fan?mid=$mid');
+            FansPage.toFansPage(mid: mid);
             break;
           case 'followed':
-            Get.toNamed('/followed?mid=$mid');
+            FollowedPage.toFollowedPage(mid: mid);
             break;
           default:
             PageUtils.toDupNamed('/member?mid=$mid', off: off);

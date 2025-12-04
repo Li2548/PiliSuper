@@ -1,19 +1,19 @@
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/models/common/theme/theme_type.dart';
-import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/models/user/stat.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
-import 'package:PiliPlus/pages/common/common_data_controller.dart';
-import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/http/fav.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/user.dart';
+import 'package:PiliSuper/models/common/account_type.dart';
+import 'package:PiliSuper/models/common/theme/theme_type.dart';
+import 'package:PiliSuper/models/user/info.dart';
+import 'package:PiliSuper/models/user/stat.dart';
+import 'package:PiliSuper/models_new/fav/fav_folder/data.dart';
+import 'package:PiliSuper/pages/common/common_data_controller.dart';
+import 'package:PiliSuper/services/account_service.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/accounts/account.dart';
+import 'package:PiliSuper/utils/login_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -30,55 +30,53 @@ class MineController
   // 用户状态 动态、关注、粉丝
   Rx<UserStat> userStat = UserStat().obs;
 
-  Rx<ThemeType> themeType = ThemeType.system.obs;
-  static RxBool anonymity =
-      (Accounts.account.isNotEmpty && !Accounts.heartbeat.isLogin).obs;
+  Rx<ThemeType> themeType = Pref.themeType.obs;
+
   ThemeType get nextThemeType =>
       ThemeType.values[(themeType.value.index + 1) % ThemeType.values.length];
 
-  late final list = <({IconData icon, String title, VoidCallback onTap})>[
-    (
-      icon: Icons.history,
-      title: '观看记录',
-      onTap: () {
-        if (isLogin) {
-          Get.toNamed('/history');
-        }
-      },
-    ),
-    (
-      icon: Icons.subscriptions_outlined,
-      title: '我的订阅',
-      onTap: () {
-        if (isLogin) {
-          Get.toNamed('/subscription');
-        }
-      },
-    ),
-    (
-      icon: Icons.watch_later_outlined,
-      title: '稍后再看',
-      onTap: () {
-        if (isLogin) {
-          Get.toNamed('/later');
-        }
-      },
-    ),
-    (
-      icon: Icons.create_outlined,
-      title: '创作中心',
-      onTap: () {
-        if (isLogin) {
-          Get.toNamed(
-            '/webview',
-            parameters: {
-              'url': 'https://member.bilibili.com/platform/home',
-            },
-          );
-        }
-      },
-    ),
-  ];
+  static RxBool anonymity =
+      (Accounts.account.isNotEmpty && !Accounts.heartbeat.isLogin).obs;
+
+  late final list =
+      <({IconData icon, double size, String title, VoidCallback onTap})>[
+        (
+          size: 23,
+          icon: MdiIcons.folderDownloadOutline,
+          title: '离线缓存',
+          onTap: () => Get.toNamed('/download'),
+        ),
+        (
+          size: 23,
+          icon: Icons.history,
+          title: '观看记录',
+          onTap: () {
+            if (isLogin) {
+              Get.toNamed('/history');
+            }
+          },
+        ),
+        (
+          size: 20,
+          icon: Icons.subscriptions_outlined,
+          title: '我的订阅',
+          onTap: () {
+            if (isLogin) {
+              Get.toNamed('/subscription');
+            }
+          },
+        ),
+        (
+          size: 22,
+          icon: Icons.watch_later_outlined,
+          title: '稍后再看',
+          onTap: () {
+            if (isLogin) {
+              Get.toNamed('/later');
+            }
+          },
+        ),
+      ];
 
   @override
   void onInit() {

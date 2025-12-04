@@ -1,35 +1,34 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliPlus/common/widgets/page/tabs.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/common/widgets/stat/stat.dart';
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/badge_type.dart';
-import 'package:PiliPlus/models/common/episode_panel_type.dart';
-import 'package:PiliPlus/models/common/stat_type.dart';
-import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart' as pgc;
-import 'package:PiliPlus/models_new/video/video_detail/episode.dart' as ugc;
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/pages/common/slide/common_slide_page.dart';
-import 'package:PiliPlus/pages/video/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/page.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/badge.dart';
+import 'package:PiliSuper/common/widgets/button/icon_button.dart';
+import 'package:PiliSuper/common/widgets/flutter/page/tabs.dart';
+import 'package:PiliSuper/common/widgets/image/image_save.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/common/widgets/keep_alive_wrapper.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/common/widgets/stat/stat.dart';
+import 'package:PiliSuper/http/fav.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/video.dart';
+import 'package:PiliSuper/models/common/badge_type.dart';
+import 'package:PiliSuper/models/common/episode_panel_type.dart';
+import 'package:PiliSuper/models/common/stat_type.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_info_model/episode.dart' as pgc;
+import 'package:PiliSuper/models_new/video/video_detail/episode.dart' as ugc;
+import 'package:PiliSuper/models_new/video/video_detail/page.dart';
+import 'package:PiliSuper/pages/common/slide/common_slide_page.dart';
+import 'package:PiliSuper/pages/video/controller.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/page.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/duration_utils.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide TabBarView;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -124,6 +123,7 @@ class _EpisodePanelState extends State<EpisodePanel>
       return;
     }
 
+    @pragma('vm:notify-debugger-on-exception')
     void jumpToCurrent() {
       final newItemIndex = _findCurrentItemIndex;
       if (_currentItemIndex != newItemIndex) {
@@ -132,8 +132,8 @@ class _EpisodePanelState extends State<EpisodePanel>
           _itemScrollController[_currentTabIndex.value].jumpTo(
             _calcItemOffset(newItemIndex),
           );
-        } catch (_) {
-          if (kDebugMode) rethrow;
+        } catch (e, s) {
+          Utils.reportError(e, s);
         }
       }
     }
@@ -158,7 +158,9 @@ class _EpisodePanelState extends State<EpisodePanel>
       widget.list.length,
       (i) => ScrollController(
         initialScrollOffset: i == widget.initialTabIndex
-            ? _calcItemOffset(_currentItemIndex)
+            ? _currentItemIndex == 0
+                  ? 0
+                  : _calcItemOffset(_currentItemIndex)
             : 0,
       ),
       growable: false,
@@ -365,6 +367,7 @@ class _EpisodePanelState extends State<EpisodePanel>
     );
   }
 
+  late final int? vipStatus = Pref.userInfoCache?.vipStatus;
   Widget _buildEpisodeItem({
     required ThemeData theme,
     required ugc.BaseEpisodeItem episode,
@@ -384,7 +387,7 @@ class _EpisodePanelState extends State<EpisodePanel>
     switch (episode) {
       case Part part:
         cover = part.firstFrame ?? widget.cover;
-        title = part.pagePart!;
+        title = part.part!;
         duration = part.duration;
         pubdate = part.ctime;
         break;
@@ -429,13 +432,9 @@ class _EpisodePanelState extends State<EpisodePanel>
           type: MaterialType.transparency,
           child: InkWell(
             onTap: () {
-              if (episode.badge == "会员") {
-                UserInfoData? userInfo = Pref.userInfoCache;
-                int vipStatus = userInfo?.vipStatus ?? 0;
-                if (vipStatus != 1) {
-                  SmartDialog.showToast('需要大会员');
-                  // return;
-                }
+              if (episode.badge == "会员" && vipStatus != 1) {
+                SmartDialog.showToast('需要大会员');
+                // return;
               }
               SmartDialog.showToast('切换到：$title');
               widget.onClose?.call();

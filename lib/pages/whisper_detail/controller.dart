@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:PiliPlus/grpc/bilibili/im/interfaces/v1.pb.dart'
+import 'package:PiliSuper/grpc/bilibili/im/interfaces/v1.pb.dart'
     show EmotionInfo, RspSessionMsg;
-import 'package:PiliPlus/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
-import 'package:PiliPlus/grpc/im.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
+import 'package:PiliSuper/grpc/bilibili/im/type.pb.dart' show Msg, MsgType;
+import 'package:PiliSuper/grpc/im.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/msg.dart';
+import 'package:PiliSuper/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/feed_back.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
-  AccountService accountService = Get.find<AccountService>();
+  late final account = Accounts.main;
 
   final int talkerId = Get.arguments['talkerId'];
   final String name = Get.arguments['name'];
@@ -78,12 +78,12 @@ class WhisperDetailController extends CommonListController<RspSessionMsg, Msg> {
     _isSending = true;
     feedBack();
     SmartDialog.dismiss();
-    if (!accountService.isLogin.value) {
+    if (!account.isLogin) {
       SmartDialog.showToast('请先登录');
       return;
     }
     var result = await ImGrpc.sendMsg(
-      senderUid: accountService.mid,
+      senderUid: account.mid,
       receiverId: mid!,
       content: msgType == 5
           ? message!

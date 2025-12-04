@@ -1,15 +1,14 @@
-import 'package:PiliPlus/grpc/bilibili/main/community/reply/v1.pb.dart'
+import 'package:PiliSuper/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, DetailListReply, Mode;
-import 'package:PiliPlus/grpc/reply.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/pages/common/reply_controller.dart';
-import 'package:PiliPlus/pages/video/reply_new/view.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/grpc/reply.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/pages/common/reply_controller.dart';
+import 'package:PiliSuper/pages/video/reply_new/view.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/request_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -102,6 +101,7 @@ class VideoReplyReplyController extends ReplyController
 
   ExtendedNestedScrollController? nestedController;
 
+  @pragma('vm:notify-debugger-on-exception')
   void jumpToItem(int index) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       animController.forward(from: 0);
@@ -115,9 +115,7 @@ class VideoReplyReplyController extends ReplyController
             scrollController.jumpTo(offset);
           }
         }
-      } catch (_) {
-        if (kDebugMode) rethrow;
-      }
+      } catch (_) {}
     });
   }
 

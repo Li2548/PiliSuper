@@ -1,27 +1,27 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/button/more_btn.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/fav_type.dart';
-import 'package:PiliPlus/models/common/home_tab_type.dart';
-import 'package:PiliPlus/models_new/fav/fav_pgc/list.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
-import 'package:PiliPlus/pages/common/common_page.dart';
-import 'package:PiliPlus/pages/pgc/controller.dart';
-import 'package:PiliPlus/pages/pgc/widgets/pgc_card_v.dart';
-import 'package:PiliPlus/pages/pgc/widgets/pgc_card_v_timeline.dart';
-import 'package:PiliPlus/pages/pgc_index/controller.dart';
-import 'package:PiliPlus/pages/pgc_index/view.dart';
-import 'package:PiliPlus/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/button/more_btn.dart';
+import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/common/widgets/view_safe_area.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/fav_type.dart';
+import 'package:PiliSuper/models/common/home_tab_type.dart';
+import 'package:PiliSuper/models_new/fav/fav_pgc/list.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_result/list.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_timeline/result.dart';
+import 'package:PiliSuper/pages/common/common_page.dart';
+import 'package:PiliSuper/pages/pgc/controller.dart';
+import 'package:PiliSuper/pages/pgc/widgets/pgc_card_v.dart';
+import 'package:PiliSuper/pages/pgc/widgets/pgc_card_v_timeline.dart';
+import 'package:PiliSuper/pages/pgc_index/controller.dart';
+import 'package:PiliSuper/pages/pgc_index/view.dart';
+import 'package:PiliSuper/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -84,12 +84,12 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
   ) => switch (loadingState) {
     Loading() => loadingWidget,
     Success(:var response) =>
-      response?.isNotEmpty == true
+      response != null && response.isNotEmpty
           ? Builder(
               builder: (context) {
                 final initialIndex = max(
                   0,
-                  response!.indexWhere((item) => item.isToday == 1),
+                  response.indexWhere((item) => item.isToday == 1),
                 );
                 return DefaultTabController(
                   initialIndex: initialIndex,
@@ -311,7 +311,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -320,7 +320,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
                   }
                   return PgcCardVPgcIndex(item: response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: controller.onReload),
       Error(:var errMsg) => HttpError(
@@ -398,11 +398,11 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
     return switch (loadingState) {
       Loading() => loadingWidget,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? ListView.builder(
                 controller: controller.followController,
                 scrollDirection: Axis.horizontal,
-                itemCount: response!.length,
+                itemCount: response.length,
                 padding: EdgeInsets.zero,
                 itemBuilder: (context, index) {
                   if (index == response.length - 1) {

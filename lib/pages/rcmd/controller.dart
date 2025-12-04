@@ -1,7 +1,7 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/video.dart';
+import 'package:PiliSuper/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 
 class RcmdController extends CommonListController {
   late bool enableSaveLastData = Pref.enableSaveLastData;
@@ -27,12 +27,12 @@ class RcmdController extends CommonListController {
   @override
   void handleListResponse(List dataList) {
     if (enableSaveLastData && page == 0 && loadingState.value.isSuccess) {
-      List? currentList = loadingState.value.data;
-      if (currentList?.isNotEmpty == true) {
+      final currentList = loadingState.value.data;
+      if (currentList != null && currentList.isNotEmpty) {
         if (savedRcmdTip) {
           lastRefreshAt = dataList.length;
         }
-        if (currentList!.length > 500) {
+        if (currentList.length > 500) {
           currentList.removeRange(50, currentList.length);
         }
         dataList.addAll(currentList);

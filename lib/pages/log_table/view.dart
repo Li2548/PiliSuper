@@ -1,7 +1,7 @@
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/pages/log_table/controller.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/pages/log_table/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -45,7 +45,7 @@ class _LogPageState<T> extends State<LogPage<T>> {
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Builder(
                 builder: (context) {
                   final them = Theme.of(context);
@@ -78,7 +78,7 @@ class _LogPageState<T> extends State<LogPage<T>> {
                       ),
                       sliverDivider,
                       SliverList.separated(
-                        itemCount: response!.length,
+                        itemCount: response.length,
                         itemBuilder: (context, index) {
                           return _item(response[index], dividerV);
                         },

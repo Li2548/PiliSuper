@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/main.dart';
-import 'package:PiliPlus/models/common/webview_menu_type.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/cache_manage.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/http/ua_type.dart';
+import 'package:PiliSuper/main.dart';
+import 'package:PiliSuper/models/common/webview_menu_type.dart';
+import 'package:PiliSuper/utils/app_scheme.dart';
+import 'package:PiliSuper/utils/cache_manager.dart';
+import 'package:PiliSuper/utils/login_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -243,7 +243,7 @@ class _WebviewPageState extends State<WebviewPage> {
                     builder: (context) {
                       String suggestedFilename = request.suggestedFilename
                           .toString();
-                      String fileSize = CacheManage.formatSize(
+                      String fileSize = CacheManager.formatSize(
                         request.contentLength.toDouble(),
                       );
                       try {
@@ -324,6 +324,7 @@ class _WebviewPageState extends State<WebviewPage> {
                 SnackBar snackBar = SnackBar(
                   content: const Text('当前网页将要打开外部链接，是否打开'),
                   showCloseIcon: true,
+                  persist: false,
                   action: SnackBarAction(
                     label: '打开',
                     onPressed: () => PageUtils.launchURL(url),

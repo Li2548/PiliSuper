@@ -1,4 +1,4 @@
-import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
+import 'package:PiliSuper/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 
 enum SourceType {
@@ -25,14 +25,16 @@ enum SourceType {
     mediaType: 3,
     extraId: 4,
     playlistSource: PlaylistSource.MEDIA_LIST,
-  );
+  ),
+  file
+  ;
 
-  final int mediaType;
+  final int? mediaType;
   final int? extraId;
-  final PlaylistSource playlistSource;
+  final PlaylistSource? playlistSource;
   const SourceType({
-    required this.mediaType,
+    this.mediaType,
     this.extraId,
-    required this.playlistSource,
+    this.playlistSource,
   });
 }

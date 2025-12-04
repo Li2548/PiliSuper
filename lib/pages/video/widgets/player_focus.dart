@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/pages/common/common_intro_controller.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey, HardwareKeyboard;
@@ -158,12 +158,16 @@ class PlayerFocus extends StatelessWidget {
           return true;
 
         case LogicalKeyboardKey.keyF:
-          plPlayerController
-            ..triggerFullScreen(
-              status: !isFullScreen,
-              inAppFullScreen: HardwareKeyboard.instance.isShiftPressed,
-            )
-            ..controlsLock.value = false;
+          final isFullScreen = this.isFullScreen;
+          if (isFullScreen && plPlayerController.controlsLock.value) {
+            plPlayerController
+              ..controlsLock.value = false
+              ..showControls.value = false;
+          }
+          plPlayerController.triggerFullScreen(
+            status: !isFullScreen,
+            inAppFullScreen: HardwareKeyboard.instance.isShiftPressed,
+          );
           return true;
 
         case LogicalKeyboardKey.keyD:
@@ -183,7 +187,8 @@ class PlayerFocus extends StatelessWidget {
           if (Utils.isDesktop && hasPlayer && !isFullScreen) {
             plPlayerController
               ..toggleDesktopPip()
-              ..controlsLock.value = false;
+              ..controlsLock.value = false
+              ..showControls.value = false;
           }
           return true;
 
@@ -201,6 +206,14 @@ class PlayerFocus extends StatelessWidget {
         case LogicalKeyboardKey.keyS:
           if (hasPlayer && isFullScreen) {
             plPlayerController.takeScreenshot();
+          }
+          return true;
+
+        case LogicalKeyboardKey.keyL:
+          if (isFullScreen || plPlayerController.isDesktopPip) {
+            plPlayerController.onLockControl(
+              !plPlayerController.controlsLock.value,
+            );
           }
           return true;
 
@@ -240,14 +253,6 @@ class PlayerFocus extends StatelessWidget {
           case LogicalKeyboardKey.keyG:
             if (introController case UgcIntroController ugcCtr) {
               ugcCtr.actionRelationMod(Get.context!);
-            }
-            return true;
-
-          case LogicalKeyboardKey.keyL:
-            if (isFullScreen || plPlayerController.isDesktopPip) {
-              plPlayerController.onLockControl(
-                !plPlayerController.controlsLock.value,
-              );
             }
             return true;
 

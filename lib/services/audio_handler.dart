@@ -1,12 +1,14 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pb.dart' show DetailItem;
-import 'package:PiliPlus/models_new/live/live_room_info_h5/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:PiliPlus/models_new/video/video_detail/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/grpc/bilibili/app/listener/v1.pb.dart'
+    show DetailItem;
+import 'package:PiliSuper/models_new/download/bili_download_entry_info.dart';
+import 'package:PiliSuper/models_new/live/live_room_info_h5/data.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_info_model/episode.dart';
+import 'package:PiliSuper/models_new/video/video_detail/data.dart';
+import 'package:PiliSuper/models_new/video/video_detail/page.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_status.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:get/get_utils/get_utils.dart';
 
@@ -14,7 +16,7 @@ Future<VideoPlayerServiceHandler> initAudioService() async {
   return AudioService.init(
     builder: VideoPlayerServiceHandler.new,
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.example.piliplus.audio',
+      androidNotificationChannelId: 'com.example.PiliSuper.audio',
       androidNotificationChannelName: 'Audio Service ${Constants.appName}',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
@@ -145,7 +147,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         );
         mediaItem = MediaItem(
           id: id,
-          title: current?.pagePart ?? '',
+          title: current?.part ?? '',
           artist: data.owner?.name,
           duration: Duration(seconds: current?.duration ?? 0),
           artUri: Uri.parse(data.pic ?? ''),
@@ -180,7 +182,7 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
     } else if (data is Part) {
       mediaItem = MediaItem(
         id: id,
-        title: data.pagePart ?? '',
+        title: data.part ?? '',
         artist: artist,
         duration: Duration(seconds: data.duration ?? 0),
         artUri: Uri.parse(cover ?? ''),
@@ -192,6 +194,14 @@ class VideoPlayerServiceHandler extends BaseAudioHandler with SeekHandler {
         artist: data.owner.name,
         duration: Duration(seconds: data.arc.duration.toInt()),
         artUri: Uri.parse(data.arc.cover),
+      );
+    } else if (data is BiliDownloadEntryInfo) {
+      mediaItem = MediaItem(
+        id: id,
+        title: data.showTitle,
+        artist: data.ownerName,
+        duration: Duration(milliseconds: data.totalTimeMilli),
+        artUri: Uri.parse(data.cover),
       );
     }
     if (mediaItem == null) return;

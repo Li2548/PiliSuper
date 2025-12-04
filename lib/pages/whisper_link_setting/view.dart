@@ -1,11 +1,11 @@
-import 'package:PiliPlus/common/widgets/pendant_avatar.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/msg/im_user_infos/datum.dart';
-import 'package:PiliPlus/models_new/msg/msg_dnd/uid_setting.dart';
-import 'package:PiliPlus/models_new/msg/session_ss/data.dart';
-import 'package:PiliPlus/pages/whisper_link_setting/controller.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/pendant_avatar.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/msg/im_user_infos/datum.dart';
+import 'package:PiliSuper/models_new/msg/msg_dnd/uid_setting.dart';
+import 'package:PiliSuper/models_new/msg/session_ss/data.dart';
+import 'package:PiliSuper/pages/whisper_link_setting/controller.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -107,14 +107,14 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Builder(
                     builder: (context) {
-                      final ImUserInfosData item = response!.first;
+                      final ImUserInfosData item = response.first;
                       return ListTile(
                         onTap: () => Get.toNamed('/member?mid=${item.mid}'),
                         leading: PendantAvatar(
@@ -231,7 +231,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? ListTile(
                 dense: true,
                 onTap: () => _controller.setMute(response.first.setting == 1),
@@ -240,7 +240,7 @@ class _WhisperLinkSettingPageState extends State<WhisperLinkSettingPage> {
                   alignment: Alignment.centerRight,
                   scale: 0.8,
                   child: Switch(
-                    value: response!.first.setting == 1,
+                    value: response.first.setting == 1,
                     onChanged: (value) =>
                         _controller.setMute(response.first.setting == 1),
                   ),

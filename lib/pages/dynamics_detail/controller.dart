@@ -1,8 +1,8 @@
-import 'package:PiliPlus/http/dynamics.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/common/dyn/common_dyn_controller.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/http/dynamics.dart';
+import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/pages/common/dyn/common_dyn_controller.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:get/get.dart';
 
 class DynamicDetailController extends CommonDynController {
@@ -25,8 +25,9 @@ class DynamicDetailController extends CommonDynController {
     var commentIdStr = dynItem.basic?.commentIdStr;
     if (commentType != null &&
         commentType != 0 &&
-        commentIdStr?.isNotEmpty == true) {
-      _init(commentIdStr!, commentType);
+        commentIdStr != null &&
+        commentIdStr.isNotEmpty) {
+      _init(commentIdStr, commentType);
     } else {
       DynamicsHttp.dynamicDetail(id: dynItem.idStr).then((res) {
         if (res.isSuccess) {

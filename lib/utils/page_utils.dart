@@ -1,31 +1,31 @@
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/hero_dialog_route.dart';
-import 'package:PiliPlus/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart';
-import 'package:PiliPlus/grpc/im.dart';
-import 'package:PiliPlus/http/dynamics.dart';
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/episode.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
-import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/pages/contact/view.dart';
-import 'package:PiliPlus/pages/fav_panel/view.dart';
-import 'package:PiliPlus/pages/share/view.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
-import 'package:PiliPlus/services/shutdown_timer_service.dart';
-import 'package:PiliPlus/utils/app_scheme.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/url_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/interactiveviewer_gallery/hero_dialog_route.dart';
+import 'package:PiliSuper/common/widgets/interactiveviewer_gallery/interactiveviewer_gallery.dart';
+import 'package:PiliSuper/grpc/im.dart';
+import 'package:PiliSuper/http/dynamics.dart';
+import 'package:PiliSuper/http/search.dart';
+import 'package:PiliSuper/http/video.dart';
+import 'package:PiliSuper/models/common/image_preview_type.dart';
+import 'package:PiliSuper/models/common/video/video_type.dart';
+import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_info_model/episode.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_info_model/result.dart';
+import 'package:PiliSuper/pages/common/common_intro_controller.dart';
+import 'package:PiliSuper/pages/contact/view.dart';
+import 'package:PiliSuper/pages/fav_panel/view.dart';
+import 'package:PiliSuper/pages/share/view.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/menu_row.dart';
+import 'package:PiliSuper/services/shutdown_timer_service.dart';
+import 'package:PiliSuper/utils/app_scheme.dart';
+import 'package:PiliSuper/utils/context_ext.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/feed_back.dart';
+import 'package:PiliSuper/utils/global_data.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/url_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -319,7 +319,6 @@ abstract class PageUtils {
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
-      sheetAnimationStyle: const AnimationStyle(curve: Curves.ease),
       constraints: BoxConstraints(
         maxWidth: min(640, context.mediaQueryShortestSide),
       ),
@@ -645,7 +644,7 @@ abstract class PageUtils {
   static void showVideoBottomSheet(
     BuildContext context, {
     required Widget child,
-    required Function isFullScreen,
+    required bool Function() isFullScreen,
     double? padding,
   }) {
     if (!context.mounted) {
@@ -655,25 +654,29 @@ abstract class PageUtils {
       barrierLabel: '',
       barrierDismissible: true,
       pageBuilder: (buildContext, animation, secondaryAnimation) {
-        return Get.context!.isPortrait
-            ? SafeArea(
-                child: Column(
-                  children: [
-                    const Spacer(flex: 3),
-                    Expanded(flex: 7, child: child),
-                    if (isFullScreen() && padding != null)
-                      SizedBox(height: padding),
-                  ],
-                ),
-              )
-            : SafeArea(
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    Expanded(child: child),
-                  ],
-                ),
-              );
+        if (Get.context!.isPortrait) {
+          return SafeArea(
+            child: FractionallySizedBox(
+              heightFactor: 0.7,
+              widthFactor: 1.0,
+              alignment: Alignment.bottomCenter,
+              child: isFullScreen() && padding != null
+                  ? Padding(
+                      padding: EdgeInsets.only(bottom: padding),
+                      child: child,
+                    )
+                  : child,
+            ),
+          );
+        }
+        return SafeArea(
+          child: FractionallySizedBox(
+            widthFactor: 0.5,
+            heightFactor: 1.0,
+            alignment: Alignment.centerRight,
+            child: child,
+          ),
+        );
       },
       transitionDuration: const Duration(milliseconds: 350),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -707,7 +710,7 @@ abstract class PageUtils {
     }
   }
 
-  static void toVideoPage({
+  static Future<void>? toVideoPage({
     VideoType videoType = VideoType.ugc,
     int? aid,
     String? bvid,
@@ -719,7 +722,6 @@ abstract class PageUtils {
     String? title,
     int? progress,
     Map? extraArguments,
-    int? id,
     bool off = false,
   }) {
     final arguments = {
@@ -737,17 +739,15 @@ abstract class PageUtils {
       ...?extraArguments,
     };
     if (off) {
-      Get.offNamed(
+      return Get.offNamed(
         '/videoV',
         arguments: arguments,
-        id: id,
         preventDuplicates: false,
       );
     } else {
-      Get.toNamed(
+      return Get.toNamed(
         '/videoV',
         arguments: arguments,
-        id: id,
         preventDuplicates: false,
       );
     }

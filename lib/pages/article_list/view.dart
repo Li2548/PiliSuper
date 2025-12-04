@@ -1,18 +1,18 @@
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/refresh_indicator.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/models_new/article/article_list/article.dart';
-import 'package:PiliPlus/models_new/article/article_list/list.dart';
-import 'package:PiliPlus/pages/article_list/controller.dart';
-import 'package:PiliPlus/pages/article_list/widgets/item.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/grid.dart';
-import 'package:PiliPlus/utils/num_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/image_type.dart';
+import 'package:PiliSuper/models_new/article/article_list/article.dart';
+import 'package:PiliSuper/models_new/article/article_list/list.dart';
+import 'package:PiliSuper/pages/article_list/controller.dart';
+import 'package:PiliSuper/pages/article_list/widgets/item.dart';
+import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/grid.dart';
+import 'package:PiliSuper/utils/num_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -74,12 +74,12 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
     return switch (loadingState) {
       Loading() => gridSkeleton,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) =>
                     ArticleListItem(item: response[index]),
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _controller.onReload),
       Error(:var errMsg) => HttpError(
@@ -137,9 +137,12 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                   if (_controller.author != null) ...[
                     const SizedBox(height: 10),
                     GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () =>
                           Get.toNamed('/member?mid=${_controller.author!.mid}'),
                       child: Row(
+                        spacing: 10,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           NetworkImgLayer(
                             width: 30,
@@ -147,8 +150,7 @@ class _ArticleListPageState extends State<ArticleListPage> with GridMixin {
                             src: _controller.author!.face,
                             type: ImageType.avatar,
                           ),
-                          const SizedBox(width: 10),
-                          Text(_controller.author!.name!),
+                          Flexible(child: Text(_controller.author!.name!)),
                         ],
                       ),
                     ),

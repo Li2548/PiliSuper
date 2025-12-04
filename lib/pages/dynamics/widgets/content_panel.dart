@@ -1,10 +1,10 @@
 // 内容
-import 'package:PiliPlus/common/widgets/custom_icon.dart';
-import 'package:PiliPlus/common/widgets/image/custom_grid_view.dart';
-import 'package:PiliPlus/common/widgets/text/text.dart' as custom_text;
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/pages/dynamics/widgets/rich_node_panel.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliSuper/common/widgets/custom_icon.dart';
+import 'package:PiliSuper/common/widgets/flutter/text/text.dart' as custom_text;
+import 'package:PiliSuper/common/widgets/image/custom_grid_view.dart';
+import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/pages/dynamics/widgets/rich_node_panel.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -88,10 +88,10 @@ Widget content(
                   onShowMore: () => PageUtils.pushDynDetail(item, isPush: true),
                   primary: theme.colorScheme.primary,
                 ),
-        if (pics?.isNotEmpty == true)
+        if (pics != null && pics.isNotEmpty)
           CustomGridView(
             maxWidth: maxWidth,
-            picArr: pics!
+            picArr: pics
                 .map(
                   (item) => ImageModel(
                     width: item.width,

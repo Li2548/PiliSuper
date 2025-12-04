@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/badge.dart';
-import 'package:PiliPlus/common/widgets/image/image_save.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models_new/sub/sub/list.dart';
-import 'package:PiliPlus/pages/subscription_detail/view.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/badge.dart';
+import 'package:PiliSuper/common/widgets/image/image_save.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/models_new/sub/sub/list.dart';
+import 'package:PiliSuper/pages/subscription_detail/view.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -108,21 +108,27 @@ class SubItem extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Column(
-            spacing: 4,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                item.title!,
-                textAlign: TextAlign.start,
-                style: const TextStyle(
-                  letterSpacing: 0.3,
+              Expanded(
+                child: Text(
+                  item.title!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
               Text(
                 'UP主: ${item.upper!.name!}',
                 textAlign: TextAlign.start,
                 style: style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 4),
               Text(
                 '${item.mediaCount}个视频',
                 textAlign: TextAlign.start,

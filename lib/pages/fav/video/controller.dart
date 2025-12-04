@@ -1,13 +1,12 @@
-import 'package:PiliPlus/http/fav.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/data.dart';
-import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
-import 'package:PiliPlus/services/account_service.dart';
-import 'package:get/get.dart';
+import 'package:PiliSuper/http/fav.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/fav/fav_folder/data.dart';
+import 'package:PiliSuper/models_new/fav/fav_folder/list.dart';
+import 'package:PiliSuper/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/utils/accounts.dart';
 
 class FavController extends CommonListController<FavFolderData, FavFolderInfo> {
-  AccountService accountService = Get.find<AccountService>();
+  late final account = Accounts.main;
 
   @override
   void onInit() {
@@ -17,7 +16,7 @@ class FavController extends CommonListController<FavFolderData, FavFolderInfo> {
 
   @override
   Future<void> queryData([bool isRefresh = true]) {
-    if (!accountService.isLogin.value) {
+    if (!account.isLogin) {
       loadingState.value = const Error('账号未登录');
       return Future.value();
     }
@@ -36,6 +35,6 @@ class FavController extends CommonListController<FavFolderData, FavFolderInfo> {
   Future<LoadingState<FavFolderData>> customGetData() => FavHttp.userfavFolder(
     pn: page,
     ps: 20,
-    mid: accountService.mid,
+    mid: account.mid,
   );
 }

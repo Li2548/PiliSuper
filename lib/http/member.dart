@@ -1,33 +1,33 @@
 import 'dart:io';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/ua_type.dart';
-import 'package:PiliPlus/models/common/member/contribute_type.dart';
-import 'package:PiliPlus/models/dynamics/result.dart';
-import 'package:PiliPlus/models/member/info.dart';
-import 'package:PiliPlus/models/member/tags.dart';
-import 'package:PiliPlus/models_new/follow/data.dart';
-import 'package:PiliPlus/models_new/follow/list.dart';
-import 'package:PiliPlus/models_new/member/coin_like_arc/data.dart';
-import 'package:PiliPlus/models_new/member/search_archive/data.dart';
-import 'package:PiliPlus/models_new/member_card_info/data.dart';
-import 'package:PiliPlus/models_new/space/space/data.dart';
-import 'package:PiliPlus/models_new/space/space_archive/data.dart';
-import 'package:PiliPlus/models_new/space/space_article/data.dart';
-import 'package:PiliPlus/models_new/space/space_audio/data.dart';
-import 'package:PiliPlus/models_new/space/space_cheese/data.dart';
-import 'package:PiliPlus/models_new/space/space_opus/data.dart';
-import 'package:PiliPlus/models_new/space/space_season_series/item.dart';
-import 'package:PiliPlus/models_new/space/space_shop/data.dart';
-import 'package:PiliPlus/models_new/upower_rank/data.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/app_sign.dart';
-import 'package:PiliPlus/utils/utils.dart';
-import 'package:PiliPlus/utils/wbi_sign.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/ua_type.dart';
+import 'package:PiliSuper/models/common/member/contribute_type.dart';
+import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/models/member/info.dart';
+import 'package:PiliSuper/models/member/tags.dart';
+import 'package:PiliSuper/models_new/follow/data.dart';
+import 'package:PiliSuper/models_new/follow/list.dart';
+import 'package:PiliSuper/models_new/member/coin_like_arc/data.dart';
+import 'package:PiliSuper/models_new/member/search_archive/data.dart';
+import 'package:PiliSuper/models_new/member_card_info/data.dart';
+import 'package:PiliSuper/models_new/space/space/data.dart';
+import 'package:PiliSuper/models_new/space/space_archive/data.dart';
+import 'package:PiliSuper/models_new/space/space_article/data.dart';
+import 'package:PiliSuper/models_new/space/space_audio/data.dart';
+import 'package:PiliSuper/models_new/space/space_cheese/data.dart';
+import 'package:PiliSuper/models_new/space/space_opus/data.dart';
+import 'package:PiliSuper/models_new/space/space_season_series/item.dart';
+import 'package:PiliSuper/models_new/space/space_shop/data.dart';
+import 'package:PiliSuper/models_new/upower_rank/data.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/app_sign.dart';
+import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 
 class MemberHttp {
@@ -392,6 +392,7 @@ class MemberHttp {
   }
 
   // 用户动态
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<DynamicsDataModel>> memberDynamic({
     String? offset,
     int? mid,
@@ -430,8 +431,8 @@ class MemberHttp {
           return memberDynamic(offset: data.offset, mid: mid);
         }
         return Success(data);
-      } catch (err) {
-        return Error(err.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       Map errMap = const {

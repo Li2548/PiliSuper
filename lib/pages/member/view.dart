@@ -1,24 +1,24 @@
-import 'package:PiliPlus/common/widgets/dialog/report_member.dart';
-import 'package:PiliPlus/common/widgets/dynamic_sliver_appbar_medium.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/space/space/data.dart';
-import 'package:PiliPlus/pages/coin_log/controller.dart';
-import 'package:PiliPlus/pages/exp_log/controller.dart';
-import 'package:PiliPlus/pages/log_table/view.dart';
-import 'package:PiliPlus/pages/login_devices/view.dart';
-import 'package:PiliPlus/pages/login_log/controller.dart';
-import 'package:PiliPlus/pages/member/controller.dart';
-import 'package:PiliPlus/pages/member/widget/user_info_card.dart';
-import 'package:PiliPlus/pages/member_cheese/view.dart';
-import 'package:PiliPlus/pages/member_contribute/view.dart';
-import 'package:PiliPlus/pages/member_dynamics/view.dart';
-import 'package:PiliPlus/pages/member_favorite/view.dart';
-import 'package:PiliPlus/pages/member_home/view.dart';
-import 'package:PiliPlus/pages/member_pgc/view.dart';
-import 'package:PiliPlus/pages/member_shop/view.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/dialog/report_member.dart';
+import 'package:PiliSuper/common/widgets/dynamic_sliver_appbar_medium.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/space/space/data.dart';
+import 'package:PiliSuper/pages/coin_log/controller.dart';
+import 'package:PiliSuper/pages/exp_log/controller.dart';
+import 'package:PiliSuper/pages/log_table/view.dart';
+import 'package:PiliSuper/pages/login_devices/view.dart';
+import 'package:PiliSuper/pages/login_log/controller.dart';
+import 'package:PiliSuper/pages/member/controller.dart';
+import 'package:PiliSuper/pages/member/widget/user_info_card.dart';
+import 'package:PiliSuper/pages/member_cheese/view.dart';
+import 'package:PiliSuper/pages/member_contribute/view.dart';
+import 'package:PiliSuper/pages/member_dynamics/view.dart';
+import 'package:PiliSuper/pages/member_favorite/view.dart';
+import 'package:PiliSuper/pages/member_home/view.dart';
+import 'package:PiliSuper/pages/member_pgc/view.dart';
+import 'package:PiliSuper/pages/member_shop/view.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -112,8 +112,8 @@ class _MemberPageState extends State<MemberPage> {
     PopupMenuButton(
       icon: const Icon(Icons.more_vert),
       itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-        if (_userController.accountService.isLogin.value &&
-            _userController.accountService.mid != _mid) ...[
+        if (_userController.account.isLogin &&
+            _userController.account.mid != _mid) ...[
           PopupMenuItem(
             onTap: () => _userController.blockUser(context),
             child: Row(
@@ -148,7 +148,7 @@ class _MemberPageState extends State<MemberPage> {
               const Icon(Icons.share_outlined, size: 19),
               const SizedBox(width: 10),
               Text(
-                _userController.accountService.mid != _mid ? '分享UP主' : '分享我的主页',
+                _userController.account.mid != _mid ? '分享UP主' : '分享我的主页',
               ),
             ],
           ),
@@ -169,8 +169,8 @@ class _MemberPageState extends State<MemberPage> {
             ],
           ),
         ),
-        if (_userController.accountService.isLogin.value)
-          if (_userController.mid == _userController.accountService.mid) ...[
+        if (_userController.account.isLogin)
+          if (_userController.mid == _userController.account.mid) ...[
             if ((_userController
                         .loadingState
                         .value
@@ -334,8 +334,7 @@ class _MemberPageState extends State<MemberPage> {
             title: Text(_userController.username ?? ''),
             flexibleSpace: Obx(
               () => UserInfoCard(
-                isOwner:
-                    _userController.mid == _userController.accountService.mid,
+                isOwner: _userController.mid == _userController.account.mid,
                 relation: _userController.relation.value,
                 card: response.card!,
                 images: response.images!,

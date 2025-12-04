@@ -1,14 +1,14 @@
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/pgc_review_type.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_review/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_timeline/pgc_timeline.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_timeline/result.dart';
-import 'package:PiliPlus/utils/accounts.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/pgc_review_type.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_condition/data.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_result/data.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_result/list.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_review/data.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_timeline/pgc_timeline.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_timeline/result.dart';
+import 'package:PiliSuper/utils/accounts.dart';
 import 'package:dio/dio.dart';
 
 class PgcHttp {
@@ -238,6 +238,20 @@ class PgcHttp {
     );
     if (res.data['code'] == 0) {
       return {'status': true};
+    } else {
+      return {'status': false, 'msg': res.data['message']};
+    }
+  }
+
+  static Future seasonStatus(dynamic seasonId) async {
+    var res = await Request().get(
+      Api.seasonStatus,
+      queryParameters: {
+        'season_id': seasonId,
+      },
+    );
+    if (res.data['code'] == 0) {
+      return {'status': true, 'data': res.data['result']};
     } else {
       return {'status': false, 'msg': res.data['message']};
     }

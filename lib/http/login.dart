@@ -1,16 +1,16 @@
 import 'dart:convert';
 
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/login/model.dart';
-import 'package:PiliPlus/models_new/login_devices/data.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/app_sign.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/login/model.dart';
+import 'package:PiliSuper/models_new/login_devices/data.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/accounts/account.dart';
+import 'package:PiliSuper/utils/app_sign.dart';
+import 'package:PiliSuper/utils/login_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:encrypt/encrypt.dart';
@@ -30,6 +30,7 @@ class LoginHttp {
     'content-type': 'application/x-www-form-urlencoded; charset=utf-8',
   };
 
+  @pragma('vm:notify-debugger-on-exception')
   static Future<LoadingState<({String authCode, String url})>>
   getHDcode() async {
     var params = {
@@ -46,8 +47,8 @@ class LoginHttp {
       try {
         final Map<String, dynamic> data = res.data['data'];
         return Success((authCode: data['auth_code'], url: data['url']));
-      } catch (e) {
-        return Error(e.toString());
+      } catch (e, s) {
+        return Error('$e\n\n$s');
       }
     } else {
       return Error(res.data['message']);

@@ -1,22 +1,24 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models/common/member/profile_type.dart';
-import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/models_new/account_myinfo/data.dart';
-import 'package:PiliPlus/pages/mine/controller.dart';
-import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/app_sign.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'dart:io' show File;
+
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/member/profile_type.dart';
+import 'package:PiliSuper/models/user/info.dart';
+import 'package:PiliSuper/models_new/account_myinfo/data.dart';
+import 'package:PiliSuper/pages/mine/controller.dart';
+import 'package:PiliSuper/services/account_service.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/app_sign.dart';
+import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/image_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_debounce/easy_throttle.dart';
@@ -488,10 +490,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
           SmartDialog.showToast('不能选GIF');
           return;
         }
-        String? imagePath;
+        String? imagePath = pickedFile.path;
         if (Utils.isMobile) {
-          CroppedFile? croppedFile = await ImageCropper.platform.cropImage(
-            sourcePath: pickedFile.path,
+          final croppedFile = await ImageCropper.platform.cropImage(
+            sourcePath: imagePath,
             uiSettings: [
               AndroidUiSettings(
                 toolbarTitle: '裁剪',
@@ -514,11 +516,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ],
           );
-          if (croppedFile != null) {
-            imagePath = croppedFile.path;
-          }
-        } else {
-          imagePath = pickedFile.path;
+          File(imagePath).tryDel();
+          imagePath = croppedFile?.path;
         }
         if (imagePath != null) {
           Request()
@@ -536,9 +535,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
               .then((res) {
                 if (res.data['code'] == 0) {
                   SmartDialog.showToast('修改成功');
-                  Future.delayed(const Duration(milliseconds: 500), _getInfo);
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      _getInfo();
+                    }
+                  });
                 } else {
                   SmartDialog.showToast(res.data['message']);
+                }
+                if (Utils.isMobile && imagePath != null) {
+                  File(imagePath).tryDel();
                 }
               });
         }

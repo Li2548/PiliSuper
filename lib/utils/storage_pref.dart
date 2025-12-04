@@ -1,35 +1,35 @@
 import 'dart:io';
 import 'dart:math' show pow, sqrt;
 
-import 'package:PiliPlus/common/widgets/pair.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
-import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
-import 'package:PiliPlus/models/common/member/tab_type.dart';
-import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliPlus/models/common/super_resolution_type.dart';
-import 'package:PiliPlus/models/common/theme/theme_type.dart';
-import 'package:PiliPlus/models/common/video/audio_quality.dart';
-import 'package:PiliPlus/models/common/video/cdn_type.dart';
-import 'package:PiliPlus/models/common/video/live_quality.dart';
-import 'package:PiliPlus/models/common/video/subtitle_pref_type.dart';
-import 'package:PiliPlus/models/common/video/video_decode_type.dart';
-import 'package:PiliPlus/models/common/video/video_quality.dart';
-import 'package:PiliPlus/models/user/danmaku_rule.dart';
-import 'package:PiliPlus/models/user/info.dart';
-import 'package:PiliPlus/plugin/pl_player/models/bottom_progress_behavior.dart';
-import 'package:PiliPlus/plugin/pl_player/models/fullscreen_mode.dart';
-import 'package:PiliPlus/plugin/pl_player/models/hwdec_type.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/pair.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/models/common/dynamic/dynamic_badge_mode.dart';
+import 'package:PiliSuper/models/common/dynamic/up_panel_position.dart';
+import 'package:PiliSuper/models/common/member/tab_type.dart';
+import 'package:PiliSuper/models/common/msg/msg_unread_type.dart';
+import 'package:PiliSuper/models/common/sponsor_block/segment_type.dart';
+import 'package:PiliSuper/models/common/sponsor_block/skip_type.dart';
+import 'package:PiliSuper/models/common/super_resolution_type.dart';
+import 'package:PiliSuper/models/common/theme/theme_type.dart';
+import 'package:PiliSuper/models/common/video/audio_quality.dart';
+import 'package:PiliSuper/models/common/video/cdn_type.dart';
+import 'package:PiliSuper/models/common/video/live_quality.dart';
+import 'package:PiliSuper/models/common/video/subtitle_pref_type.dart';
+import 'package:PiliSuper/models/common/video/video_decode_type.dart';
+import 'package:PiliSuper/models/common/video/video_quality.dart';
+import 'package:PiliSuper/models/user/danmaku_rule.dart';
+import 'package:PiliSuper/models/user/info.dart';
+import 'package:PiliSuper/plugin/pl_player/models/bottom_progress_behavior.dart';
+import 'package:PiliSuper/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliSuper/plugin/pl_player/models/hwdec_type.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliSuper/utils/context_ext.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/global_data.dart';
+import 'package:PiliSuper/utils/login_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 import 'package:hive/hive.dart';
@@ -79,13 +79,13 @@ abstract class Pref {
         defaultValue: 0,
       )];
 
-  static int get themeTypeInt => _setting.get(
+  static int get _themeTypeInt => _setting.get(
     SettingBoxKey.themeMode,
     defaultValue: ThemeType.system.index,
   );
 
   static ThemeMode get themeMode {
-    return switch (themeTypeInt) {
+    return switch (_themeTypeInt) {
       0 => ThemeMode.light,
       1 => ThemeMode.dark,
       _ => ThemeMode.system,
@@ -142,7 +142,7 @@ abstract class Pref {
   static int get picQuality =>
       _setting.get(SettingBoxKey.defaultPicQa, defaultValue: 10);
 
-  static ThemeType get themeType => ThemeType.values[themeTypeInt];
+  static ThemeType get themeType => ThemeType.values[_themeTypeInt];
 
   static DynamicBadgeMode get dynamicBadgeType =>
       DynamicBadgeMode.values[_setting.get(
@@ -220,7 +220,7 @@ abstract class Pref {
 
   static String get defaultDecode => _setting.get(
     SettingBoxKey.defaultDecode,
-    defaultValue: VideoDecodeFormatType.values.last.codes.first,
+    defaultValue: VideoDecodeFormatType.AVC.codes.first,
   );
 
   static String get secondDecode => _setting.get(
@@ -238,10 +238,12 @@ abstract class Pref {
   static String get videoSync =>
       _setting.get(SettingBoxKey.videoSync, defaultValue: 'display-resample');
 
-  static String get defaultCDNService => _setting.get(
-    SettingBoxKey.CDNService,
-    defaultValue: CDNService.backupUrl.code,
-  );
+  static CDNService get defaultCDNService {
+    if (_setting.get(SettingBoxKey.CDNService) case final String cdnName) {
+      return CDNService.values.byName(cdnName);
+    }
+    return CDNService.backupUrl;
+  }
 
   static String get banWordForRecommend =>
       _setting.get(SettingBoxKey.banWordForRecommend, defaultValue: '');
@@ -401,9 +403,6 @@ abstract class Pref {
 
   static bool get showVipDanmaku =>
       _setting.get(SettingBoxKey.showVipDanmaku, defaultValue: true);
-
-  static bool get showSpecialDanmaku =>
-      _setting.get(SettingBoxKey.showSpecialDanmaku, defaultValue: false);
 
   static bool get mergeDanmaku =>
       _setting.get(SettingBoxKey.mergeDanmaku, defaultValue: false);
@@ -569,7 +568,7 @@ abstract class Pref {
       _setting.get(SettingBoxKey.enableLog, defaultValue: true);
 
   static bool get disableAudioCDN =>
-      _setting.get(SettingBoxKey.disableAudioCDN, defaultValue: true);
+      _setting.get(SettingBoxKey.disableAudioCDN, defaultValue: false);
 
   static int get minDurationForRcmd =>
       _setting.get(SettingBoxKey.minDurationForRcmd, defaultValue: 0);
@@ -654,7 +653,7 @@ abstract class Pref {
       _setting.get(SettingBoxKey.customColor, defaultValue: 0);
 
   static bool get dynamicColor =>
-      _setting.get(SettingBoxKey.dynamicColor, defaultValue: true);
+      _setting.get(SettingBoxKey.dynamicColor, defaultValue: !Platform.isIOS);
 
   static bool get autoClearCache =>
       _setting.get(SettingBoxKey.autoClearCache, defaultValue: false);
@@ -865,4 +864,16 @@ abstract class Pref {
 
   static bool get showTrayIcon =>
       _setting.get(SettingBoxKey.showTrayIcon, defaultValue: true);
+
+  static bool get setSystemBrightness =>
+      _setting.get(SettingBoxKey.setSystemBrightness, defaultValue: false);
+
+  static String? get downloadPath => _setting.get(SettingBoxKey.downloadPath);
+
+  static String? get liveCdnUrl => _setting.get(SettingBoxKey.liveCdnUrl);
+
+  static bool get showBatteryLevel => _setting.get(
+    SettingBoxKey.showBatteryLevel,
+    defaultValue: Utils.isMobile,
+  );
 }

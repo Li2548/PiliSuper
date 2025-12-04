@@ -1,16 +1,16 @@
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
-import 'package:PiliPlus/common/widgets/self_sized_horizontal_list.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/data.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/sort.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_condition/value.dart';
-import 'package:PiliPlus/models_new/pgc/pgc_index_result/list.dart';
-import 'package:PiliPlus/pages/pgc_index/controller.dart';
-import 'package:PiliPlus/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
-import 'package:PiliPlus/pages/search/widgets/search_text.dart';
-import 'package:PiliPlus/utils/grid.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
+import 'package:PiliSuper/common/widgets/self_sized_horizontal_list.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_condition/data.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_condition/sort.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_condition/value.dart';
+import 'package:PiliSuper/models_new/pgc/pgc_index_result/list.dart';
+import 'package:PiliSuper/pages/pgc_index/controller.dart';
+import 'package:PiliSuper/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
+import 'package:PiliSuper/pages/search/widgets/search_text.dart';
+import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -177,7 +177,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
                     ? data.order
                     : data.filter![index - 1].values
               : data.filter![index].values;
-          return item?.isNotEmpty == true
+          return item != null && item.isNotEmpty
               ? Padding(
                   padding: index == 0
                       ? EdgeInsets.zero
@@ -193,7 +193,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
                         item[childIndex],
                       );
                     },
-                    itemCount: item!.length,
+                    itemCount: item.length,
                   ),
                 )
               : const SizedBox.shrink();
@@ -241,7 +241,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
     return switch (loadingState) {
       Loading() => linearLoading,
       Success(:var response) =>
-        response?.isNotEmpty == true
+        response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
                 itemBuilder: (context, index) {
@@ -250,7 +250,7 @@ class _PgcIndexPageState extends State<PgcIndexPage>
                   }
                   return PgcCardVPgcIndex(item: response[index]);
                 },
-                itemCount: response!.length,
+                itemCount: response.length,
               )
             : HttpError(onReload: _ctr.onReload),
       Error(:var errMsg) => HttpError(

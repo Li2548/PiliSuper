@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/view_safe_area.dart';
-import 'package:PiliPlus/http/danmaku.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/main.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
-import 'package:PiliPlus/pages/common/publish/common_text_pub_page.dart';
-import 'package:PiliPlus/pages/danmaku/dnamaku_model.dart';
-import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/common/widgets/button/icon_button.dart';
+import 'package:PiliSuper/common/widgets/view_safe_area.dart';
+import 'package:PiliSuper/http/danmaku.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/main.dart';
+import 'package:PiliSuper/models/common/publish_panel_type.dart';
+import 'package:PiliSuper/pages/common/publish/common_text_pub_page.dart';
+import 'package:PiliSuper/pages/danmaku/dnamaku_model.dart';
+import 'package:PiliSuper/pages/setting/slide_color_picker.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:canvas_danmaku/models/danmaku_content_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
@@ -186,7 +186,13 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Text('弹幕字号', style: TextStyle(fontSize: 15)),
+              Text(
+                '弹幕字号',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: themeData.colorScheme.onSurface,
+                ),
+              ),
               const SizedBox(width: 16),
               _buildFontSizeItem(18, '小'),
               const SizedBox(width: 5),
@@ -196,7 +202,13 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Text('弹幕样式', style: TextStyle(fontSize: 15)),
+              Text(
+                '弹幕样式',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: themeData.colorScheme.onSurface,
+                ),
+              ),
               const SizedBox(width: 16),
               _buildPositionItem(1, '滚动'),
               const SizedBox(width: 5),
@@ -209,7 +221,13 @@ class _SendDanmakuPanelState extends CommonTextPubPageState<SendDanmakuPanel> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('弹幕颜色', style: TextStyle(fontSize: 15)),
+              Text(
+                '弹幕颜色',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: themeData.colorScheme.onSurface,
+                ),
+              ),
               const SizedBox(width: 16),
               _buildColorPanel,
             ],

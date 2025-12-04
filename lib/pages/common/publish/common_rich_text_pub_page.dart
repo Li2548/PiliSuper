@@ -1,22 +1,22 @@
 import 'dart:io';
 
-import 'package:PiliPlus/common/widgets/button/icon_button.dart';
-import 'package:PiliPlus/common/widgets/button/toolbar_icon_button.dart';
-import 'package:PiliPlus/common/widgets/text_field/controller.dart';
-import 'package:PiliPlus/common/widgets/text_field/text_field.dart';
-import 'package:PiliPlus/http/msg.dart';
-import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/models/common/publish_panel_type.dart';
-import 'package:PiliPlus/models_new/dynamic/dyn_mention/item.dart';
-import 'package:PiliPlus/models_new/emote/emote.dart' as e;
-import 'package:PiliPlus/models_new/live/live_emote/emoticon.dart';
-import 'package:PiliPlus/models_new/upload_bfs/data.dart';
-import 'package:PiliPlus/pages/common/publish/common_publish_page.dart';
-import 'package:PiliPlus/pages/dynamics_mention/view.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/button/icon_button.dart';
+import 'package:PiliSuper/common/widgets/button/toolbar_icon_button.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/text_field.dart';
+import 'package:PiliSuper/http/msg.dart';
+import 'package:PiliSuper/models/common/image_preview_type.dart';
+import 'package:PiliSuper/models/common/publish_panel_type.dart';
+import 'package:PiliSuper/models_new/dynamic/dyn_mention/item.dart';
+import 'package:PiliSuper/models_new/emote/emote.dart' as e;
+import 'package:PiliSuper/models_new/live/live_emote/emoticon.dart';
+import 'package:PiliSuper/models_new/upload_bfs/data.dart';
+import 'package:PiliSuper/pages/common/publish/common_publish_page.dart';
+import 'package:PiliSuper/pages/dynamics_mention/view.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/feed_back.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:dio/dio.dart' show CancelToken;
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +82,10 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     ).colorScheme.secondaryContainer.withValues(alpha: 0.5);
 
     void onClear() {
-      pathList.removeAt(index);
+      final path = pathList.removeAt(index);
+      if (Utils.isMobile) {
+        File(path).tryDel();
+      }
       if (pathList.isEmpty && editController.rawText.trim().isEmpty) {
         enablePublish.value = false;
       }
@@ -148,8 +151,9 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
 
   Future<void> onCropImage(int index) async {
     late final colorScheme = ColorScheme.of(context);
-    CroppedFile? croppedFile = await ImageCropper.platform.cropImage(
-      sourcePath: pathList[index],
+    final sourcePath = pathList[index];
+    final croppedFile = await ImageCropper.platform.cropImage(
+      sourcePath: sourcePath,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: '裁剪',
@@ -161,6 +165,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       ],
     );
     if (croppedFile != null) {
+      File(sourcePath).tryDel();
       pathList[index] = croppedFile.path;
     }
   }

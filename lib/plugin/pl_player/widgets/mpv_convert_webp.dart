@@ -1,8 +1,10 @@
+// ignore_for_file: implementation_imports
+
 import 'dart:async';
 import 'dart:ffi';
 
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/get_rx.dart';
@@ -150,7 +152,8 @@ enum WebpPreset {
   photo('photo', '照片', '户外摄影，自然光环境'),
   drawing('drawing', '绘图', '手绘或线稿，高对比度细节'),
   icon('icon', '图标', '小型彩色图像'),
-  text('text', '文本', '文字类');
+  text('text', '文本', '文字类')
+  ;
 
   final String flag;
   final String name;

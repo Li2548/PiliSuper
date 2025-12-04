@@ -1,45 +1,44 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/http/api.dart';
-import 'package:PiliPlus/http/constants.dart';
-import 'package:PiliPlus/http/init.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/member.dart';
-import 'package:PiliPlus/http/search.dart';
-import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/video/source_type.dart';
-import 'package:PiliPlus/models_new/member_card_info/data.dart';
-import 'package:PiliPlus/models_new/triple/ugc_triple.dart';
-import 'package:PiliPlus/models_new/video/video_ai_conclusion/data.dart';
-import 'package:PiliPlus/models_new/video/video_ai_conclusion/model_result.dart';
-import 'package:PiliPlus/models_new/video/video_detail/data.dart';
-import 'package:PiliPlus/models_new/video/video_detail/episode.dart';
-import 'package:PiliPlus/models_new/video/video_detail/page.dart';
-import 'package:PiliPlus/models_new/video/video_detail/section.dart';
-import 'package:PiliPlus/models_new/video/video_detail/staff.dart';
-import 'package:PiliPlus/models_new/video/video_detail/stat_detail.dart';
-import 'package:PiliPlus/models_new/video/video_detail/ugc_season.dart';
-import 'package:PiliPlus/pages/common/common_intro_controller.dart';
-import 'package:PiliPlus/pages/dynamics_repost/view.dart';
-import 'package:PiliPlus/pages/video/controller.dart';
-import 'package:PiliPlus/pages/video/pay_coins/view.dart';
-import 'package:PiliPlus/pages/video/related/controller.dart';
-import 'package:PiliPlus/pages/video/reply/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
-import 'package:PiliPlus/services/service_locator.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/context_ext.dart';
-import 'package:PiliPlus/utils/extension.dart';
-import 'package:PiliPlus/utils/feed_back.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/id_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/http/api.dart';
+import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/member.dart';
+import 'package:PiliSuper/http/search.dart';
+import 'package:PiliSuper/http/user.dart';
+import 'package:PiliSuper/http/video.dart';
+import 'package:PiliSuper/models/common/video/source_type.dart';
+import 'package:PiliSuper/models_new/member_card_info/data.dart';
+import 'package:PiliSuper/models_new/triple/ugc_triple.dart';
+import 'package:PiliSuper/models_new/video/video_ai_conclusion/data.dart';
+import 'package:PiliSuper/models_new/video/video_ai_conclusion/model_result.dart';
+import 'package:PiliSuper/models_new/video/video_detail/data.dart';
+import 'package:PiliSuper/models_new/video/video_detail/episode.dart';
+import 'package:PiliSuper/models_new/video/video_detail/page.dart';
+import 'package:PiliSuper/models_new/video/video_detail/section.dart';
+import 'package:PiliSuper/models_new/video/video_detail/staff.dart';
+import 'package:PiliSuper/models_new/video/video_detail/stat_detail.dart';
+import 'package:PiliSuper/models_new/video/video_detail/ugc_season.dart';
+import 'package:PiliSuper/pages/common/common_intro_controller.dart';
+import 'package:PiliSuper/pages/dynamics_repost/view.dart';
+import 'package:PiliSuper/pages/video/pay_coins/view.dart';
+import 'package:PiliSuper/pages/video/related/controller.dart';
+import 'package:PiliSuper/pages/video/reply/controller.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliSuper/services/service_locator.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/context_ext.dart';
+import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/feed_back.dart';
+import 'package:PiliSuper/utils/global_data.dart';
+import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/request_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
@@ -104,15 +103,12 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       }
       videoDetail.value = data;
       try {
-        final videoDetailController = Get.find<VideoDetailController>(
-          tag: heroTag,
-        );
-        if (videoDetailController.cover.value.isEmpty ||
-            (videoDetailController.videoUrl.isNullOrEmpty &&
-                !videoDetailController.isQuerying)) {
-          videoDetailController.cover.value = data.pic ?? '';
+        if (videoDetailCtr.cover.value.isEmpty ||
+            (videoDetailCtr.videoUrl.isNullOrEmpty &&
+                !videoDetailCtr.isQuerying)) {
+          videoDetailCtr.cover.value = data.pic ?? '';
         }
-        if (videoDetailController.showReply) {
+        if (videoDetailCtr.showReply) {
           try {
             Get.find<VideoReplyController>(tag: heroTag).count.value =
                 data.stat?.reply ?? 0;
@@ -129,7 +125,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       status.value = false;
     }
 
-    if (accountService.isLogin.value) {
+    if (isLogin) {
       queryAllStatus();
       queryFollowStatus();
     }
@@ -137,11 +133,11 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   // 获取up主粉丝数
   Future<void> queryUserStat(List<Staff>? staff) async {
-    if (staff?.isNotEmpty == true) {
+    if (staff != null && staff.isNotEmpty) {
       Request()
           .get(
             Api.relations,
-            queryParameters: {'fids': staff!.map((item) => item.mid).join(',')},
+            queryParameters: {'fids': staff.map((item) => item.mid).join(',')},
           )
           .then((res) {
             if (res.data['code'] == 0) {
@@ -184,7 +180,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   @override
   Future<void> actionTriple() async {
     feedBack();
-    if (!accountService.isLogin.value) {
+    if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
@@ -224,7 +220,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   // （取消）点赞
   @override
   Future<void> actionLikeVideo() async {
-    if (!accountService.isLogin.value) {
+    if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
@@ -246,7 +242,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   }
 
   Future<void> actionDislikeVideo() async {
-    if (!accountService.isLogin.value) {
+    if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
@@ -274,7 +270,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
   // 投币
   @override
   void actionCoinVideo() {
-    if (!accountService.isLogin.value) {
+    if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
@@ -426,7 +422,7 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
 
   // 关注/取关up
   Future<void> actionRelationMod(BuildContext context) async {
-    if (!accountService.isLogin.value) {
+    if (!isLogin) {
       SmartDialog.showToast('账号未登录');
       return;
     }
@@ -479,7 +475,6 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
       final String? cover = episode.cover;
 
       // 重新获取视频资源
-      final videoDetailCtr = Get.find<VideoDetailController>(tag: heroTag);
 
       if (videoDetailCtr.isPlayAll) {
         if (videoDetailCtr.mediaList.indexWhere((item) => item.bvid == bvid) ==
@@ -566,7 +561,6 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     final List<BaseEpisodeItem> episodes = <BaseEpisodeItem>[];
     bool isPart = false;
 
-    final videoDetailCtr = Get.find<VideoDetailController>(tag: heroTag);
     final videoDetail = this.videoDetail.value;
 
     if (!skipPart && (videoDetail.pages?.length ?? 0) > 1) {
@@ -632,7 +626,6 @@ class UgcIntroController extends CommonIntroController with ReloadMixin {
     try {
       final List<BaseEpisodeItem> episodes = <BaseEpisodeItem>[];
       bool isPart = false;
-      final videoDetailCtr = Get.find<VideoDetailController>(tag: heroTag);
       final videoDetail = this.videoDetail.value;
 
       // part -> playall -> season

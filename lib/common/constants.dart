@@ -12,8 +12,8 @@ class StyleString {
 }
 
 class Constants {
-  static const appName = 'PiliPlus';
-  static const sourceCodeUrl = 'https://github.com/bggRGjQaUbCoE/PiliPlus';
+  static const appName = 'PiliSuper';
+  static const sourceCodeUrl = 'https://github.com/FRBLanApps/PiliSuper';
 
   // 27eb53fc9058f8c3  移动端 Android
   // 4409e2ce8ffd12b8  HD版
@@ -40,8 +40,6 @@ class Constants {
       '{"appId":1,"platform":3,"version":"8.43.0","abtest":""}';
 
   static const baseHeaders = {
-    'connection': 'keep-alive',
-    'accept-encoding': 'br,gzip',
     // 'referer': HttpString.baseUrl,
     'env': 'prod',
     'app-key': 'android64',
