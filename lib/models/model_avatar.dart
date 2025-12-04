@@ -1,4 +1,4 @@
-import 'package:PiliSuper/models/model_owner.dart';
+import 'package:PiliPlus/models/model_owner.dart';
 
 class Avatar extends Owner {
   Pendant? pendant;
