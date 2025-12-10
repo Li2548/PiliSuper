@@ -10,12 +10,12 @@ import 'package:PiliSuper/plugin/pl_player/controller.dart';
 import 'package:PiliSuper/router/app_pages.dart';
 import 'package:PiliSuper/services/account_service.dart';
 import 'package:PiliSuper/services/download/download_service.dart';
-import 'package:PiliSuper/services/logger.dart';
 import 'package:PiliSuper/services/service_locator.dart';
 import 'package:PiliSuper/utils/app_scheme.dart';
 import 'package:PiliSuper/utils/cache_manager.dart';
 import 'package:PiliSuper/utils/calc_window_position.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/json_file_handler.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
 import 'package:PiliSuper/utils/path_utils.dart';
 import 'package:PiliSuper/utils/request_utils.dart';
@@ -175,15 +175,14 @@ void main() async {
     // 异常捕获 logo记录
     final customParameters = {
       'BuildConfig':
-          '''\n
-Build Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}
-Commit Hash: ${BuildConfig.commitHash}''',
+          '\nBuild Time: ${DateFormatUtils.format(BuildConfig.buildTime, format: DateFormatUtils.longFormatDs)}\n'
+          'Commit Hash: ${BuildConfig.commitHash}',
     };
-    final fileHandler = FileHandler(await LoggerUtils.getLogsPath());
+    final fileHandler = await JsonFileHandler.init();
     final Catcher2Options debugConfig = Catcher2Options(
       SilentReportMode(),
       [
-        fileHandler,
+        ?fileHandler,
         ConsoleHandler(
           enableDeviceParameters: false,
           enableApplicationParameters: false,
@@ -196,7 +195,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
     final Catcher2Options releaseConfig = Catcher2Options(
       SilentReportMode(),
       [
-        fileHandler,
+        ?fileHandler,
         ConsoleHandler(enableCustomParameters: true),
       ],
       customParameters: customParameters,
@@ -205,7 +204,7 @@ Commit Hash: ${BuildConfig.commitHash}''',
     Catcher2(
       debugConfig: debugConfig,
       releaseConfig: releaseConfig,
-      runAppFunction: () => runApp(const MyApp()),
+      rootWidget: const MyApp(),
     );
   } else {
     runApp(const MyApp());
@@ -294,6 +293,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
       initialRoute: '/',
       getPages: Routes.getPages,
+      defaultTransition: Pref.pageTransition,
       builder: FlutterSmartDialog.init(
         toastBuilder: (String msg) => CustomToast(msg: msg),
         loadingBuilder: (msg) => LoadingWidget(msg: msg),

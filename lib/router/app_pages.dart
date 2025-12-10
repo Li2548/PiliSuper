@@ -71,8 +71,6 @@ import 'package:PiliSuper/pages/webdav/view.dart';
 import 'package:PiliSuper/pages/webview/view.dart';
 import 'package:PiliSuper/pages/whisper/view.dart';
 import 'package:PiliSuper/pages/whisper_detail/view.dart';
-import 'package:PiliSuper/utils/storage_pref.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class Routes {
@@ -234,18 +232,12 @@ class Routes {
   ];
 }
 
-class CustomGetPage extends GetPage<dynamic> {
+class CustomGetPage<T> extends GetPage<T> {
   CustomGetPage({
     required super.name,
     required super.page,
-    bool fullscreen = false,
-    super.transitionDuration,
-  }) : super(
-         curve: Curves.linear,
-         transition: pageTransition,
-         showCupertinoParallax: false,
-         popGesture: false,
-         fullscreenDialog: fullscreen,
-       );
-  static Transition pageTransition = Transition.values[Pref.pageTransition];
+    super.popGesture = false,
+    super.fullscreenDialog = false,
+    super.showCupertinoParallax = false,
+  });
 }

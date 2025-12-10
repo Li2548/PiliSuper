@@ -4,7 +4,6 @@ import 'package:PiliSuper/http/video.dart';
 import 'package:PiliSuper/models_new/fav/fav_pgc/data.dart';
 import 'package:PiliSuper/models_new/fav/fav_pgc/list.dart';
 import 'package:PiliSuper/pages/common/multi_select/multi_select_controller.dart';
-import 'package:PiliSuper/utils/accounts.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -39,7 +38,6 @@ class FavPgcController
 
   @override
   Future<LoadingState<FavPgcData>> customGetData() => FavHttp.favPgc(
-    mid: Accounts.main.mid,
     type: type,
     followStatus: followStatus,
     pn: page,

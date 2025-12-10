@@ -7,7 +7,7 @@ import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/main.dart';
 import 'package:PiliSuper/models/common/publish_panel_type.dart';
 import 'package:PiliSuper/pages/common/publish/common_text_pub_page.dart';
-import 'package:PiliSuper/pages/danmaku/dnamaku_model.dart';
+import 'package:PiliSuper/pages/danmaku/danmaku_model.dart';
 import 'package:PiliSuper/pages/setting/slide_color_picker.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';

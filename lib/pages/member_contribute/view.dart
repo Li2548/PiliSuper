@@ -1,3 +1,4 @@
+import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliSuper/models/common/member/contribute_type.dart';
 import 'package:PiliSuper/models_new/space/space/tab2.dart';
 import 'package:PiliSuper/pages/member_article/view.dart';
@@ -88,7 +89,7 @@ class _MemberContributeState extends State<MemberContribute>
           )
         : _controller.items?.isNotEmpty == true
         ? _getPageFromType(_controller.items!.first)
-        : const SizedBox.shrink();
+        : scrollErrorWidget();
   }
 
   Widget _getPageFromType(SpaceTab2Item item) {

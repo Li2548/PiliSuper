@@ -12,7 +12,7 @@ import 'package:PiliSuper/models_new/live/live_dm_info/data.dart';
 import 'package:PiliSuper/models_new/live/live_room_info_h5/data.dart';
 import 'package:PiliSuper/models_new/live/live_room_play_info/codec.dart';
 import 'package:PiliSuper/models_new/live/live_superchat/item.dart';
-import 'package:PiliSuper/pages/danmaku/dnamaku_model.dart';
+import 'package:PiliSuper/pages/danmaku/danmaku_model.dart';
 import 'package:PiliSuper/pages/live_room/send_danmaku/view.dart';
 import 'package:PiliSuper/pages/video/widgets/header_control.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
