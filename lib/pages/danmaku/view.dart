@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:PiliSuper/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliSuper/pages/danmaku/controller.dart';
-import 'package:PiliSuper/pages/danmaku/dnamaku_model.dart';
+import 'package:PiliSuper/pages/danmaku/danmaku_model.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
 import 'package:PiliSuper/plugin/pl_player/models/play_status.dart';
 import 'package:PiliSuper/utils/danmaku_utils.dart';

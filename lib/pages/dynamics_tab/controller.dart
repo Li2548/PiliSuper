@@ -6,12 +6,14 @@ import 'package:PiliSuper/models/dynamics/result.dart';
 import 'package:PiliSuper/pages/common/common_list_controller.dart';
 import 'package:PiliSuper/pages/dynamics/controller.dart';
 import 'package:PiliSuper/pages/main/controller.dart';
+import 'package:PiliSuper/services/account_service.dart';
 import 'package:PiliSuper/utils/extension.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class DynamicsTabController
-    extends CommonListController<DynamicsDataModel, DynamicItemModel> {
+    extends CommonListController<DynamicsDataModel, DynamicItemModel>
+    with AccountMixin {
   DynamicsTabController({required this.dynamicsType});
   final DynamicsTabType dynamicsType;
   String offset = '';
@@ -87,4 +89,7 @@ class DynamicsTabController
       loadingState.refresh();
     } catch (_) {}
   }
+
+  @override
+  void onChangeAccount(bool isLogin) => onReload();
 }

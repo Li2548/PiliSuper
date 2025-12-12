@@ -4,7 +4,7 @@ import 'package:PiliSuper/common/widgets/disabled_icon.dart';
 import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models_new/search/search_rcmd/data.dart';
-import 'package:PiliSuper/pages/about/view.dart' show showInportExportDialog;
+import 'package:PiliSuper/pages/about/view.dart' show showImportExportDialog;
 import 'package:PiliSuper/pages/search/controller.dart';
 import 'package:PiliSuper/pages/search/widgets/hot_keyword.dart';
 import 'package:PiliSuper/pages/search/widgets/search_text.dart';
@@ -14,7 +14,6 @@ import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart' hide ContextExtensionss;
 
 class SearchPage extends StatefulWidget {
@@ -331,7 +330,7 @@ class _SearchPageState extends State<SearchPage> {
                         );
                       },
                     ),
-                    _exportHsitory(theme),
+                    _exportHistory(theme),
                     const Spacer(),
                     SizedBox(
                       height: 34,
@@ -381,7 +380,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _exportHsitory(ThemeData theme) => SizedBox(
+  Widget _exportHistory(ThemeData theme) => SizedBox(
     width: 34,
     height: 34,
     child: IconButton(
@@ -392,20 +391,15 @@ class _SearchPageState extends State<SearchPage> {
         color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
       ),
       style: IconButton.styleFrom(padding: EdgeInsets.zero),
-      onPressed: () => showInportExportDialog<List>(
+      onPressed: () => showImportExportDialog<List>(
         context,
         title: '历史记录',
         toJson: () => jsonEncode(_searchController.historyList),
         fromJson: (json) {
-          try {
-            final list = List<String>.from(json);
-            _searchController.historyList.value = list;
-            GStorage.historyWord.put('cacheList', list);
-            return true;
-          } catch (e) {
-            SmartDialog.showToast(e.toString());
-            return false;
-          }
+          final list = List<String>.from(json);
+          _searchController.historyList.value = list;
+          GStorage.historyWord.put('cacheList', list);
+          return true;
         },
       ),
     ),

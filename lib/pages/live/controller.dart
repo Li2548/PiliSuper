@@ -7,9 +7,10 @@ import 'package:PiliSuper/models_new/live/live_feed_index/data.dart';
 import 'package:PiliSuper/models_new/live/live_second_list/data.dart';
 import 'package:PiliSuper/models_new/live/live_second_list/tag.dart';
 import 'package:PiliSuper/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/services/account_service.dart';
 import 'package:get/get.dart';
 
-class LiveController extends CommonListController {
+class LiveController extends CommonListController with AccountMixin {
   @override
   void onInit() {
     super.onInit();
@@ -140,4 +141,7 @@ class LiveController extends CommonListController {
     isEnd = false;
     queryData();
   }
+
+  @override
+  void onChangeAccount(bool isLogin) => onReload();
 }

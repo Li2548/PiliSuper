@@ -7,6 +7,7 @@ import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/pages/common/common_page.dart';
 import 'package:PiliSuper/pages/rcmd/controller.dart';
 import 'package:PiliSuper/utils/grid.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -56,7 +57,7 @@ class _RcmdPageState extends CommonPageState<RcmdPage, RcmdController>
   late final gridDelegate = SliverGridDelegateWithExtentAndRatio(
     mainAxisSpacing: StyleString.cardSpace,
     crossAxisSpacing: StyleString.cardSpace,
-    maxCrossAxisExtent: Grid.smallCardWidth,
+    maxCrossAxisExtent: Pref.recommendCardWidth,
     childAspectRatio: StyleString.aspectRatio,
     mainAxisExtent: MediaQuery.textScalerOf(context).scale(90),
   );
