@@ -242,6 +242,10 @@
 <br/>
 <br/>
 
+## 你们的精神状态还好吗？
+
+[已经疯掉了，下一个问题。](https://github.com/FRBLanApps/PiliSuper/blob/main/screaming.txt)
+
 ## Star History
 
 <a href="https://www.star-history.com/#bggRGjQaUbCoE/PiliPlus&Date">

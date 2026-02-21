@@ -1,4 +1,5 @@
 import 'package:PiliPlus/http/video.dart';
+import 'package:PiliPlus/models/common/settings_type.dart';
 import 'package:PiliPlus/pages/rcmd/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/utils/recommend_filter.dart';

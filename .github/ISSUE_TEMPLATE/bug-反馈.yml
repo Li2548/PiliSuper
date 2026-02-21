@@ -63,7 +63,7 @@ body:
     id: log
     attributes:
       label: 错误日志
-      description: 请提供设置->关于->错误日志中的内容，粘贴在下方代码框中。如果没有，请提供您的app版本号、系统版本、设备型号等相关信息。
+      description: 请提供设置->关于->错误日志中的内容，粘贴在下方代码框中。如果没有，请提供您的app版本号、系统版本、设备型号、是否root（对于安卓）、是否越狱/在livecontainer中运行（适用于iOS）、是否在卓易通（鸿蒙5/6）或其他android容器/虚拟机中运行等相关信息。
 
   - type: textarea
     id: info
