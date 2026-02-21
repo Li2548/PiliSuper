@@ -1,38 +1,38 @@
 /*
- * This file is part of PiliPlus
+ * This file is part of PiliSuper
  *
- * PiliPlus is free software: you can redistribute it and/or modify
+ * PiliSuper is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * PiliPlus is distributed in the hope that it will be useful,
+ * PiliSuper is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with PiliPlus.  If not, see <https://www.gnu.org/licenses/>.
+ * along with PiliSuper.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import 'dart:io' show File, Platform;
 
-import 'package:PiliPlus/common/widgets/colored_box_transition.dart';
-import 'package:PiliPlus/common/widgets/flutter/page/page_view.dart';
-import 'package:PiliPlus/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/gesture/image_tap_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/image_viewer/image.dart';
-import 'package:PiliPlus/common/widgets/image_viewer/loading_indicator.dart';
-import 'package:PiliPlus/common/widgets/image_viewer/viewer.dart';
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/models/common/image_preview_type.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/common/widgets/colored_box_transition.dart';
+import 'package:PiliSuper/common/widgets/flutter/page/page_view.dart';
+import 'package:PiliSuper/common/widgets/gesture/image_horizontal_drag_gesture_recognizer.dart';
+import 'package:PiliSuper/common/widgets/gesture/image_tap_gesture_recognizer.dart';
+import 'package:PiliSuper/common/widgets/image_viewer/image.dart';
+import 'package:PiliSuper/common/widgets/image_viewer/loading_indicator.dart';
+import 'package:PiliSuper/common/widgets/image_viewer/viewer.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/models/common/image_preview_type.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
+import 'package:PiliSuper/utils/image_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/gestures.dart';

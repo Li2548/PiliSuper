@@ -1,4 +1,4 @@
-import 'package:PiliPlus/models/common/account_type.dart';
+import 'package:PiliSuper/models/common/account_type.dart';
 import 'package:hive/hive.dart';
 
 class AccountTypeAdapter extends TypeAdapter<AccountType> {

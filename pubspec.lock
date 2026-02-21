@@ -240,7 +240,7 @@ packages:
       path: "."
       ref: main
       resolved-ref: af10fe3cd4d1f7071988f4d9d13cc17616f4de30
-      url: "https://github.com/bggRGjQaUbCoE/canvas_danmaku.git"
+      url: "https://github.com/FRBLanApps/canvas_danmaku.git"
     source: git
     version: "0.2.6"
   catcher_2:
@@ -265,7 +265,7 @@ packages:
       path: "packages/chat_bottom_container"
       ref: main
       resolved-ref: dba2bf10db4a6f89564d9be63ce17b18f0f7e3e5
-      url: "https://github.com/bggRGjQaUbCoE/flutter_chat_packages.git"
+      url: "https://github.com/FRBLanApps/flutter_chat_packages.git"
     source: git
     version: "0.3.2"
   checked_yaml:
@@ -531,7 +531,7 @@ packages:
       path: "."
       ref: "v10.3.10"
       resolved-ref: fd8afd89260436b63b9d41e150b4eb3c806cc8fd
-      url: "https://github.com/bggRGjQaUbCoE/flutter_file_picker.git"
+      url: "https://github.com/FRBLanApps/flutter_file_picker.git"
     source: git
     version: "10.3.10"
   file_selector_linux:
@@ -802,7 +802,7 @@ packages:
       path: "."
       ref: "version_4.7.2"
       resolved-ref: "9addd004c11e1c388bff5988ac9564e7ee5ff395"
-      url: "https://github.com/bggRGjQaUbCoE/getx.git"
+      url: "https://github.com/FRBLanApps/getx.git"
     source: git
     version: "4.7.2"
   glob:
@@ -1132,7 +1132,7 @@ packages:
       path: media_kit
       ref: "version_1.2.5"
       resolved-ref: ac35bc96c5560a7c9a55bc421bd4115d1e47bc70
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      url: "https://github.com/FRBLanApps/media-kit.git"
     source: git
     version: "1.1.11"
   media_kit_libs_android_video:
@@ -1141,7 +1141,7 @@ packages:
       path: "libs/android/media_kit_libs_android_video"
       ref: "version_1.2.5"
       resolved-ref: ac35bc96c5560a7c9a55bc421bd4115d1e47bc70
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      url: "https://github.com/FRBLanApps/media-kit.git"
     source: git
     version: "1.3.7"
   media_kit_libs_ios_video:
@@ -1174,7 +1174,7 @@ packages:
       path: "libs/universal/media_kit_libs_video"
       ref: "version_1.2.5"
       resolved-ref: ac35bc96c5560a7c9a55bc421bd4115d1e47bc70
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      url: "https://github.com/FRBLanApps/media-kit.git"
     source: git
     version: "1.0.5"
   media_kit_libs_windows_video:
@@ -1183,7 +1183,7 @@ packages:
       path: "libs/windows/media_kit_libs_windows_video"
       ref: "version_1.2.5"
       resolved-ref: ac35bc96c5560a7c9a55bc421bd4115d1e47bc70
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      url: "https://github.com/FRBLanApps/media-kit.git"
     source: git
     version: "1.0.10"
   media_kit_native_event_loop:
@@ -1192,7 +1192,7 @@ packages:
       path: media_kit_native_event_loop
       ref: "version_1.2.5"
       resolved-ref: ac35bc96c5560a7c9a55bc421bd4115d1e47bc70
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      url: "https://github.com/FRBLanApps/media-kit.git"
     source: git
     version: "1.0.9"
   media_kit_video:
@@ -1201,7 +1201,7 @@ packages:
       path: media_kit_video
       ref: "version_1.2.5"
       resolved-ref: ac35bc96c5560a7c9a55bc421bd4115d1e47bc70
-      url: "https://github.com/bggRGjQaUbCoE/media-kit.git"
+      url: "https://github.com/FRBLanApps/media-kit.git"
     source: git
     version: "1.2.5"
   menu_base:

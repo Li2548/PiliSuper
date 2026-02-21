@@ -1,4 +1,4 @@
-import 'package:PiliPlus/common/widgets/only_layout_widget.dart';
+import 'package:PiliSuper/common/widgets/only_layout_widget.dart';
 import 'package:flutter/material.dart';
 
 class SelfSizedHorizontalList extends StatefulWidget {

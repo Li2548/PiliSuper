@@ -21,10 +21,10 @@ import 'dart:io' show Platform;
 import 'dart:math' as math;
 import 'dart:ui' as ui hide TextStyle;
 
-import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
-import 'package:PiliPlus/common/widgets/flutter/text_field/editable.dart';
-import 'package:PiliPlus/common/widgets/flutter/text_field/spell_check.dart';
-import 'package:PiliPlus/common/widgets/flutter/text_field/text_selection.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/editable.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/spell_check.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/text_selection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart'
@@ -2490,7 +2490,7 @@ class EditableTextState extends State<EditableText>
     if (selection.isCollapsed || widget.obscureText) {
       return;
     }
-    // bggRGjQaUbCoE copySelection
+    // FRBLanApps copySelection
     final String text =
         widget.controller.getSelectionText(selection) ??
         selection.textInside(textEditingValue.text);
@@ -2532,7 +2532,7 @@ class EditableTextState extends State<EditableText>
     if (selection.isCollapsed) {
       return;
     }
-    // bggRGjQaUbCoE cutSelection
+    // FRBLanApps cutSelection
     final String text =
         widget.controller.getSelectionText(selection) ??
         selection.textInside(textEditingValue.text);
@@ -2581,7 +2581,7 @@ class EditableTextState extends State<EditableText>
       selection.baseOffset,
       selection.extentOffset,
     );
-    // bggRGjQaUbCoE _pasteText
+    // FRBLanApps _pasteText
     widget.controller.syncRichText(
       selection.isCollapsed
           ? TextEditingDeltaInsertion(
@@ -3581,7 +3581,7 @@ class EditableTextState extends State<EditableText>
           ),
         );
 
-        // bggRGjQaUbCoE ios single long press
+        // FRBLanApps ios single long press
         _lastTextPosition = widget.controller.dragOffset(_lastTextPosition!);
 
         renderEditable.setFloatingCursor(
@@ -5434,7 +5434,7 @@ class EditableTextState extends State<EditableText>
 
   void _replaceText(ReplaceTextIntent intent) {
     final TextEditingValue oldValue = _value;
-    // bggRGjQaUbCoE _replaceText
+    // FRBLanApps _replaceText
     widget.controller.syncRichText(
       intent.replacementText.isEmpty
           ? TextEditingDeltaDeletion(
@@ -5598,7 +5598,7 @@ class EditableTextState extends State<EditableText>
 
     bringIntoView(intent.newSelection.extent);
 
-    // bggRGjQaUbCoE keyboard
+    // FRBLanApps keyboard
     TextSelection newSelection = intent.newSelection;
     if (newSelection.isCollapsed) {
       newSelection = widget.controller.keyboardOffset(newSelection);

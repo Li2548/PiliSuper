@@ -1,10 +1,10 @@
-import 'package:PiliPlus/models/model_avatar.dart';
-import 'package:PiliPlus/models/model_owner.dart';
-import 'package:PiliPlus/models/model_video.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/em.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
+import 'package:PiliSuper/models/model_avatar.dart';
+import 'package:PiliSuper/models/model_owner.dart';
+import 'package:PiliSuper/models/model_video.dart';
+import 'package:PiliSuper/utils/duration_utils.dart';
+import 'package:PiliSuper/utils/em.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
 
 abstract class SearchNumData<T> {
   SearchNumData({

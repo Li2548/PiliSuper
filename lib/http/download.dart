@@ -1,17 +1,17 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/common/account_type.dart';
-import 'package:PiliPlus/models/common/video/audio_quality.dart';
-import 'package:PiliPlus/models/common/video/video_decode_type.dart';
-import 'package:PiliPlus/models/common/video/video_quality.dart';
-import 'package:PiliPlus/models/common/video/video_type.dart';
-import 'package:PiliPlus/models/video/play/url.dart';
-import 'package:PiliPlus/models_new/download/bili_download_entry_info.dart';
-import 'package:PiliPlus/models_new/download/bili_download_media_file_info.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/video_utils.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/video.dart';
+import 'package:PiliSuper/models/common/account_type.dart';
+import 'package:PiliSuper/models/common/video/audio_quality.dart';
+import 'package:PiliSuper/models/common/video/video_decode_type.dart';
+import 'package:PiliSuper/models/common/video/video_quality.dart';
+import 'package:PiliSuper/models/common/video/video_type.dart';
+import 'package:PiliSuper/models/video/play/url.dart';
+import 'package:PiliSuper/models_new/download/bili_download_entry_info.dart';
+import 'package:PiliSuper/models_new/download/bili_download_media_file_info.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/video_utils.dart';
 
 abstract final class DownloadHttp {
   static const String referer = "https://www.bilibili.com/";

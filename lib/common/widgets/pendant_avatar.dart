@@ -1,10 +1,10 @@
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/models/common/avatar_badge_type.dart';
-import 'package:PiliPlus/models/common/image_type.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/extension/string_ext.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/models/common/avatar_badge_type.dart';
+import 'package:PiliSuper/models/common/image_type.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 
 class PendantAvatar extends StatelessWidget {

@@ -2,11 +2,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:PiliPlus/models/common/enum_with_label.dart';
-import 'package:PiliPlus/pages/video/introduction/ugc/widgets/menu_row.dart';
-import 'package:PiliPlus/plugin/pl_player/controller.dart';
-import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
+import 'package:PiliSuper/models/common/enum_with_label.dart';
+import 'package:PiliSuper/pages/video/introduction/ugc/widgets/menu_row.dart';
+import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_status.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';

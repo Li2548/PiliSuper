@@ -2,24 +2,24 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:PiliPlus/build_config.dart';
-import 'package:PiliPlus/common/constants.dart';
-import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
-import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
-import 'package:PiliPlus/pages/mine/controller.dart';
-import 'package:PiliPlus/services/logger.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/cache_manager.dart';
-import 'package:PiliPlus/utils/date_utils.dart';
-import 'package:PiliPlus/utils/extension/context_ext.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/login_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
-import 'package:PiliPlus/utils/platform_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/update.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/build_config.dart';
+import 'package:PiliSuper/common/constants.dart';
+import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/common/widgets/flutter/list_tile.dart';
+import 'package:PiliSuper/pages/mine/controller.dart';
+import 'package:PiliSuper/services/logger.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/accounts/account.dart';
+import 'package:PiliSuper/utils/cache_manager.dart';
+import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/extension/context_ext.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/login_utils.dart';
+import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/update.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -348,7 +348,7 @@ Future<void> showImportExportDialog<T>(
               Get.back();
               final res = utf8.encode(toJson());
               final name =
-                  'piliplus_${label}_${context.isTablet ? 'pad' : 'phone'}_'
+                  'pilisuper_${label}_${context.isTablet ? 'pad' : 'phone'}_'
                   '${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}.json';
               Utils.saveBytes2File(
                 name: name,

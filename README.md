@@ -44,7 +44,7 @@
 - [x] Windows
 - [x] Linux
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/piliplus.svg)](https://repology.org/project/piliplus/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/pilisuper.svg)](https://repology.org/project/pilisuper/versions)
 
 ## refactor
 

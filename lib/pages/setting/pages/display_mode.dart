@@ -1,6 +1,6 @@
-import 'package:PiliPlus/utils/extension/iterable_ext.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show PlatformException;

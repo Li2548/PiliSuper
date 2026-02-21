@@ -1,16 +1,16 @@
 import 'dart:async' show FutureOr;
 import 'dart:io' show Platform;
 
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/user.dart';
-import 'package:PiliPlus/main.dart';
-import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/utils/accounts.dart';
-import 'package:PiliPlus/utils/accounts/account.dart';
-import 'package:PiliPlus/utils/request_utils.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
-import 'package:PiliPlus/utils/utils.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/user.dart';
+import 'package:PiliSuper/main.dart';
+import 'package:PiliSuper/services/account_service.dart';
+import 'package:PiliSuper/utils/accounts.dart';
+import 'package:PiliSuper/utils/accounts/account.dart';
+import 'package:PiliSuper/utils/request_utils.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';

@@ -15,7 +15,7 @@ import 'dart:ui'
         SemanticsInputType,
         TextBox;
 
-import 'package:PiliPlus/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/controller.dart';
 import 'package:characters/characters.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -2219,7 +2219,7 @@ class RenderEditable extends RenderBox
     int baseOffset = fromPosition.offset;
     int extentOffset = toPosition?.offset ?? fromPosition.offset;
 
-    // bggRGjQaUbCoE tap
+    // FRBLanApps tap
     if (toPosition == null) {
       baseOffset = controller.tapOffset(
         baseOffset,
@@ -2284,7 +2284,7 @@ class RenderEditable extends RenderBox
         : getWordAtOffset(toPosition);
     final bool isFromWordBeforeToWord = fromWord.start < toWord.end;
 
-    // bggRGjQaUbCoE longpress
+    // FRBLanApps longpress
     var startOffset = isFromWordBeforeToWord
         ? fromWord.baseOffset
         : toWord.baseOffset;
@@ -2316,7 +2316,7 @@ class RenderEditable extends RenderBox
       localPos - _paintOffset,
     );
 
-    // bggRGjQaUbCoE ios tap
+    // FRBLanApps ios tap
     final newOffset = controller.tapOffset(
       position.offset,
       textPainter: _textPainter,

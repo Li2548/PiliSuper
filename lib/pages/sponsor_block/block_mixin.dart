@@ -1,15 +1,15 @@
 import 'dart:async' show StreamSubscription, Timer;
 import 'dart:math' as math;
 
-import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/sponsor_block.dart';
-import 'package:PiliPlus/models/common/sponsor_block/segment_model.dart';
-import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
-import 'package:PiliPlus/models/common/sponsor_block/skip_type.dart';
-import 'package:PiliPlus/models_new/sponsor_block/segment_item.dart';
-import 'package:PiliPlus/utils/duration_utils.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/common/widgets/progress_bar/segment_progress_bar.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/sponsor_block.dart';
+import 'package:PiliSuper/models/common/sponsor_block/segment_model.dart';
+import 'package:PiliSuper/models/common/sponsor_block/segment_type.dart';
+import 'package:PiliSuper/models/common/sponsor_block/skip_type.dart';
+import 'package:PiliSuper/models_new/sponsor_block/segment_item.dart';
+import 'package:PiliSuper/utils/duration_utils.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';

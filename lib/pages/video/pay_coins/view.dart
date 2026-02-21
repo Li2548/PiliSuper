@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:math' show max;
 
-import 'package:PiliPlus/common/widgets/scroll_physics.dart';
-import 'package:PiliPlus/pages/common/publish/publish_route.dart';
-import 'package:PiliPlus/utils/extension/num_ext.dart';
-import 'package:PiliPlus/utils/extension/size_ext.dart';
-import 'package:PiliPlus/utils/extension/widget_ext.dart';
-import 'package:PiliPlus/utils/global_data.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
-import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/pages/common/publish/publish_route.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/size_ext.dart';
+import 'package:PiliSuper/utils/extension/widget_ext.dart';
+import 'package:PiliSuper/utils/global_data.dart';
+import 'package:PiliSuper/utils/storage.dart';
+import 'package:PiliSuper/utils/storage_key.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

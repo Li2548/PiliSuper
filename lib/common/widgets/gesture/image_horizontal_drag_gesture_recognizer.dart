@@ -1,5 +1,5 @@
-import 'package:PiliPlus/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
-import 'package:PiliPlus/common/widgets/gesture/image_tap_gesture_recognizer.dart'
+import 'package:PiliSuper/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
+import 'package:PiliSuper/common/widgets/gesture/image_tap_gesture_recognizer.dart'
     show ImageGestureRecognizerMixin;
 import 'package:flutter/gestures.dart';
 

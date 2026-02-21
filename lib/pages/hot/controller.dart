@@ -1,7 +1,7 @@
-import 'package:PiliPlus/http/loading_state.dart';
-import 'package:PiliPlus/http/video.dart';
-import 'package:PiliPlus/models/model_hot_video_item.dart';
-import 'package:PiliPlus/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/video.dart';
+import 'package:PiliSuper/models/model_hot_video_item.dart';
+import 'package:PiliSuper/pages/common/common_list_controller.dart';
 
 class HotController
     extends CommonListController<List<HotVideoItemModel>, HotVideoItemModel> {
