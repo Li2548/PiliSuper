@@ -1,7 +1,7 @@
-import 'package:PiliSuper/models/common/video/video_type.dart';
-import 'package:PiliSuper/pages/common/multi_select/base.dart'
+import 'package:PiliPlus/models/common/video/video_type.dart';
+import 'package:PiliPlus/pages/common/multi_select/base.dart'
     show MultiSelectData;
-import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 

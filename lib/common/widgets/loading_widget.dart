@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:PiliSuper/pages/video/introduction/ugc/widgets/action_item.dart';
+import 'package:PiliPlus/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.PiliSuper"
+    namespace = "com.example.piliplus"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -23,7 +23,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.PiliSuper"
+        applicationId = "com.example.piliplus"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

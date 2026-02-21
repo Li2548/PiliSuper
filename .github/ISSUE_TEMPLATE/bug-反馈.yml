@@ -9,7 +9,7 @@ body:
     attributes:
       label: 检查清单
       options:
-        - label: 搜索了 [历史 issue](https://github.com/FRBLanApps/PiliSuper/issues?q=is%3Aissue) ，并未发现相同问题
+        - label: 搜索了 [历史 issue](https://github.com/bggRGjQaUbCoE/PiliPlus/issues?q=is%3Aissue) ，并未发现相同问题
           required: true
         - label: 正在使用最新版本。
           required: true
@@ -19,10 +19,6 @@ body:
           required: true
         - label: 已排除设置问题
           required: true
-        - label: 我同时在PiliPlus最新版中测试了一遍，发现该问题仍存在。
-          required: false 
-        - label: 我同时在PiliPlus最新版中测试了一遍，发现该问题不复存在。
-          required: false 
   
   - type: checkboxes
     id: assign

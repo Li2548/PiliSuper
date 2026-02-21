@@ -1,4 +1,4 @@
-import 'package:PiliSuper/models_new/space/space_season_series/stat.dart';
+import 'package:PiliPlus/models_new/space/space_season_series/stat.dart';
 
 class SpaceSsArchive {
   int? aid;
