@@ -24,10 +24,16 @@ class MemberCheese extends StatefulWidget {
 
 class _MemberCheeseState extends State<MemberCheese>
     with AutomaticKeepAliveClientMixin, GridMixin {
-  late final _controller = Get.put(
-    MemberCheeseController(widget.mid),
-    tag: widget.heroTag,
-  );
+  late final MemberCheeseController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      MemberCheeseController(widget.mid),
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +61,7 @@ class _MemberCheeseState extends State<MemberCheese>
   Widget _buildBody(LoadingState<List<SpaceCheeseItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -68,7 +74,7 @@ class _MemberCheeseState extends State<MemberCheese>
                 itemCount: response.length,
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

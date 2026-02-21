@@ -4,7 +4,7 @@ import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/models/search/result.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class LiveItem extends StatelessWidget {
@@ -24,7 +24,7 @@ class LiveItem extends StatelessWidget {
       child: InkWell(
         onTap: () => PageUtils.toLiveRoom(liveItem.roomid),
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -41,7 +41,7 @@ class LiveItem extends StatelessWidget {
                         src: liveItem.cover,
                         width: maxWidth,
                         height: maxHeight,
-                        radius: 0,
+                        type: .emote,
                       ),
                       Positioned(
                         left: 0,

@@ -5,6 +5,7 @@ import 'package:PiliSuper/http/api.dart';
 import 'package:PiliSuper/http/init.dart';
 import 'package:PiliSuper/models/common/home_tab_type.dart';
 import 'package:PiliSuper/pages/common/common_controller.dart';
+import 'package:PiliSuper/pages/main/controller.dart';
 import 'package:PiliSuper/services/account_service.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
@@ -19,9 +20,8 @@ class HomeController extends GetxController
   late List<HomeTabType> tabs;
   late TabController tabController;
 
-  StreamController<bool>? searchBarStream;
-  final bool hideSearchBar = Pref.hideSearchBar;
-  final bool useSideBar = Pref.useSideBar;
+  RxBool? showTopBar;
+  late final bool hideTopBar;
 
   bool enableSearchWord = Pref.enableSearchWord;
   late final RxString defaultSearch = ''.obs;
@@ -38,8 +38,15 @@ class HomeController extends GetxController
   void onInit() {
     super.onInit();
 
-    if (hideSearchBar) {
-      searchBarStream = StreamController<bool>.broadcast();
+    hideTopBar = !Pref.useSideBar && Pref.hideTopBar;
+    if (hideTopBar) {
+      final mainCtr = Get.find<MainController>();
+      switch (mainCtr.barHideType) {
+        case .instant:
+          showTopBar = RxBool(true);
+        case .sync:
+          mainCtr.barOffset ??= RxDouble(0.0);
+      }
     }
 
     if (enableSearchWord) {
@@ -80,7 +87,7 @@ class HomeController extends GetxController
 
   Future<void> querySearchDefault() async {
     try {
-      var res = await Request().get(
+      final res = await Request().get(
         Api.searchDefault,
         queryParameters: await WbiSign.makSign({'web_location': 333.1365}),
       );
@@ -89,11 +96,5 @@ class HomeController extends GetxController
         // defaultSearch.value = res.data['data']?['show_name'] ?? '';
       }
     } catch (_) {}
-  }
-
-  @override
-  void onClose() {
-    searchBarStream?.close();
-    super.onClose();
   }
 }

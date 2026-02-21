@@ -10,7 +10,7 @@ import 'package:PiliSuper/models/common/stat_type.dart';
 import 'package:PiliSuper/models_new/music/bgm_recommend_list.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class MusicVideoCardH extends StatelessWidget {
@@ -44,7 +44,7 @@ class MusicVideoCardH extends StatelessWidget {
           }
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,

@@ -1,10 +1,9 @@
 import 'dart:async' show FutureOr;
 import 'dart:io' show Platform;
 
-import 'package:PiliSuper/grpc/grpc_req.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/user.dart';
 import 'package:PiliSuper/main.dart';
-import 'package:PiliSuper/models/user/info.dart';
 import 'package:PiliSuper/services/account_service.dart';
 import 'package:PiliSuper/utils/accounts.dart';
 import 'package:PiliSuper/utils/accounts/account.dart';
@@ -12,8 +11,6 @@ import 'package:PiliSuper/utils/request_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:PiliSuper/utils/utils.dart';
-import 'package:collection/collection.dart';
-import 'package:crypto/crypto.dart' show Digest;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as web;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -47,15 +44,13 @@ abstract final class LoginUtils {
 
   static Future<void> onLoginMain() async {
     final account = Accounts.main;
-    GrpcReq.updateHeaders(account.accessKey);
-    setWebCookie(account);
-    RequestUtils.syncHistoryStatus();
-    final result = await UserHttp.userInfo();
-    if (result.isSuccess) {
-      final UserInfoData data = result.data;
-      if (data.isLogin == true) {
+    final res = await UserHttp.userInfo();
+    if (res case Success(:final response)) {
+      setWebCookie(account);
+      RequestUtils.syncHistoryStatus();
+      if (response.isLogin == true) {
         final accountService = Get.find<AccountService>()
-          ..face.value = data.face!;
+          ..face.value = response.face!;
 
         if (accountService.isLogin.value) {
           accountService.isLogin.refresh();
@@ -64,15 +59,15 @@ abstract final class LoginUtils {
         }
 
         SmartDialog.showToast('main登录成功');
-        if (data != Pref.userInfoCache) {
-          await GStorage.userInfo.put('userInfoCache', data);
+        if (response != Pref.userInfoCache) {
+          await GStorage.userInfo.put('userInfoCache', response);
         }
       }
     } else {
       // 获取用户信息失败
       await Accounts.deleteAll({account});
       SmartDialog.showNotify(
-        msg: '登录失败，请检查cookie是否正确，${result.toString()}',
+        msg: '登录失败，请检查cookie是否正确，${res.toString()}',
         notifyType: NotifyType.warning,
       );
     }
@@ -82,8 +77,6 @@ abstract final class LoginUtils {
     Get.find<AccountService>()
       ..face.value = ''
       ..isLogin.value = false;
-
-    GrpcReq.updateHeaders(null);
 
     return Future.wait([
       if (!Platform.isLinux)
@@ -95,7 +88,7 @@ abstract final class LoginUtils {
   }
 
   static String generateBuvid() {
-    var md5Str = Digest(
+    final md5Str = Digest(
       List.generate(16, (_) => Utils.random.nextInt(256)),
     ).toString();
     return 'XY${md5Str[2]}${md5Str[12]}${md5Str[22]}$md5Str';

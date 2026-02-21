@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:PiliSuper/build_config.dart';
 import 'package:PiliSuper/common/constants.dart';
 import 'package:PiliSuper/http/init.dart';
 import 'package:PiliSuper/http/loading_state.dart';
@@ -11,12 +12,20 @@ import 'package:PiliSuper/models_new/sponsor_block/user_info.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 /// https://github.com/hanydd/BilibiliSponsorBlock/wiki/API
 abstract final class SponsorBlock {
   static String get blockServer => Pref.blockServer;
   static final options = Options(
     followRedirects: true,
+    // https://github.com/hanydd/BilibiliSponsorBlock/wiki/API#1-%E5%85%AC%E7%94%A8%E5%8F%82%E6%95%B0
+    headers: kDebugMode
+        ? null
+        : {
+            'origin': Constants.appName,
+            'x-ext-version': BuildConfig.versionName,
+          },
     validateStatus: (status) => true,
   );
 
@@ -58,7 +67,7 @@ abstract final class SponsorBlock {
     );
 
     if (res.statusCode == 200) {
-      if (res.data case List list) {
+      if (res.data case final List list) {
         return Success(list.map((i) => SegmentItemModel.fromJson(i)).toList());
       }
     }
@@ -73,7 +82,7 @@ abstract final class SponsorBlock {
     assert((type == null) == (category == null));
     final res = await Request().post(
       _api(SponsorBlockApi.voteOnSponsorTime),
-      data: {
+      queryParameters: {
         'UUID': uuid,
         'type': ?type,
         'category': ?category?.name,
@@ -136,7 +145,9 @@ abstract final class SponsorBlock {
         'videoID': bvid,
         'cid': cid.toString(),
         'userID': Pref.blockUserID,
-        'userAgent': Constants.userAgent,
+        'userAgent': kDebugMode
+            ? Constants.userAgent
+            : '${Constants.appName}/${BuildConfig.versionName}',
         'videoDuration': videoDuration,
         'segments': segments
             .map(
@@ -152,7 +163,7 @@ abstract final class SponsorBlock {
     );
 
     if (res.statusCode == 200) {
-      if (res.data case List list) {
+      if (res.data case final List list) {
         return Success(list.map((i) => SegmentItemModel.fromJson(i)).toList());
       }
     }
@@ -182,7 +193,7 @@ abstract final class SponsorBlock {
     );
 
     if (res.statusCode == 200) {
-      if (res.data case Map<String, dynamic> data) {
+      if (res.data case final Map<String, dynamic> data) {
         if (data['ytbID'] case String ytbId) {
           return Success(ytbId);
         }
@@ -210,7 +221,7 @@ abstract final class SponsorBlock {
     );
 
     if (res.statusCode == 200) {
-      if (res.data case Map<String, dynamic> data) {
+      if (res.data case final Map<String, dynamic> data) {
         if (data['UUID'] case String uuid) {
           return Success(uuid);
         }

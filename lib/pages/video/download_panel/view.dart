@@ -18,9 +18,12 @@ import 'package:PiliSuper/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliSuper/services/download/download_service.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:PiliSuper/utils/utils.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -97,6 +100,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final textStyle = TextStyle(color: theme.colorScheme.onSurfaceVariant);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
       child: Row(
@@ -104,7 +108,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
         children: [
           Text(
             '最高画质',
-            style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            style: textStyle,
           ),
           Builder(
             builder: (context) => PopupMenuButton<VideoQuality>(
@@ -141,6 +145,22 @@ class _DownloadPanelState extends State<DownloadPanel> {
               ),
             ),
           ),
+          if (kDebugMode || PlatformUtils.isMobile) ...[
+            const Spacer(),
+            StreamBuilder(
+              stream: Connectivity().onConnectivityChanged,
+              builder: (context, snapshot) {
+                if (snapshot.data case final data?) {
+                  final network = data.contains(ConnectivityResult.wifi)
+                      ? 'WIFI'
+                      : '数据';
+                  return Text('当前网络：$network', style: textStyle);
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            const SizedBox(width: 4),
+          ],
         ],
       ),
     );
@@ -240,21 +260,24 @@ class _DownloadPanelState extends State<DownloadPanel> {
       }
     }
 
-    if (episode is ugc.EpisodeItem && episode.pages!.length > 1) {
-      if (isFromList && kDebugMode) {
-        SmartDialog.showToast('hasParts');
-      }
-      if (isDownloadAll) {
-        for (int i = 0; i < episode.pages!.length; i++) {
-          _onDownload(
-            index: i,
-            episode: episode.pages![i],
-            parent: episode,
-          );
+    if (episode is ugc.EpisodeItem) {
+      final pages = episode.pages!;
+      if (pages.length > 1) {
+        if (isFromList && kDebugMode) {
+          SmartDialog.showToast('hasParts');
         }
-        return true;
+        if (isDownloadAll) {
+          for (int i = 0; i < pages.length; i++) {
+            _onDownload(
+              index: i,
+              episode: pages[i],
+              parent: episode,
+            );
+          }
+          return true;
+        }
+        return false;
       }
-      return false;
     }
 
     try {
@@ -301,13 +324,15 @@ class _DownloadPanelState extends State<DownloadPanel> {
     required ugc.BaseEpisodeItem episode,
   }) {
     late String title;
-    String? cover;
     num? duration;
     int? pubdate;
     int? view;
     int? danmaku;
     bool? isCharging;
     int? cid;
+
+    String? cover;
+    bool? cacheWidth;
 
     switch (episode) {
       case Part part:
@@ -316,15 +341,21 @@ class _DownloadPanelState extends State<DownloadPanel> {
         title = part.part ?? widget.videoDetail!.title!;
         duration = part.duration;
         pubdate = part.ctime;
+        cacheWidth = part.dimension?.cacheWidth;
         break;
       case ugc.EpisodeItem item:
         cid = item.cid;
         title = item.title!;
-        cover = item.arc?.pic;
-        duration = item.arc?.duration;
-        pubdate = item.arc?.pubdate;
-        view = item.arc?.stat?.view;
-        danmaku = item.arc?.stat?.danmaku;
+        if (item.arc case final arc?) {
+          cover = arc.pic;
+          duration = arc.duration;
+          pubdate = arc.pubdate;
+          if (arc.stat case final stat?) {
+            view = stat.view;
+            danmaku = stat.danmaku;
+          }
+          cacheWidth = arc.dimension?.cacheWidth;
+        }
         if (item.attribute == 8) {
           isCharging = true;
         }
@@ -340,6 +371,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
           duration = item.duration == null ? null : item.duration! ~/ 1000;
         }
         pubdate = item.pubTime;
+        cacheWidth = item.dimension?.cacheWidth;
         break;
     }
     late final primary = theme.colorScheme.primary;
@@ -378,6 +410,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
                               src: cover,
                               width: 140.8,
                               height: 88,
+                              cacheWidth: cacheWidth,
                             ),
                             if (duration != null && duration > 0)
                               PBadge(
@@ -411,6 +444,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
                           'assets/images/live.png',
                           color: primary,
                           height: 12,
+                          cacheHeight: 12.cacheSize(context),
                           semanticLabel: '正在播放：',
                         ),
                       Expanded(
@@ -516,7 +550,7 @@ class _DownloadPanelState extends State<DownloadPanel> {
                       isDownloadAll: true,
                     );
                   }
-                  setState(() {});
+                  if (mounted) setState(() {});
                 },
               );
             },

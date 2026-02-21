@@ -7,20 +7,28 @@ import 'package:PiliSuper/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliSuper/http/msg.dart';
 import 'package:PiliSuper/models/common/image_preview_type.dart';
 import 'package:PiliSuper/models/common/publish_panel_type.dart';
+import 'package:PiliSuper/models/dynamics/result.dart'
+    show PicModel, FilePicModel, OpusPicModel;
 import 'package:PiliSuper/models_new/dynamic/dyn_mention/item.dart';
 import 'package:PiliSuper/models_new/emote/emote.dart' as e;
 import 'package:PiliSuper/models_new/live/live_emote/emoticon.dart';
-import 'package:PiliSuper/models_new/upload_bfs/data.dart';
 import 'package:PiliSuper/pages/common/publish/common_publish_page.dart';
 import 'package:PiliSuper/pages/dynamics_mention/view.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/file_ext.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/feed_back.dart';
+import 'package:PiliSuper/utils/image_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart' show CancelToken;
 import 'package:easy_debounce/easy_throttle.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -31,40 +39,45 @@ abstract class CommonRichTextPubPage
   const CommonRichTextPubPage({
     super.key,
     this.items,
+    this.pics,
     super.onSave,
     super.autofocus,
     super.imageLengthLimit,
   });
 
   final List<RichTextItem>? items;
+  final List<PicModel>? pics;
 }
 
 abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     extends CommonPublishPageState<T> {
   final key = GlobalKey<RichTextFieldState>();
   late final imagePicker = ImagePicker();
-  late final RxList<String> pathList = <String>[].obs;
+  late final RxList<PicModel> imageList;
   int get limit => widget.imageLengthLimit ?? 9;
 
   @override
-  late final RichTextEditingController editController =
-      RichTextEditingController(
-        items: widget.items,
-        onMention: onMention,
-      );
+  late final RichTextEditingController editController;
 
   @override
   void initPubState() {
+    editController = RichTextEditingController(
+      items: widget.items,
+      onMention: onMention,
+    );
     if (editController.rawText.trim().isNotEmpty) {
       enablePublish.value = true;
     }
+    imageList = RxList<PicModel>(widget.pics ?? <PicModel>[]);
   }
 
   @override
   void dispose() {
-    if (Utils.isMobile) {
-      for (var i in pathList) {
-        File(i).tryDel();
+    if (PlatformUtils.isMobile) {
+      for (final img in imageList) {
+        if (img is FilePicModel) {
+          File(img.path).tryDel();
+        }
       }
     }
     super.dispose();
@@ -82,15 +95,18 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     ).colorScheme.secondaryContainer.withValues(alpha: 0.5);
 
     void onClear() {
-      final path = pathList.removeAt(index);
-      if (Utils.isMobile) {
-        File(path).tryDel();
+      final image = imageList.removeAt(index);
+      if (PlatformUtils.isMobile) {
+        if (image is FilePicModel) {
+          File(image.path).tryDel();
+        }
       }
-      if (pathList.isEmpty && editController.rawText.trim().isEmpty) {
+      if (imageList.isEmpty && editController.rawText.trim().isEmpty) {
         enablePublish.value = false;
       }
     }
 
+    final image = imageList[index];
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -98,37 +114,60 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
           onTap: () async {
             controller.keepChatPanel();
             await PageUtils.imageView(
-              imgList: pathList
+              imgList: imageList
                   .map(
-                    (path) => SourceModel(
-                      url: path,
-                      sourceType: SourceType.fileImage,
-                    ),
+                    (img) => switch (img) {
+                      FilePicModel e => SourceModel(
+                        url: e.path,
+                        sourceType: .fileImage,
+                      ),
+                      OpusPicModel e => SourceModel(
+                        url: e.url!,
+                        sourceType: .networkImage,
+                      ),
+                    },
                   )
                   .toList(),
               initialPage: index,
             );
             controller.restoreChatPanel();
           },
-          onLongPress: onClear,
-          onSecondaryTap: Utils.isMobile ? null : onClear,
+          onLongPress: () {
+            Feedback.forLongPress(context);
+            onClear();
+          },
+          onSecondaryTap: PlatformUtils.isMobile ? null : onClear,
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(4)),
-            child: Image(
-              height: height,
-              fit: BoxFit.fitHeight,
-              filterQuality: FilterQuality.low,
-              image: FileImage(File(pathList[index])),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 42),
+              child: switch (image) {
+                FilePicModel e => Image.file(
+                  File(e.path),
+                  height: height,
+                  filterQuality: .low,
+                  cacheHeight: height.cacheSize(context),
+                ),
+                OpusPicModel e => CachedNetworkImage(
+                  imageUrl: ImageUtils.thumbnailUrl(e.url!),
+                  height: height,
+                  filterQuality: .low,
+                  memCacheHeight: height.cacheSize(context),
+                  fadeInDuration: .zero,
+                  fadeOutDuration: .zero,
+                  placeholder: (_, _) => const SizedBox(width: 42),
+                ),
+              },
             ),
           ),
         ),
-        if (Utils.isMobile)
+        if (kDebugMode || PlatformUtils.isMobile)
           Positioned(
             top: 34,
             right: 5,
             child: iconButton(
               icon: const Icon(Icons.edit),
-              onPressed: () => onCropImage(index),
+              onPressed: () => onCropImage(index, image),
               size: 24,
               iconSize: 14,
               bgColor: color,
@@ -149,11 +188,23 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
     );
   }
 
-  Future<void> onCropImage(int index) async {
+  Future<void> onCropImage(int index, PicModel image) async {
+    String? path;
+    switch (image) {
+      case FilePicModel e:
+        path = e.path;
+      case OpusPicModel e:
+        SmartDialog.showLoading();
+        final file = (await DefaultCacheManager().getSingleFile(
+          e.url.http2https,
+        ));
+        await SmartDialog.dismiss();
+        path = file.path;
+    }
+    if (!mounted || path.isEmpty) return;
     late final colorScheme = ColorScheme.of(context);
-    final sourcePath = pathList[index];
     final croppedFile = await ImageCropper.platform.cropImage(
-      sourcePath: sourcePath,
+      sourcePath: path,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: '裁剪',
@@ -165,8 +216,10 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
       ],
     );
     if (croppedFile != null) {
-      File(sourcePath).tryDel();
-      pathList[index] = croppedFile.path;
+      if (image is FilePicModel) {
+        File(image.path).tryDel();
+      }
+      imageList[index] = FilePicModel(path: croppedFile.path);
     }
   }
 
@@ -182,11 +235,11 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
           );
           if (pickedFiles.isNotEmpty) {
             for (int i = 0; i < pickedFiles.length; i++) {
-              if (pathList.length == limit) {
+              if (imageList.length == limit) {
                 SmartDialog.showToast('最多选择$limit张图片');
                 break;
               } else {
-                pathList.add(pickedFiles[i].path);
+                imageList.add(FilePicModel(path: pickedFiles[i].path));
               }
             }
             callback?.call();
@@ -230,7 +283,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   List<Map<String, dynamic>>? getRichContent() {
     if (editController.items.isEmpty) return null;
     final list = <Map<String, dynamic>>[];
-    for (var e in editController.items) {
+    for (final e in editController.items) {
       switch (e.type) {
         case RichTextType.text || RichTextType.composing || RichTextType.common:
           list.add({
@@ -239,11 +292,17 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
             "biz_id": "",
           });
         case RichTextType.at:
-          list.add({
-            "raw_text": '@${e.rawText}',
-            "type": 2,
-            "biz_id": e.id,
-          });
+          list
+            ..add({
+              "raw_text": '@${e.rawText}',
+              "type": 2,
+              "biz_id": e.id,
+            })
+            ..add({
+              "raw_text": ' ',
+              "type": 1,
+              "biz_id": "",
+            });
         case RichTextType.emoji:
           list.add({
             "raw_text": e.rawText,
@@ -268,19 +327,19 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   }
 
   late double _mentionOffset = 0;
-  Future<void> onMention([bool fromClick = false]) async {
+  Future<void>? onMention([bool fromClick = false]) async {
     controller.keepChatPanel();
     final res = await DynMentionPanel.onDynMention(
       context,
       offset: _mentionOffset,
-      callback: (offset) => _mentionOffset = offset,
+      onCachePos: (offset) => _mentionOffset = offset,
     );
     if (res != null) {
       if (res is MentionItem) {
         _onInsertUser(res, fromClick);
       } else if (res is Set<MentionItem>) {
-        for (var e in res) {
-          e.checked = null;
+        for (final e in res) {
+          e.checked = false;
           _onInsertUser(e, fromClick);
         }
         res.clear();
@@ -313,7 +372,7 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
 
     enablePublish.value = true;
 
-    var oldValue = editController.value;
+    final oldValue = editController.value;
     final selection = oldValue.selection;
 
     if (selection.isValid) {
@@ -456,26 +515,30 @@ abstract class CommonRichTextPubPageState<T extends CommonRichTextPubPage>
   Future<void> onPublish() async {
     feedBack();
     List<Map<String, dynamic>>? pictures;
-    if (pathList.isNotEmpty) {
+    if (imageList.isNotEmpty) {
       SmartDialog.showLoading(msg: '正在上传图片...');
       final cancelToken = CancelToken();
       try {
         pictures = await Future.wait<Map<String, dynamic>>(
-          pathList.map((path) async {
-            Map result = await MsgHttp.uploadBfs(
-              path: path,
-              category: 'daily',
-              biz: 'new_dyn',
-              cancelToken: cancelToken,
-            );
-            if (!result['status']) throw HttpException(result['msg']);
-            UploadBfsResData data = result['data'];
-            return {
-              'img_width': data.imageWidth,
-              'img_height': data.imageHeight,
-              'img_size': data.imgSize,
-              'img_src': data.imageUrl,
-            };
+          imageList.map((img) async {
+            switch (img) {
+              case FilePicModel e:
+                final result = await MsgHttp.uploadBfs(
+                  path: e.path,
+                  category: 'daily',
+                  biz: 'new_dyn',
+                  cancelToken: cancelToken,
+                );
+                final data = result.data;
+                return {
+                  'img_width': data.imageWidth,
+                  'img_height': data.imageHeight,
+                  'img_size': data.imgSize,
+                  'img_src': data.imageUrl,
+                };
+              case OpusPicModel e:
+                return e.toJson();
+            }
           }),
           eagerError: true,
         );

@@ -1,4 +1,5 @@
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
 
 class VideoShotData {
   String? pvdata;

@@ -8,20 +8,24 @@ import 'package:PiliSuper/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
 import 'package:PiliSuper/models/common/video/video_type.dart';
 import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/pages/common/publish/publish_route.dart';
 import 'package:PiliSuper/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliSuper/pages/music/controller.dart';
 import 'package:PiliSuper/pages/video/introduction/pgc/controller.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliSuper/pages/video/reply/widgets/reply_item_grpc.dart';
-import 'package:PiliSuper/utils/context_ext.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
+import 'package:PiliSuper/utils/extension/context_ext.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/image_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share_plus/share_plus.dart';
@@ -41,25 +45,20 @@ class SavePanel extends StatefulWidget {
   State<SavePanel> createState() => _SavePanelState();
 
   static void toSavePanel({dynamic upMid, dynamic item}) {
-    Get.generalDialog(
-      barrierLabel: '',
-      barrierDismissible: true,
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return SavePanel(upMid: upMid, item: item);
-      },
-      transitionDuration: const Duration(milliseconds: 255),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: animation.drive(
-            Tween<double>(
-              begin: 0,
-              end: 1,
-            ).chain(CurveTween(curve: Curves.easeInOut)),
-          ),
-          child: child,
-        );
-      },
-      routeSettings: RouteSettings(arguments: Get.arguments),
+    Get.key.currentState!.push(
+      PublishRoute(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return SavePanel(upMid: upMid, item: item);
+        },
+        transitionDuration: const Duration(milliseconds: 255),
+        transitionBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation.drive(CurveTween(curve: Curves.easeInOut)),
+            child: child,
+          );
+        },
+        settings: RouteSettings(arguments: Get.arguments),
+      ),
     );
   }
 }
@@ -87,7 +86,7 @@ class _SavePanelState extends State<SavePanel> {
   @override
   void initState() {
     super.initState();
-    if (_item case ReplyInfo reply) {
+    if (_item case final ReplyInfo reply) {
       itemType = '评论';
       final currentRoute = Get.currentRoute;
       late final hasRoot = reply.hasRoot();
@@ -216,7 +215,7 @@ class _SavePanelState extends State<SavePanel> {
       }
 
       if (kDebugMode) debugPrint(uri);
-    } else if (_item case DynamicItemModel i) {
+    } else if (_item case final DynamicItemModel i) {
       uri = parseDyn(i);
 
       if (kDebugMode) debugPrint(uri);
@@ -286,17 +285,17 @@ class _SavePanelState extends State<SavePanel> {
   }
 
   Future<void> _onSaveOrSharePic([bool isShare = false]) async {
-    if (!isShare && Utils.isMobile) {
-      if (mounted && !await ImageUtils.checkPermissionDependOnSdkInt(context)) {
-        return;
-      }
+    if (!isShare &&
+        PlatformUtils.isMobile &&
+        !await ImageUtils.checkPermissionDependOnSdkInt()) {
+      return;
     }
     SmartDialog.showLoading();
     try {
       RenderRepaintBoundary boundary =
           boundaryKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
-      var image = await boundary.toImage(pixelRatio: 3);
+      final image = await boundary.toImage(pixelRatio: 3);
       ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
       String picName =
@@ -372,7 +371,7 @@ class _SavePanelState extends State<SavePanel> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (_item case ReplyInfo reply)
+                          if (_item case final ReplyInfo reply)
                             IgnorePointer(
                               child: ReplyItemGrpc(
                                 replyItem: reply,
@@ -381,7 +380,7 @@ class _SavePanelState extends State<SavePanel> {
                                 upMid: widget.upMid,
                               ),
                             )
-                          else if (_item case DynamicItemModel dyn)
+                          else if (_item case final DynamicItemModel dyn)
                             IgnorePointer(
                               child: DynamicPanel(
                                 item: dyn,
@@ -408,13 +407,16 @@ class _SavePanelState extends State<SavePanel> {
                               child: Row(
                                 children: [
                                   NetworkImgLayer(
-                                    radius: 6,
                                     src: cover!,
                                     height: coverSize,
                                     width: coverType == _CoverType.def16_9
-                                        ? coverSize * 16 / 9
+                                        ? coverSize *
+                                              StyleString.aspectRatio16x9
                                         : coverSize,
                                     quality: 100,
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(6),
+                                    ),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
@@ -509,7 +511,7 @@ class _SavePanelState extends State<SavePanel> {
                                                 padding: const EdgeInsets.all(
                                                   3,
                                                 ),
-                                                color: Get.isDarkMode
+                                                color: theme.brightness.isDark
                                                     ? Colors.white
                                                     : theme.colorScheme.surface,
                                                 child: PrettyQrView.data(
@@ -530,6 +532,7 @@ class _SavePanelState extends State<SavePanel> {
                                       child: Image.asset(
                                         'assets/images/logo/logo_2.png',
                                         width: 100,
+                                        cacheWidth: 100.cacheSize(context),
                                         color:
                                             theme.colorScheme.onSurfaceVariant,
                                       ),
@@ -589,7 +592,7 @@ class _SavePanelState extends State<SavePanel> {
                         showBottom = !showBottom;
                       }),
                     ),
-                    if (Utils.isMobile)
+                    if (PlatformUtils.isMobile)
                       iconButton(
                         size: 42,
                         tooltip: '分享',

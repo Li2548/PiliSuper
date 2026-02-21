@@ -12,6 +12,7 @@ import 'package:PiliSuper/models_new/dynamic/dyn_topic_top/top_details.dart';
 import 'package:PiliSuper/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliSuper/pages/dynamics_create/view.dart';
 import 'package:PiliSuper/pages/dynamics_topic/controller.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/global_data.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
@@ -80,13 +81,14 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                 return SliverPersistentHeader(
                   pinned: true,
                   delegate: CustomSliverPersistentHeaderDelegate(
-                    extent: 30,
+                    extent: 36,
                     needRebuild: true,
                     bgColor: theme.colorScheme.surface,
                     child: Container(
-                      height: 30,
+                      height: 36,
                       padding: EdgeInsets.only(
                         left: 12 + padding.left,
+                        top: 6,
                         bottom: 6,
                       ),
                       child: Builder(
@@ -100,16 +102,14 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                               minHeight: 24,
                             ),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            borderRadius: const BorderRadius.all(
-                              Radius.circular(25),
-                            ),
+                            borderRadius: const .all(.circular(25)),
                             onPressed: (index) {
                               _controller.onSort(allSortBy[index].sortBy!);
                               (context as Element).markNeedsBuild();
                             },
-                            isSelected: allSortBy.map((e) {
-                              return e.sortBy == _controller.sortBy;
-                            }).toList(),
+                            isSelected: allSortBy
+                                .map((e) => e.sortBy == _controller.sortBy)
+                                .toList(),
                             children: allSortBy.map((e) {
                               return Text(
                                 e.sortName!,
@@ -157,186 +157,184 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
   ) {
     return switch (topState) {
       Loading() => const SliverAppBar(),
-      Success(:var response) when (topState.dataOrNull != null) =>
-        DynamicSliverAppBarMedium(
-          pinned: true,
-          callback: (value) =>
-              _controller.appbarOffset = value - kToolbarHeight - padding.top,
-          title: IgnorePointer(child: Text(response!.topicItem!.name)),
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: Image.asset(
-                  'assets/images/topic-header-bg.png',
-                ).image,
-                filterQuality: FilterQuality.low,
-                fit: BoxFit.cover,
-              ),
-            ),
-            padding: EdgeInsets.only(
-              top: padding.top,
-              left: 12 + padding.left,
-              right: 12 + padding.right,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  height: kToolbarHeight,
-                  alignment: Alignment.centerLeft,
-                  margin: const EdgeInsets.only(left: 45, right: 78),
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => Get.toNamed(
-                      '/member?mid=${response.topicCreator!.uid}',
-                    ),
-                    child: Row(
-                      spacing: 10,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        NetworkImgLayer(
-                          width: 28,
-                          height: 28,
-                          src: response.topicCreator!.face!,
-                          type: ImageType.avatar,
-                        ),
-                        Flexible(
-                          child: Text(
-                            response.topicCreator!.name!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Text(
-                          ' 发起',
-                          style: TextStyle(color: theme.colorScheme.outline),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Text(
-                  response.topicItem!.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                SelectableText(
-                  response.topicItem!.description!,
-                  style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text(
-                      '${NumUtils.numFormat(response.topicItem!.view)}浏览 · ${NumUtils.numFormat(response.topicItem!.discuss)}讨论',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
-                    const Spacer(),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          width: 1,
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.2,
-                          ),
-                        ),
-                        foregroundColor: _controller.isLike.value == true
-                            ? null
-                            : theme.colorScheme.onSurfaceVariant,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        visualDensity: const VisualDensity(
-                          horizontal: -4,
-                          vertical: -4,
-                        ),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: _controller.onLike,
-                      icon: _controller.isLike.value == true
-                          ? const Icon(FontAwesomeIcons.solidThumbsUp, size: 13)
-                          : const Icon(FontAwesomeIcons.thumbsUp, size: 13),
-                      label: Text(
-                        NumUtils.numFormat(response.topicItem!.like),
-                        style: const TextStyle(fontSize: 13),
-                        textScaler: TextScaler.noScaling,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          width: 1,
-                          color: theme.colorScheme.outline.withValues(
-                            alpha: 0.2,
-                          ),
-                        ),
-                        foregroundColor: _controller.isFav.value == true
-                            ? null
-                            : theme.colorScheme.onSurfaceVariant,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        visualDensity: const VisualDensity(
-                          horizontal: -4,
-                          vertical: -4,
-                        ),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: _controller.onFav,
-                      icon: _controller.isFav.value == true
-                          ? const Icon(FontAwesomeIcons.solidStar, size: 13)
-                          : const Icon(FontAwesomeIcons.star, size: 13),
-                      label: Text(
-                        NumUtils.numFormat(response.topicItem!.fav),
-                        style: const TextStyle(fontSize: 13),
-                        textScaler: TextScaler.noScaling,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-              ],
+      Success(:final response) when response != null => DynamicSliverAppBarMedium(
+        pinned: true,
+        onPerformLayout: (value) =>
+            _controller.appbarOffset = value - kToolbarHeight - padding.top,
+        title: IgnorePointer(child: Text(response.topicItem!.name)),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: Image.asset(
+                'assets/images/topic-header-bg.png',
+              ).image,
+              filterQuality: FilterQuality.low,
+              fit: BoxFit.cover,
             ),
           ),
-          actions: [
-            IconButton(
-              onPressed: () => Utils.shareText(
-                '${_controller.topicName} https://m.bilibili.com/topic-detail?topic_id=${_controller.topicId}',
+          padding: EdgeInsets.only(
+            top: padding.top,
+            left: 12 + padding.left,
+            right: 12 + padding.right,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: kToolbarHeight,
+                alignment: Alignment.centerLeft,
+                margin: const EdgeInsets.only(left: 45, right: 78),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Get.toNamed(
+                    '/member?mid=${response.topicCreator!.uid}',
+                  ),
+                  child: Row(
+                    spacing: 10,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      NetworkImgLayer(
+                        width: 28,
+                        height: 28,
+                        src: response.topicCreator!.face!,
+                        type: ImageType.avatar,
+                      ),
+                      Flexible(
+                        child: Text(
+                          response.topicCreator!.name!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        ' 发起',
+                        style: TextStyle(color: theme.colorScheme.outline),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              // https://www.bilibili.com/v/topic/detail?topic_id=${_controller.topicId}
-              icon: const Icon(MdiIcons.share),
-            ),
-            PopupMenuButton(
-              itemBuilder: (context) {
-                return [
-                  PopupMenuItem(
-                    onTap: _controller.onFav,
-                    child: Text(
-                      '${_controller.isFav.value == true ? '取消' : ''}收藏',
+              Text(
+                response.topicItem!.name,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              SelectableText(
+                response.topicItem!.description!,
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Text(
+                    '${NumUtils.numFormat(response.topicItem!.view)}浏览 · ${NumUtils.numFormat(response.topicItem!.discuss)}讨论',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: theme.colorScheme.outline,
                     ),
                   ),
-                  PopupMenuItem(
-                    child: const Text('举报'),
-                    onTap: () {
-                      if (!_controller.isLogin) {
-                        SmartDialog.showToast('账号未登录');
-                        return;
-                      }
-                      final isDark = Get.isDarkMode;
-                      PageUtils.inAppWebview(
-                        'https://www.bilibili.com/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&native.theme=${isDark ? 2 : 1}&night=${isDark ? 1 : 0}',
-                      );
-                    },
+                  const Spacer(),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        width: 1,
+                        color: theme.colorScheme.outline.withValues(
+                          alpha: 0.2,
+                        ),
+                      ),
+                      foregroundColor: _controller.isLike.value == true
+                          ? null
+                          : theme.colorScheme.onSurfaceVariant,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      visualDensity: const VisualDensity(
+                        horizontal: -4,
+                        vertical: -4,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: _controller.onLike,
+                    icon: _controller.isLike.value == true
+                        ? const Icon(FontAwesomeIcons.solidThumbsUp, size: 13)
+                        : const Icon(FontAwesomeIcons.thumbsUp, size: 13),
+                    label: Text(
+                      NumUtils.numFormat(response.topicItem!.like),
+                      style: const TextStyle(fontSize: 13),
+                      textScaler: TextScaler.noScaling,
+                    ),
                   ),
-                ];
-              },
-            ),
-            const SizedBox(width: 4),
-          ],
+                  const SizedBox(width: 10),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                        width: 1,
+                        color: theme.colorScheme.outline.withValues(
+                          alpha: 0.2,
+                        ),
+                      ),
+                      foregroundColor: _controller.isFav.value == true
+                          ? null
+                          : theme.colorScheme.onSurfaceVariant,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      visualDensity: const VisualDensity(
+                        horizontal: -4,
+                        vertical: -4,
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: _controller.onFav,
+                    icon: _controller.isFav.value == true
+                        ? const Icon(FontAwesomeIcons.solidStar, size: 13)
+                        : const Icon(FontAwesomeIcons.star, size: 13),
+                    label: Text(
+                      NumUtils.numFormat(response.topicItem!.fav),
+                      style: const TextStyle(fontSize: 13),
+                      textScaler: TextScaler.noScaling,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+            ],
+          ),
         ),
+        actions: [
+          IconButton(
+            onPressed: () => Utils.shareText(
+              '${_controller.topicName} https://m.bilibili.com/topic-detail?topic_id=${_controller.topicId}',
+            ),
+            // https://www.bilibili.com/v/topic/detail?topic_id=${_controller.topicId}
+            icon: const Icon(MdiIcons.share),
+          ),
+          PopupMenuButton(
+            itemBuilder: (context) {
+              return [
+                PopupMenuItem(
+                  onTap: _controller.onFav,
+                  child: Text(
+                    '${_controller.isFav.value == true ? '取消' : ''}收藏',
+                  ),
+                ),
+                PopupMenuItem(
+                  child: const Text('举报'),
+                  onTap: () {
+                    if (!_controller.isLogin) {
+                      SmartDialog.showToast('账号未登录');
+                      return;
+                    }
+                    PageUtils.inAppWebview(
+                      'https://www.bilibili.com/h5/topic-active/topic-report?topic_id=${_controller.topicId}&topic_name=${_controller.topicName}&${Utils.themeUrl(theme.colorScheme.isDark)}',
+                    );
+                  },
+                ),
+              ];
+            },
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       _ => SliverAppBar(
         pinned: true,
         title: Text(_controller.topicName),
@@ -347,7 +345,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
   Widget _buildBody(LoadingState<List<TopicCardItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => dynSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? GlobalData().dynamicsWaterfallFlow
                   ? SliverWaterfallFlow(
@@ -389,7 +387,7 @@ class _DynTopicPageState extends State<DynTopicPage> with DynMixin {
                       itemCount: response.length,
                     )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

@@ -21,10 +21,16 @@ class FavNoteChildPage extends StatefulWidget {
 
 class _FavNoteChildPageState extends State<FavNoteChildPage>
     with AutomaticKeepAliveClientMixin, GridMixin {
-  late final FavNoteController _favNoteController = Get.put(
-    FavNoteController(widget.isPublish),
-    tag: '${widget.isPublish}',
-  );
+  late final FavNoteController _favNoteController;
+
+  @override
+  void initState() {
+    super.initState();
+    _favNoteController = Get.put(
+      FavNoteController(widget.isPublish),
+      tag: widget.isPublish.toString(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +146,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
   Widget _buildBody(LoadingState<List<FavNoteItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -158,7 +164,7 @@ class _FavNoteChildPageState extends State<FavNoteChildPage>
                 itemCount: response.length,
               )
             : HttpError(onReload: _favNoteController.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _favNoteController.onReload,
       ),

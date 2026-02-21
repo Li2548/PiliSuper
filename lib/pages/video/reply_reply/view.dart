@@ -1,4 +1,5 @@
 import 'package:PiliSuper/common/skeleton/video_reply.dart';
+import 'package:PiliSuper/common/widgets/colored_box_transition.dart';
 import 'package:PiliSuper/common/widgets/custom_sliver_persistent_header_delegate.dart';
 import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
@@ -10,12 +11,13 @@ import 'package:PiliSuper/pages/common/slide/common_slide_page.dart';
 import 'package:PiliSuper/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliSuper/pages/video/reply_reply/controller.dart';
 import 'package:PiliSuper/utils/app_scheme.dart';
+import 'package:PiliSuper/utils/extension/widget_ext.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class VideoReplyReplyPanel extends CommonSlidePage {
@@ -83,7 +85,7 @@ class VideoReplyReplyPanel extends CommonSlidePage {
             firstFloor: null,
             id: rpId,
           ),
-        ),
+        ).constraintWidth(),
       ),
     );
   }
@@ -93,13 +95,14 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     with SingleTickerProviderStateMixin, CommonSlideMixin {
   late VideoReplyReplyController _controller;
   late final _tag = Utils.makeHeroTag('${widget.rpid}${widget.dialog}');
-  Animation<Color?>? colorAnimation;
+  Animation<Color?>? _colorAnimation;
 
   late final bool isDialogue = widget.dialog != null;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _colorAnimation = null;
     final controller = PrimaryScrollController.of(context);
     _controller
       ..didChangeDependencies(context)
@@ -222,11 +225,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
             replyItem: firstFloor,
             replyLevel: 2,
             needDivider: false,
-            onReply: (replyItem) => _controller.onReply(
-              context,
-              replyItem: replyItem,
-              index: -1,
-            ),
+            onReply: (replyItem) => _controller.onReply(replyItem, index: -1),
             upMid: _controller.upMid,
             onCheckReply: (item) =>
                 _controller.onCheckReply(item, isManual: true),
@@ -306,7 +305,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
         itemBuilder: (_, _) => const VideoReplySkeleton(),
         itemCount: 8,
       ),
-      Success(:var response!) => SuperSliverList.builder(
+      Success(:final response!) => SuperSliverList.builder(
         listController: _controller.listController,
         itemBuilder: (context, index) {
           if (index == response.length) {
@@ -329,31 +328,25 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
           }
           final child = _replyItem(context, response[index], index);
           if (jumpIndex == index) {
-            return AnimatedBuilder(
-              animation: colorAnimation ??=
-                  ColorTween(
-                    begin: theme.colorScheme.onInverseSurface,
-                    end: theme.colorScheme.surface,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: _controller.animController,
-                      curve: const Interval(0.8, 1.0), // 前0.8s不变, 后0.2s开始动画
-                    ),
+            return ColoredBoxTransition(
+              color: _colorAnimation ??= _controller.animController.drive(
+                ColorTween(
+                  begin: theme.colorScheme.onInverseSurface,
+                  end: theme.colorScheme.surface,
+                ).chain(
+                  CurveTween(
+                    curve: const Interval(0.8, 1.0), // 前0.8s不变, 后0.2s开始动画
                   ),
+                ),
+              ),
               child: child,
-              builder: (context, child) {
-                return ColoredBox(
-                  color: colorAnimation!.value!,
-                  child: child,
-                );
-              },
             );
           }
           return child;
         },
         itemCount: response.length + 1,
       ),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),
@@ -364,8 +357,7 @@ class _VideoReplyReplyPanelState extends State<VideoReplyReplyPanel>
     return ReplyItemGrpc(
       replyItem: replyItem,
       replyLevel: isDialogue ? 3 : 2,
-      onReply: (replyItem) =>
-          _controller.onReply(this.context, replyItem: replyItem, index: index),
+      onReply: (replyItem) => _controller.onReply(replyItem, index: index),
       onDelete: (item, subIndex) => _controller.onRemove(index, item, null),
       upMid: _controller.upMid,
       showDialogue: () => Scaffold.of(context).showBottomSheet(

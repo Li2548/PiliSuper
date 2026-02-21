@@ -27,10 +27,16 @@ class FavPgcChildPage extends StatefulWidget {
 
 class _FavPgcChildPageState extends State<FavPgcChildPage>
     with AutomaticKeepAliveClientMixin, GridMixin {
-  late final FavPgcController _favPgcController = Get.put(
-    FavPgcController(widget.type, widget.followStatus),
-    tag: '${widget.type}${widget.followStatus}',
-  );
+  late final FavPgcController _favPgcController;
+
+  @override
+  void initState() {
+    super.initState();
+    _favPgcController = Get.put(
+      FavPgcController(widget.type, widget.followStatus),
+      tag: '${widget.type}${widget.followStatus}',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +175,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
         itemBuilder: (context, index) => const FavPgcItemSkeleton(),
         itemCount: 10,
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -206,7 +212,7 @@ class _FavPgcChildPageState extends State<FavPgcChildPage>
                 itemCount: response.length,
               )
             : HttpError(onReload: _favPgcController.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _favPgcController.onReload,
       ),

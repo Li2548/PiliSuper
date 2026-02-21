@@ -4,6 +4,7 @@ import 'package:PiliSuper/pages/fan/controller.dart';
 import 'package:PiliSuper/pages/follow_type/view.dart';
 import 'package:PiliSuper/pages/follow_type/widgets/item.dart';
 import 'package:PiliSuper/pages/share/view.dart' show UserModel;
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -37,11 +38,17 @@ class FansPage extends StatefulWidget {
 
 class _FansPageState extends FollowTypePageState<FansPage> {
   @override
-  late final FansController controller = Get.put(
-    FansController(widget.showName),
-    tag: Get.arguments?['mid']?.toString() ?? Utils.generateRandomString(8),
-  );
+  late final FansController controller;
   late final flag = widget.onSelect == null && controller.isOwner;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(
+      FansController(widget.showName),
+      tag: Get.arguments?['mid']?.toString() ?? Utils.generateRandomString(8),
+    );
+  }
 
   @override
   PreferredSizeWidget? get appBar => widget.showName
@@ -73,6 +80,7 @@ class _FansPageState extends FollowTypePageState<FansPage> {
               mid: item.mid,
               name: item.uname!,
               avatar: item.face!,
+              selected: true,
             ),
           );
           return;
@@ -80,7 +88,7 @@ class _FansPageState extends FollowTypePageState<FansPage> {
         Get.toNamed('/member?mid=${item.mid}');
       },
       onLongPress: flag ? onRemove : null,
-      onSecondaryTap: flag && !Utils.isMobile ? onRemove : null,
+      onSecondaryTap: flag && !PlatformUtils.isMobile ? onRemove : null,
     );
   }
 }

@@ -85,7 +85,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                       parent: ClampingScrollPhysics(),
                     )
                   : const AlwaysScrollableScrollPhysics(),
-              key: const PageStorageKey<String>('评论'),
+              key: const PageStorageKey(_VideoReplyPanelState),
               slivers: <Widget>[
                 SliverPersistentHeader(
                   pinned: false,
@@ -142,13 +142,13 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
               right: kFloatingActionButtonMargin,
               bottom: kFloatingActionButtonMargin + bottom,
               child: SlideTransition(
-                position: _videoReplyController.anim,
+                position: _videoReplyController.animation,
                 child: FloatingActionButton(
                   heroTag: null,
                   onPressed: () {
                     feedBack();
                     _videoReplyController.onReply(
-                      context,
+                      null,
                       oid: _videoReplyController.aid,
                       replyType: _videoReplyController.videoType.replyType,
                     );
@@ -180,7 +180,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
         itemBuilder: (context, index) => const VideoReplySkeleton(),
         itemCount: 5,
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.builder(
                 itemBuilder: (context, index) {
@@ -204,10 +204,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                       replyItem: response[index],
                       replyLevel: widget.replyLevel,
                       replyReply: replyReply,
-                      onReply: (replyItem) => _videoReplyController.onReply(
-                        context,
-                        replyItem: replyItem,
-                      ),
+                      onReply: _videoReplyController.onReply,
                       onDelete: (item, subIndex) =>
                           _videoReplyController.onRemove(index, item, subIndex),
                       upMid: _videoReplyController.upMid,
@@ -229,7 +226,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
                 errMsg: '还没有评论',
                 onReload: _videoReplyController.onReload,
               ),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _videoReplyController.onReload,
       ),
@@ -249,7 +246,7 @@ class _VideoReplyPanelState extends State<VideoReplyPanel>
           id: id,
           oid: oid,
           rpid: rpid,
-          firstFloor: replyItem,
+          firstFloor: replyItem.replyControl.isNote ? null : replyItem,
           replyType: _videoReplyController.videoType.replyType,
           isVideoDetail: true,
           isNested: widget.isNested,

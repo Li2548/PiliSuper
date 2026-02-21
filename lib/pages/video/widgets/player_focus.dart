@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'dart:io' show exit, Platform;
 import 'dart:math' as math;
 
 import 'package:PiliSuper/pages/common/common_intro_controller.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show KeyDownEvent, KeyUpEvent, LogicalKeyboardKey, HardwareKeyboard;
@@ -22,14 +23,16 @@ class PlayerFocus extends StatelessWidget {
     required this.onSendDanmaku,
     this.canPlay,
     this.onSkipSegment,
+    this.onRefresh,
   });
 
   final Widget child;
   final PlPlayerController plPlayerController;
   final CommonIntroController? introController;
   final VoidCallback onSendDanmaku;
-  final bool Function()? canPlay;
-  final bool Function()? onSkipSegment;
+  final ValueGetter<bool>? canPlay;
+  final ValueGetter<bool>? onSkipSegment;
+  final VoidCallback? onRefresh;
 
   static bool _shouldHandle(LogicalKeyboardKey logicalKey) {
     return logicalKey == LogicalKeyboardKey.tab ||
@@ -59,7 +62,10 @@ class PlayerFocus extends StatelessWidget {
 
   void _setVolume({required bool isIncrease}) {
     final volume = isIncrease
-        ? math.min(1.0, plPlayerController.volume.value + 0.1)
+        ? math.min(
+            PlPlayerController.maxVolume,
+            plPlayerController.volume.value + 0.1,
+          )
         : math.max(0.0, plPlayerController.volume.value - 0.1);
     plPlayerController.setVolume(volume);
   }
@@ -88,14 +94,19 @@ class PlayerFocus extends StatelessWidget {
     final isKeyQ = key == LogicalKeyboardKey.keyQ;
     if (isKeyQ || key == LogicalKeyboardKey.keyR) {
       if (HardwareKeyboard.instance.isMetaPressed) {
+        if (isKeyQ && Platform.isMacOS) {
+          exit(0);
+        }
         return true;
       }
-      if (!plPlayerController.isLive) {
-        if (event is KeyDownEvent) {
+      if (event is KeyDownEvent) {
+        if (plPlayerController.isLive) {
+          onRefresh?.call();
+        } else {
           introController!.onStartTriple();
-        } else if (event is KeyUpEvent) {
-          introController!.onCancelTriple(isKeyQ);
         }
+      } else if (event is KeyUpEvent && !plPlayerController.isLive) {
+        introController!.onCancelTriple(isKeyQ);
       }
       return true;
     }
@@ -184,7 +195,7 @@ class PlayerFocus extends StatelessWidget {
           return true;
 
         case LogicalKeyboardKey.keyP:
-          if (Utils.isDesktop && hasPlayer && !isFullScreen) {
+          if (PlatformUtils.isDesktop && hasPlayer && !isFullScreen) {
             plPlayerController
               ..toggleDesktopPip()
               ..controlsLock.value = false
@@ -251,7 +262,7 @@ class PlayerFocus extends StatelessWidget {
             return true;
 
           case LogicalKeyboardKey.keyG:
-            if (introController case UgcIntroController ugcCtr) {
+            if (introController case final UgcIntroController ugcCtr) {
               ugcCtr.actionRelationMod(Get.context!);
             }
             return true;

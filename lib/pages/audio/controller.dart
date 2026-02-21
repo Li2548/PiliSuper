@@ -6,7 +6,6 @@ import 'package:PiliSuper/grpc/bilibili/app/listener/v1.pb.dart'
     show
         DetailItem,
         PlayURLResp,
-        PlaylistResp,
         PlaylistSource,
         PlayInfo,
         ThumbUpReq_ThumbType,
@@ -14,22 +13,27 @@ import 'package:PiliSuper/grpc/bilibili/app/listener/v1.pb.dart'
         DashItem,
         ResponseUrl;
 import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/ua_type.dart';
 import 'package:PiliSuper/pages/common/common_intro_controller.dart'
     show FavMixin;
 import 'package:PiliSuper/pages/dynamics_repost/view.dart';
 import 'package:PiliSuper/pages/main_reply/view.dart';
+import 'package:PiliSuper/pages/sponsor_block/block_mixin.dart';
 import 'package:PiliSuper/pages/video/controller.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/widgets/triple_mixin.dart';
 import 'package:PiliSuper/pages/video/pay_coins/view.dart';
 import 'package:PiliSuper/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliSuper/plugin/pl_player/models/play_status.dart';
 import 'package:PiliSuper/services/service_locator.dart';
+import 'package:PiliSuper/services/shutdown_timer_service.dart';
 import 'package:PiliSuper/utils/accounts.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
 import 'package:PiliSuper/utils/global_data.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:PiliSuper/utils/video_utils.dart';
@@ -40,17 +44,24 @@ import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart';
 
 class AudioController extends GetxController
-    with GetTickerProviderStateMixin, TripleMixin, FavMixin {
+    with
+        GetTickerProviderStateMixin,
+        TripleMixin,
+        FavMixin,
+        BlockConfigMixin,
+        BlockMixin {
   late Int64 id;
   late Int64 oid;
   late List<Int64> subId;
   late int itemType;
   Int64? extraId;
   late final PlaylistSource from;
-  late final isVideo = itemType == 1;
+  @override
+  late final bool isUgc = itemType == 1;
 
   final Rx<DetailItem?> audioItem = Rx<DetailItem?>(null);
 
+  @override
   Player? player;
   late int cacheAudioQa;
 
@@ -58,10 +69,7 @@ class AudioController extends GetxController
   final Rx<Duration> position = Duration.zero.obs;
   final Rx<Duration> duration = Duration.zero.obs;
 
-  late final AnimationController animController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 200),
-  );
+  late final AnimationController animController;
 
   Set<StreamSubscription>? _subscriptions;
 
@@ -109,6 +117,7 @@ class AudioController extends GetxController
     final String? audioUrl = args['audioUrl'];
     final hasAudioUrl = audioUrl != null;
     if (hasAudioUrl) {
+      _querySponsorBlock();
       _onOpenMedia(
         audioUrl,
         ua: UaType.pc.ua,
@@ -125,18 +134,33 @@ class AudioController extends GetxController
       ?..onPlay = onPlay
       ..onPause = onPause
       ..onSeek = onSeek;
+
+    animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+
+    if (shutdownTimerService.isActive) {
+      shutdownTimerService
+        ..onPause = onPause
+        ..isPlaying = isPlaying;
+    }
   }
 
-  Future<void> onPlay() async {
-    await player?.play();
+  bool isPlaying() {
+    return player?.state.playing ?? false;
   }
 
-  Future<void> onPause() async {
-    await player?.pause();
+  Future<void>? onPlay() {
+    return player?.play();
   }
 
-  Future<void> onSeek(Duration duration) async {
-    await player?.seek(duration);
+  Future<void>? onPause() async {
+    return player?.pause();
+  }
+
+  Future<void>? onSeek(Duration duration) {
+    return player?.seek(duration);
   }
 
   void _updateCurrItem(DetailItem item) {
@@ -170,28 +194,27 @@ class AudioController extends GetxController
       extraId: extraId,
       order: order,
     );
-    if (res.isSuccess) {
-      final PlaylistResp data = res.data;
+    if (res case Success(:final response)) {
       if (isInit) {
-        late final paginationReply = data.paginationReply;
-        _prev = data.reachStart ? null : paginationReply.prev;
-        _next = data.reachEnd ? null : paginationReply.next;
-        final index = data.list.indexWhere((e) => e.item.oid == oid);
+        late final paginationReply = response.paginationReply;
+        _prev = response.reachStart ? null : paginationReply.prev;
+        _next = response.reachEnd ? null : paginationReply.next;
+        final index = response.list.indexWhere((e) => e.item.oid == oid);
         if (index != -1) {
           this.index = index;
-          _updateCurrItem(data.list[index]);
-          playlist = data.list;
+          _updateCurrItem(response.list[index]);
+          playlist = response.list;
         }
       } else if (isLoadPrev) {
-        _prev = data.reachStart ? null : data.paginationReply.prev;
-        if (data.list.isNotEmpty) {
-          index += data.list.length;
-          playlist?.insertAll(0, data.list);
+        _prev = response.reachStart ? null : response.paginationReply.prev;
+        if (response.list.isNotEmpty) {
+          index += response.list.length;
+          playlist?.insertAll(0, response.list);
         }
       } else if (isLoadNext) {
-        _next = data.reachEnd ? null : data.paginationReply.next;
-        if (data.list.isNotEmpty) {
-          playlist?.addAll(data.list);
+        _next = response.reachEnd ? null : response.paginationReply.next;
+        if (response.list.isNotEmpty) {
+          playlist?.addAll(response.list);
         }
       }
     } else {
@@ -199,14 +222,26 @@ class AudioController extends GetxController
     }
   }
 
+  @pragma('vm:notify-debugger-on-exception')
+  void _querySponsorBlock() {
+    if (isUgc && enableSponsorBlock) {
+      try {
+        final bvid = IdUtils.av2bv(oid.toInt());
+        final cid = subId.first.toInt();
+        querySponsorBlock(bvid: bvid, cid: cid);
+      } catch (_) {}
+    }
+  }
+
   Future<bool> _queryPlayUrl() async {
+    _querySponsorBlock();
     final res = await AudioGrpc.audioPlayUrl(
       itemType: itemType,
       oid: oid,
       subId: subId,
     );
-    if (res.isSuccess) {
-      _onPlay(res.data);
+    if (res case Success(:final response)) {
+      _onPlay(response);
       return true;
     } else {
       res.toast();
@@ -294,26 +329,30 @@ class AudioController extends GetxController
           false,
         );
         if (completed) {
-          switch (playMode.value) {
-            case PlayRepeat.pause:
-              break;
-            case PlayRepeat.listOrder:
-              playNext(nextPart: true);
-              break;
-            case PlayRepeat.singleCycle:
-              _replay();
-              break;
-            case PlayRepeat.listCycle:
-              if (!playNext(nextPart: true)) {
-                if (index != null && index != 0 && playlist != null) {
-                  playIndex(0);
-                } else {
-                  _replay();
+          if (shutdownTimerService.isWaiting) {
+            shutdownTimerService.handleWaiting();
+          } else {
+            switch (playMode.value) {
+              case PlayRepeat.pause:
+                break;
+              case PlayRepeat.listOrder:
+                playNext(nextPart: true);
+                break;
+              case PlayRepeat.singleCycle:
+                _replay();
+                break;
+              case PlayRepeat.listCycle:
+                if (!playNext(nextPart: true)) {
+                  if (index != null && index != 0 && playlist != null) {
+                    playIndex(0);
+                  } else {
+                    _replay();
+                  }
                 }
-              }
-              break;
-            case PlayRepeat.autoPlayRelated:
-              break;
+                break;
+              case PlayRepeat.autoPlayRelated:
+                break;
+            }
           }
         }
       }),
@@ -339,7 +378,7 @@ class AudioController extends GetxController
           ? ThumbUpReq_ThumbType.LIKE
           : ThumbUpReq_ThumbType.CANCEL_LIKE,
     );
-    if (res.isSuccess) {
+    if (res case Success(:final response)) {
       hasLike.value = newVal;
       try {
         audioItem.value!.stat
@@ -347,7 +386,7 @@ class AudioController extends GetxController
           ..like += newVal ? 1 : -1;
         audioItem.refresh();
       } catch (_) {}
-      SmartDialog.showToast(res.data.message);
+      SmartDialog.showToast(response.message);
     } else {
       res.toast();
     }
@@ -364,10 +403,9 @@ class AudioController extends GetxController
       subId: subId,
       itemType: itemType,
     );
-    if (res.isSuccess) {
-      final data = res.data;
+    if (res case Success(:final response)) {
       hasLike.value = true;
-      if (data.coinOk && !hasCoin) {
+      if (response.coinOk && !hasCoin) {
         coinNum.value = 2;
         GlobalData().afterCoin(2);
         try {
@@ -468,120 +506,127 @@ class AudioController extends GetxController
   void showReply() {
     MainReplyPage.toMainReplyPage(
       oid: oid.toInt(),
-      replyType: isVideo ? 1 : 14,
+      replyType: isUgc ? 1 : 14,
     );
   }
 
   void actionShareVideo(BuildContext context) {
+    final audioUrl = isUgc
+        ? '${HttpString.baseUrl}/video/${IdUtils.av2bv(oid.toInt())}'
+        : '${HttpString.baseUrl}/audio/au$oid';
     showDialog(
       context: context,
-      builder: (_) {
-        final audioUrl = isVideo
-            ? '${HttpString.baseUrl}/video/${IdUtils.av2bv(oid.toInt())}'
-            : '${HttpString.baseUrl}/audio/au$oid';
-        return AlertDialog(
-          clipBehavior: Clip.hardEdge,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '复制链接',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  Utils.copyText(audioUrl);
-                },
+      builder: (_) => AlertDialog(
+        clipBehavior: Clip.hardEdge,
+        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              dense: true,
+              title: const Text(
+                '复制链接',
+                style: TextStyle(fontSize: 14),
               ),
-              ListTile(
-                dense: true,
-                title: const Text(
-                  '其它app打开',
-                  style: TextStyle(fontSize: 14),
-                ),
-                onTap: () {
-                  Get.back();
-                  PageUtils.launchURL(audioUrl);
-                },
+              onTap: () {
+                Get.back();
+                Utils.copyText(audioUrl);
+              },
+            ),
+            ListTile(
+              dense: true,
+              title: const Text(
+                '其它app打开',
+                style: TextStyle(fontSize: 14),
               ),
-              if (Utils.isMobile)
-                ListTile(
-                  dense: true,
-                  title: const Text(
-                    '分享视频',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  onTap: () {
-                    Get.back();
-                    if (audioItem.value case final audioItem?) {
-                      Utils.shareText(
-                        '${audioItem.arc.title} '
-                        'UP主: ${audioItem.owner.name}'
-                        ' - $audioUrl',
-                      );
-                    }
-                  },
-                ),
+              onTap: () {
+                Get.back();
+                PageUtils.launchURL(audioUrl);
+              },
+            ),
+            if (PlatformUtils.isMobile)
               ListTile(
                 dense: true,
                 title: const Text(
-                  '分享至动态',
+                  '分享视频',
                   style: TextStyle(fontSize: 14),
                 ),
                 onTap: () {
                   Get.back();
-                  if (audioItem.value case final audioItem?) {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      builder: (context) => RepostPanel(
-                        rid: oid.toInt(),
-                        dynType: isVideo ? 8 : 256,
-                        pic: audioItem.arc.cover,
-                        title: audioItem.arc.title,
-                        uname: audioItem.owner.name,
-                      ),
+                  if (audioItem.value case DetailItem(
+                    :final arc,
+                    :final owner,
+                  )) {
+                    Utils.shareText(
+                      '${arc.title} '
+                      'UP主: ${owner.name}'
+                      ' - $audioUrl',
                     );
                   }
                 },
               ),
-              if (isVideo)
-                ListTile(
-                  dense: true,
-                  title: const Text(
-                    '分享至消息',
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  onTap: () {
-                    Get.back();
-                    if (audioItem.value case final audioItem?) {
-                      try {
-                        PageUtils.pmShare(
-                          context,
-                          content: {
-                            "id": oid.toString(),
-                            "title": audioItem.arc.title,
-                            "headline": audioItem.arc.title,
-                            "source": 5,
-                            "thumb": audioItem.arc.cover,
-                            "author": audioItem.owner.name,
-                            "author_id": audioItem.owner.mid.toString(),
-                          },
-                        );
-                      } catch (e) {
-                        SmartDialog.showToast(e.toString());
-                      }
-                    }
-                  },
+            ListTile(
+              dense: true,
+              title: const Text(
+                '分享至动态',
+                style: TextStyle(fontSize: 14),
+              ),
+              onTap: () {
+                Get.back();
+                if (audioItem.value case DetailItem(
+                  :final arc,
+                  :final owner,
+                )) {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    useSafeArea: true,
+                    builder: (context) => RepostPanel(
+                      rid: oid.toInt(),
+                      dynType: isUgc ? 8 : 256,
+                      pic: arc.cover,
+                      title: arc.title,
+                      uname: owner.name,
+                    ),
+                  );
+                }
+              },
+            ),
+            if (isUgc)
+              ListTile(
+                dense: true,
+                title: const Text(
+                  '分享至消息',
+                  style: TextStyle(fontSize: 14),
                 ),
-            ],
-          ),
-        );
-      },
+                onTap: () {
+                  Get.back();
+                  if (audioItem.value case DetailItem(
+                    :final arc,
+                    :final owner,
+                  )) {
+                    try {
+                      PageUtils.pmShare(
+                        context,
+                        content: {
+                          "id": oid.toString(),
+                          "title": arc.title,
+                          "headline": arc.title,
+                          "source": 5,
+                          "thumb": arc.cover,
+                          "author": owner.name,
+                          "author_id": owner.mid.toString(),
+                        },
+                      );
+                    } catch (e) {
+                      SmartDialog.showToast(e.toString());
+                    }
+                  }
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -608,8 +653,7 @@ class AudioController extends GetxController
 
   bool playNext({bool nextPart = false}) {
     if (nextPart) {
-      if (audioItem.value case final audioItem?) {
-        final parts = audioItem.parts;
+      if (audioItem.value case DetailItem(:final parts)) {
         if (parts.length > 1) {
           final subId = this.subId.firstOrNull;
           final nextIndex = parts.indexWhere((e) => e.subId == subId) + 1;
@@ -665,19 +709,8 @@ class AudioController extends GetxController
     }
   }
 
-  // Timer? _timer;
-
-  // void _cancelTimer() {
-  //   _timer?.cancel();
-  //   _timer = null;
-  // }
-
-  // void showTimerDialog() {
-  //   // TODO
-  // }
-
   @override
-  (Object, int) get getFavRidType => (oid, isVideo ? 2 : 12);
+  (Object, int) get getFavRidType => (oid, isUgc ? 2 : 12);
 
   @override
   void updateFavCount(int count) {
@@ -715,8 +748,30 @@ class AudioController extends GetxController
   }
 
   @override
+  BlockConfigMixin get blockConfig => this;
+
+  @override
+  int get currPosInMilliseconds => position.value.inMilliseconds;
+
+  @override
+  Future<void>? seekTo(Duration duration, {required bool isSeek}) =>
+      onSeek(duration);
+
+  @override
+  int? get timeLength => duration.value.inMilliseconds;
+
+  @override
+  bool get autoPlay => true;
+
+  @override
+  bool get preInitPlayer => true;
+
+  @override
   void onClose() {
-    // _cancelTimer();
+    shutdownTimerService
+      ..onPause = null
+      ..isPlaying = null
+      ..reset();
     videoPlayerServiceHandler
       ?..onPlay = null
       ..onPause = null

@@ -1,17 +1,16 @@
 import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliSuper/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliSuper/common/widgets/view_safe_area.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models/common/home_tab_type.dart';
 import 'package:PiliSuper/models/model_hot_video_item.dart';
-import 'package:PiliSuper/pages/common/common_page.dart';
 import 'package:PiliSuper/pages/home/controller.dart';
 import 'package:PiliSuper/pages/hot/controller.dart';
 import 'package:PiliSuper/pages/rank/view.dart';
 import 'package:PiliSuper/utils/grid.dart';
-import 'package:PiliSuper/utils/image_utils.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,10 +21,9 @@ class HotPage extends StatefulWidget {
   State<HotPage> createState() => _HotPageState();
 }
 
-class _HotPageState extends CommonPageState<HotPage, HotController>
+class _HotPageState extends State<HotPage>
     with AutomaticKeepAliveClientMixin, GridMixin {
-  @override
-  HotController controller = Get.put(HotController());
+  final HotController controller = Get.put(HotController());
 
   @override
   bool get wantKeepAlive => true;
@@ -39,14 +37,15 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Column(
+        spacing: 4,
         mainAxisSize: MainAxisSize.min,
         children: [
-          CachedNetworkImage(
+          NetworkImgLayer(
             width: 35,
             height: 35,
-            imageUrl: ImageUtils.thumbnailUrl(iconUrl),
+            type: .emote,
+            src: iconUrl,
           ),
-          const SizedBox(height: 4),
           Text(
             title,
             style: const TextStyle(fontSize: 12),
@@ -59,82 +58,66 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return onBuild(
-      refreshIndicator(
-        onRefresh: controller.onRefresh,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          controller: controller.scrollController,
-          slivers: [
+    return refreshIndicator(
+      onRefresh: controller.onRefresh,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        controller: controller.scrollController,
+        slivers: [
+          if (Pref.showHotRcmd)
             SliverToBoxAdapter(
-              child: Obx(
-                () => controller.showHotRcmd.value
-                    ? Padding(
-                        padding: const EdgeInsets.only(
-                          left: 12,
-                          top: 12,
-                          right: 12,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildEntranceItem(
-                              iconUrl:
-                                  'http://i0.hdslb.com/bfs/archive/a3f11218aaf4521b4967db2ae164ecd3052586b9.png',
-                              title: '排行榜',
-                              onTap: () {
-                                try {
-                                  HomeController homeController =
-                                      Get.find<HomeController>();
-                                  int index = homeController.tabs.indexOf(
-                                    HomeTabType.rank,
-                                  );
-                                  if (index != -1) {
-                                    homeController.tabController.animateTo(
-                                      index,
-                                    );
-                                  } else {
-                                    Get.to(
-                                      Scaffold(
-                                        resizeToAvoidBottomInset: false,
-                                        appBar: AppBar(
-                                          title: const Text('排行榜'),
-                                        ),
-                                        body: const ViewSafeArea(
-                                          child: RankPage(),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                } catch (_) {}
-                              },
-                            ),
-                            _buildEntranceItem(
-                              iconUrl:
-                                  'https://i0.hdslb.com/bfs/archive/552ebe8c4794aeef30ebd1568b59ad35f15e21ad.png',
-                              title: '每周必看',
-                              onTap: () => Get.toNamed('/popularSeries'),
-                            ),
-                            _buildEntranceItem(
-                              iconUrl:
-                                  'https://i0.hdslb.com/bfs/archive/3693ec9335b78ca57353ac0734f36a46f3d179a9.png',
-                              title: '入站必刷',
-                              onTap: () => Get.toNamed('/popularPrecious'),
-                            ),
-                          ],
-                        ),
-                      )
-                    : const SizedBox.shrink(),
+              child: Padding(
+                padding: const .only(left: 12, top: 12, right: 12),
+                child: Row(
+                  mainAxisAlignment: .spaceEvenly,
+                  children: [
+                    _buildEntranceItem(
+                      iconUrl:
+                          'https://i0.hdslb.com/bfs/archive/a3f11218aaf4521b4967db2ae164ecd3052586b9.png',
+                      title: '排行榜',
+                      onTap: () {
+                        try {
+                          final homeController = Get.find<HomeController>();
+                          final index = homeController.tabs.indexOf(
+                            HomeTabType.rank,
+                          );
+                          if (index != -1) {
+                            homeController.tabController.animateTo(index);
+                          } else {
+                            Get.to(
+                              Scaffold(
+                                resizeToAvoidBottomInset: false,
+                                appBar: AppBar(title: const Text('排行榜')),
+                                body: const ViewSafeArea(child: RankPage()),
+                              ),
+                            );
+                          }
+                        } catch (_) {}
+                      },
+                    ),
+                    _buildEntranceItem(
+                      iconUrl:
+                          'https://i0.hdslb.com/bfs/archive/552ebe8c4794aeef30ebd1568b59ad35f15e21ad.png',
+                      title: '每周必看',
+                      onTap: () => Get.toNamed('/popularSeries'),
+                    ),
+                    _buildEntranceItem(
+                      iconUrl:
+                          'https://i0.hdslb.com/bfs/archive/3693ec9335b78ca57353ac0734f36a46f3d179a9.png',
+                      title: '入站必刷',
+                      onTap: () => Get.toNamed('/popularPrecious'),
+                    ),
+                  ],
+                ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.only(top: 7, bottom: 100),
-              sliver: Obx(
-                () => _buildBody(controller.loadingState.value),
-              ),
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 7, bottom: 100),
+            sliver: Obx(
+              () => _buildBody(controller.loadingState.value),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -142,7 +125,7 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
   Widget _buildBody(LoadingState<List<HotVideoItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -160,7 +143,7 @@ class _HotPageState extends CommonPageState<HotPage, HotController>
                 itemCount: response.length,
               )
             : HttpError(onReload: controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: controller.onReload,
       ),

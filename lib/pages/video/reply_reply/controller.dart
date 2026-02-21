@@ -2,6 +2,7 @@ import 'package:PiliSuper/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo, DetailListReply, Mode;
 import 'package:PiliSuper/grpc/reply.dart';
 import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/pages/common/publish/publish_route.dart';
 import 'package:PiliSuper/pages/common/reply_controller.dart';
 import 'package:PiliSuper/pages/video/reply_new/view.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
@@ -12,7 +13,6 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
-import 'package:get/get_navigation/src/dialog/dialog_route.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class VideoReplyReplyController extends ReplyController
@@ -156,15 +156,14 @@ class VideoReplyReplyController extends ReplyController
 
   @override
   void onReply(
-    BuildContext context, {
+    ReplyInfo? replyItem, {
     int? oid,
-    ReplyInfo? replyItem,
     int? replyType,
     int? index,
   }) {
     assert(replyItem != null && index != null);
 
-    final (bool inputDisable, bool canUploadPic, String? hint) = replyHint;
+    final (bool inputDisable, String? hint) = replyHint;
     if (inputDisable) {
       return;
     }
@@ -173,9 +172,9 @@ class VideoReplyReplyController extends ReplyController
     final root = replyItem.id.toInt();
     final key = oid + root;
 
-    Navigator.of(context)
+    Get.key.currentState!
         .push(
-          GetDialogRoute(
+          PublishRoute(
             pageBuilder: (buildContext, animation, secondaryAnimation) {
               return ReplyPage(
                 hint: hint,
@@ -192,18 +191,6 @@ class VideoReplyReplyController extends ReplyController
                     savedReplies[key] = reply.toList();
                   }
                 },
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-            transitionBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween(
-                    begin: const Offset(0.0, 1.0),
-                    end: Offset.zero,
-                  ).chain(CurveTween(curve: Curves.linear)),
-                ),
-                child: child,
               );
             },
           ),

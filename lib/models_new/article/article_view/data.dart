@@ -5,7 +5,7 @@ import 'package:PiliSuper/models_new/article/article_view/ops.dart';
 import 'package:PiliSuper/models_new/article/article_view/opus.dart';
 import 'package:PiliSuper/models_new/article/article_view/stats.dart';
 import 'package:PiliSuper/models_new/article/article_view/tag.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class ArticleViewData {
   int? id;

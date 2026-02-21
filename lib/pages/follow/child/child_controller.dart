@@ -7,9 +7,6 @@ import 'package:PiliSuper/models_new/follow/data.dart';
 import 'package:PiliSuper/models_new/follow/list.dart';
 import 'package:PiliSuper/pages/common/common_list_controller.dart';
 import 'package:PiliSuper/pages/follow/controller.dart';
-import 'package:PiliSuper/utils/storage.dart';
-import 'package:PiliSuper/utils/storage_key.dart';
-import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:get/get.dart';
 
 class FollowChildController
@@ -85,8 +82,8 @@ class FollowChildController
 
   Future<void> _loadSameFollow() async {
     final res = await UserHttp.sameFollowing(mid: mid);
-    if (res.isSuccess) {
-      sameState.value = Success(res.data.list);
+    if (res case Success(:final response)) {
+      sameState.value = Success(response.list);
     }
   }
 }

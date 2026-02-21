@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 
-class StyleString {
+abstract final class StyleString {
   static const double cardSpace = 8;
   static const double safeSpace = 12;
   static const BorderRadius mdRadius = BorderRadius.all(imgRadius);
   static const Radius imgRadius = Radius.circular(10);
   static const double aspectRatio = 16 / 10;
+  static const double aspectRatio16x9 = 16 / 9;
+  static const double imgMaxRatio = 22 / 9;
   static const bottomSheetRadius = BorderRadius.vertical(
     top: Radius.circular(18),
   );
+  static const dialogFixedConstraints = BoxConstraints(
+    minWidth: 420,
+    maxWidth: 420,
+  );
+  static const topBarHeight = 52.0;
 }
 
-class Constants {
+abstract final class Constants {
   static const appName = 'PiliSuper';
   static const sourceCodeUrl = 'https://github.com/FRBLanApps/PiliSuper';
 
@@ -20,9 +27,9 @@ class Constants {
   static const String appKey = 'dfca71928277209b';
   // 59b43e04ad6965f34319062b478f83dd TV端
   static const String appSec = 'b5475a8825547a4fc26c7d518eaaa02e';
-  static const String thirdSign = '04224646d1fea004e79606d3b038c84a';
-  static const String thirdApi =
-      'https://www.mcbbs.net/template/mcbbs/image/special_photo_bg.png';
+  // static const String thirdSign = '04224646d1fea004e79606d3b038c84a';
+  // static const String thirdApi =
+  //     'https://www.mcbbs.net/template/mcbbs/image/special_photo_bg.png';
 
   static const String traceId =
       '11111111111111111111111111111111:1111111111111111:0:0';

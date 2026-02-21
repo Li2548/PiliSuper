@@ -10,7 +10,7 @@ import 'package:PiliSuper/models_new/sub/sub_detail/media.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 // 收藏视频卡片 - 水平布局
@@ -46,7 +46,7 @@ class SubVideoCardH extends StatelessWidget {
           }
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,

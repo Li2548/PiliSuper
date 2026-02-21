@@ -1,5 +1,8 @@
 import 'package:PiliSuper/common/constants.dart';
 import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
+import 'package:PiliSuper/common/widgets/flutter/selectable_text/selection_area.dart';
+import 'package:PiliSuper/common/widgets/flutter/selectable_text/text.dart';
+import 'package:PiliSuper/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/common/widgets/pendant_avatar.dart';
 import 'package:PiliSuper/common/widgets/scroll_physics.dart';
@@ -7,6 +10,7 @@ import 'package:PiliSuper/common/widgets/stat/stat.dart';
 import 'package:PiliSuper/http/sponsor_block.dart';
 import 'package:PiliSuper/models/common/image_type.dart';
 import 'package:PiliSuper/models/common/stat_type.dart';
+import 'package:PiliSuper/models_new/video/video_ai_conclusion/model_result.dart';
 import 'package:PiliSuper/models_new/video/video_detail/data.dart';
 import 'package:PiliSuper/models_new/video/video_detail/staff.dart';
 import 'package:PiliSuper/models_new/video/video_tag/data.dart';
@@ -17,23 +21,26 @@ import 'package:PiliSuper/pages/video/introduction/ugc/controller.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/widgets/season.dart';
-import 'package:PiliSuper/pages/video/introduction/ugc/widgets/selectable_text.dart';
 import 'package:PiliSuper/utils/app_scheme.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/feed_back.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/request_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:expandable/expandable.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SelectionArea;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class UgcIntroPanel extends StatefulWidget {
@@ -174,7 +181,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   const SizedBox(height: 8),
                   if (isLoading)
                     _buildVideoTitle(theme, videoDetail)
-                  else if (isHorizontal && Utils.isDesktop)
+                  else if (isHorizontal && PlatformUtils.isDesktop)
                     SelectionArea(
                       child: _buildVideoTitle(
                         theme,
@@ -205,13 +212,15 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                         children: [
                           WidgetSpan(
                             alignment: PlaceholderAlignment.middle,
-                            child: Icon(
-                              size: 13,
-                              Icons.error_outline,
-                              color: theme.colorScheme.outline,
+                            child: Padding(
+                              padding: const .only(right: 2),
+                              child: Icon(
+                                size: 13,
+                                Icons.error_outline,
+                                color: theme.colorScheme.outline,
+                              ),
                             ),
                           ),
-                          const WidgetSpan(child: SizedBox(width: 2)),
                           TextSpan(
                             text: '${videoDetail.argueInfo!.argueMsg}',
                           ),
@@ -223,7 +232,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                       ),
                     ),
                   ],
-                  if (isHorizontal && Utils.isDesktop)
+                  if (isHorizontal && PlatformUtils.isDesktop)
                     ..._infos(theme, videoDetail)
                   else
                     ExpandablePanel(
@@ -342,10 +351,10 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     ],
     Obx(() {
       final videoTags = introController.videoTags.value;
-      if (videoTags.isNullOrEmpty) {
+      if (videoTags == null || videoTags.isEmpty) {
         return const SizedBox.shrink();
       }
-      return _buildTags(videoTags!);
+      return _buildTags(videoTags);
     }),
   ];
 
@@ -631,7 +640,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   TextSpan(
                     text: matchStr,
                     style: TextStyle(color: theme.colorScheme.primary),
-                    recognizer: TapGestureRecognizer()
+                    recognizer: NoDeadlineTapGestureRecognizer()
                       ..onTap = () async {
                         if (videoDetailCtr
                             .plPlayerController
@@ -694,7 +703,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     TextSpan(
                       text: matchStr,
                       style: TextStyle(color: theme.colorScheme.primary),
-                      recognizer: TapGestureRecognizer()
+                      recognizer: NoDeadlineTapGestureRecognizer()
                         ..onTap = () => PiliScheme.videoPush(aid, null),
                     ),
                   );
@@ -708,7 +717,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     TextSpan(
                       text: matchStr,
                       style: TextStyle(color: theme.colorScheme.primary),
-                      recognizer: TapGestureRecognizer()
+                      recognizer: NoDeadlineTapGestureRecognizer()
                         ..onTap = () => PiliScheme.videoPush(null, matchStr),
                     ),
                   );
@@ -720,7 +729,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                   TextSpan(
                     text: matchStr,
                     style: TextStyle(color: theme.colorScheme.primary),
-                    recognizer: TapGestureRecognizer()
+                    recognizer: NoDeadlineTapGestureRecognizer()
                       ..onTap = () {
                         try {
                           Get.find<VideoDetailController>(
@@ -749,7 +758,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           return TextSpan(
             text: '@${currentDesc.rawText}',
             style: TextStyle(color: colorSchemePrimary),
-            recognizer: TapGestureRecognizer()
+            recognizer: NoDeadlineTapGestureRecognizer()
               ..onTap = () => Get.toNamed('/member?mid=${currentDesc.bizId}'),
           );
         default:
@@ -765,6 +774,9 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
     int? ownerMid,
     Staff item,
   ) {
+    void onTap() => Get.toNamed(
+      '/member?mid=${item.mid}&from_view_aid=${videoDetailCtr.aid}',
+    );
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -773,11 +785,13 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
             introController.horizontalMemberPage) {
           widget.onShowMemberPage(ownerMid);
         } else {
-          Get.toNamed(
-            '/member?mid=${item.mid}&from_view_aid=${videoDetailCtr.aid}',
-          );
+          onTap();
         }
       },
+      onSecondaryTap:
+          PlatformUtils.isDesktop && introController.horizontalMemberPage
+          ? onTap
+          : null,
       child: Row(
         children: [
           Stack(
@@ -825,7 +839,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                               context: context,
                               mid: item.mid,
                               isFollow: false,
-                              callback: (val) {
+                              afterMod: (val) {
                                 introController.staffRelations['${item.mid}'] =
                                     true;
                               },
@@ -885,6 +899,12 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
   ) => GestureDetector(
     onTap: onPushMember,
     behavior: HitTestBehavior.opaque,
+    onSecondaryTap:
+        PlatformUtils.isDesktop && introController.horizontalMemberPage
+        ? () => Get.toNamed(
+            '/member?mid=${introController.userStat.value.card?.mid}&from_view_aid=${videoDetailCtr.aid}',
+          )
+        : null,
     child: Obx(
       () {
         final userStat = introController.userStat.value;
@@ -979,9 +999,11 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           if (introController.aiConclusionResult == null) {
             await introController.aiConclusion();
           }
-          if (introController.aiConclusionResult case final res?) {
-            if (res.summary?.isNotEmpty == true ||
-                res.outline?.isNotEmpty == true) {
+          if (introController.aiConclusionResult case AiConclusionResult(
+            :final summary,
+            :final outline,
+          )) {
+            if (summary?.isNotEmpty == true || outline?.isNotEmpty == true) {
               widget.showAiBottomSheet();
             } else {
               SmartDialog.showToast("当前视频不支持AI视频总结");
@@ -993,6 +1015,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
           'assets/images/ai.png',
           height: 18,
           width: 18,
+          cacheHeight: 18.cacheSize(context),
         ),
       ),
     ),

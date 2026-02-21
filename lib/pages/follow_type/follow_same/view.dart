@@ -1,6 +1,6 @@
 import 'package:PiliSuper/pages/follow_type/follow_same/controller.dart';
 import 'package:PiliSuper/pages/follow_type/view.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

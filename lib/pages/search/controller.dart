@@ -6,31 +6,33 @@ import 'package:PiliSuper/http/search.dart';
 import 'package:PiliSuper/models/search/suggest.dart';
 import 'package:PiliSuper/models_new/search/search_rcmd/data.dart';
 import 'package:PiliSuper/models_new/search/search_trending/data.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 mixin DebounceStreamMixin<T> {
-  Duration duration = const Duration(milliseconds: 200);
+  final Duration duration = const Duration(milliseconds: 200);
   StreamController<T>? ctr;
-  StreamSubscription<T>? sub;
+  StreamSubscription<T>? _sub;
   void onValueChanged(T value);
 
   void subInit() {
-    ctr = StreamController<T>();
-    sub = ctr!.stream.debounce(duration, trailing: true).listen(onValueChanged);
+    _sub = (ctr = StreamController<T>()).stream
+        .debounce(duration, trailing: true)
+        .listen(onValueChanged);
   }
 
   void subDispose() {
-    sub?.cancel();
+    _sub?.cancel();
     ctr?.close();
-    sub = null;
+    _sub = null;
     ctr = null;
   }
 }
@@ -190,7 +192,7 @@ class SSearchController extends GetxController
       },
     );
     searchFocusNode.requestFocus();
-    if (Utils.isDesktop) {
+    if (PlatformUtils.isDesktop) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         controller.selection = TextSelection.collapsed(
           offset: controller.text.length,
@@ -213,11 +215,10 @@ class SSearchController extends GetxController
 
   @override
   Future<void> onValueChanged(String value) async {
-    var res = await SearchHttp.searchSuggest(term: value);
-    if (res['status']) {
-      SearchSuggestModel data = res['data'];
-      if (data.tag?.isNotEmpty == true) {
-        searchSuggestList.value = data.tag!;
+    final res = await SearchHttp.searchSuggest(term: value);
+    if (res case Success(:final response)) {
+      if (response.tag?.isNotEmpty == true) {
+        searchSuggestList.value = response.tag!;
       }
     }
   }

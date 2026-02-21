@@ -25,10 +25,15 @@ class WhisperSettingsPage extends StatefulWidget {
 }
 
 class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
-  late final WhisperSettingsController _controller = Get.put(
-    WhisperSettingsController(imSettingType: widget.imSettingType),
-    tag: widget.imSettingType.name,
-  );
+  late final WhisperSettingsController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      WhisperSettingsController(imSettingType: widget.imSettingType),
+      tag: widget.imSettingType.name,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,52 +82,50 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
       String? selected;
       showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            clipBehavior: Clip.hardEdge,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: item.redirect.windowSelect.item.map(
-                (e) {
-                  if (e.selected) {
-                    selected ??= e.text;
-                  }
-                  return ListTile(
-                    dense: true,
-                    onTap: () async {
-                      if (!e.selected) {
-                        Get.back();
-                        for (var j in item.redirect.windowSelect.item) {
-                          j.selected = false;
-                        }
-                        item.redirect.selectedSummary = e.text;
-                        e.selected = true;
-                        _controller.loadingState.refresh();
-                        final settings = {key: item};
-                        final res = await _controller.onSet(settings);
-                        if (!res) {
-                          for (var j in item.redirect.windowSelect.item) {
-                            j.selected = j.text == selected;
-                          }
-                          item.redirect.selectedSummary = selected!;
-                          _controller.loadingState.refresh();
-                        }
+        builder: (context) => AlertDialog(
+          clipBehavior: Clip.hardEdge,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: item.redirect.windowSelect.item.map(
+              (e) {
+                if (e.selected) {
+                  selected ??= e.text;
+                }
+                return ListTile(
+                  dense: true,
+                  onTap: () async {
+                    if (!e.selected) {
+                      Get.back();
+                      for (final j in item.redirect.windowSelect.item) {
+                        j.selected = false;
                       }
-                    },
-                    title: Text(
-                      e.text,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: e.selected ? theme.colorScheme.primary : null,
-                      ),
+                      item.redirect.selectedSummary = e.text;
+                      e.selected = true;
+                      _controller.loadingState.refresh();
+                      final settings = {key: item};
+                      final res = await _controller.onSet(settings);
+                      if (!res) {
+                        for (final j in item.redirect.windowSelect.item) {
+                          j.selected = j.text == selected;
+                        }
+                        item.redirect.selectedSummary = selected!;
+                        _controller.loadingState.refresh();
+                      }
+                    }
+                  },
+                  title: Text(
+                    e.text,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: e.selected ? theme.colorScheme.primary : null,
                     ),
-                  );
-                },
-              ).toList(),
-            ),
-          );
-        },
+                  ),
+                );
+              },
+            ).toList(),
+          ),
+        ),
       );
     } else if (item.redirect.otherPage.hasUrl()) {
       if (item.redirect.title == '黑名单') {
@@ -159,7 +162,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
     );
     return switch (loadingState) {
       Loading() => const SizedBox.shrink(),
-      Success<PbMap<int, Setting>>(:var response) => Builder(
+      Success<PbMap<int, Setting>>(:final response) => Builder(
         builder: (context) {
           final keys = response.keys.toList()..sort();
           return ListView.separated(
@@ -180,7 +183,7 @@ class _WhisperSettingsPageState extends State<WhisperSettingsPage> {
           );
         },
       ),
-      Error(:var errMsg) => scrollErrorWidget(
+      Error(:final errMsg) => scrollErrorWidget(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

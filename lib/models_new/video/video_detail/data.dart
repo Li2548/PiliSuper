@@ -1,7 +1,7 @@
+import 'package:PiliSuper/models/model_owner.dart';
 import 'package:PiliSuper/models_new/video/video_detail/argue_info.dart';
 import 'package:PiliSuper/models_new/video/video_detail/desc_v2.dart';
 import 'package:PiliSuper/models_new/video/video_detail/dimension.dart';
-import 'package:PiliSuper/models_new/video/video_detail/owner.dart';
 import 'package:PiliSuper/models_new/video/video_detail/page.dart';
 import 'package:PiliSuper/models_new/video/video_detail/rights.dart';
 import 'package:PiliSuper/models_new/video/video_detail/staff.dart';

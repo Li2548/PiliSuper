@@ -15,7 +15,7 @@ import 'package:PiliSuper/pages/fav_detail/controller.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -87,7 +87,7 @@ class FavVideoCardH extends StatelessWidget {
                 }
               },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,
@@ -135,7 +135,7 @@ class FavVideoCardH extends StatelessWidget {
                           Positioned.fill(
                             child: selectMask(
                               theme,
-                              item.checked == true,
+                              item.checked,
                             ),
                           ),
                       ],
@@ -217,28 +217,26 @@ class FavVideoCardH extends StatelessWidget {
                 iconColor: theme.colorScheme.outline,
                 onPressed: () => showDialog(
                   context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text('提示'),
-                      content: const Text('要取消收藏吗?'),
-                      actions: [
-                        TextButton(
-                          onPressed: Get.back,
-                          child: Text(
-                            '取消',
-                            style: TextStyle(color: theme.colorScheme.outline),
-                          ),
+                  builder: (context) => AlertDialog(
+                    title: const Text('提示'),
+                    content: const Text('要取消收藏吗?'),
+                    actions: [
+                      TextButton(
+                        onPressed: Get.back,
+                        child: Text(
+                          '取消',
+                          style: TextStyle(color: theme.colorScheme.outline),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Get.back();
-                            ctr!.onCancelFav(index!, item.id!, item.type!);
-                          },
-                          child: const Text('确定取消'),
-                        ),
-                      ],
-                    );
-                  },
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Get.back();
+                          ctr!.onCancelFav(index!, item.id!, item.type!);
+                        },
+                        child: const Text('确定取消'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

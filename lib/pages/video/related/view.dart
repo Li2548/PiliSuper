@@ -3,7 +3,7 @@ import 'package:PiliSuper/common/widgets/video_card/video_card_h.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models/model_hot_video_item.dart';
 import 'package:PiliSuper/pages/video/related/controller.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
 import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,10 +16,16 @@ class RelatedVideoPanel extends StatefulWidget {
 }
 
 class _RelatedVideoPanelState extends State<RelatedVideoPanel> with GridMixin {
-  late final RelatedController _relatedController = Get.putOrFind(
-    RelatedController.new,
-    tag: widget.heroTag,
-  );
+  late final RelatedController _relatedController;
+
+  @override
+  void initState() {
+    super.initState();
+    _relatedController = Get.putOrFind(
+      RelatedController.new,
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +38,7 @@ class _RelatedVideoPanelState extends State<RelatedVideoPanel> with GridMixin {
   Widget _buildBody(LoadingState<List<HotVideoItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -47,7 +53,7 @@ class _RelatedVideoPanelState extends State<RelatedVideoPanel> with GridMixin {
                 itemCount: response.length,
               )
             : const SliverToBoxAdapter(),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _relatedController.onReload,
       ),

@@ -28,13 +28,19 @@ class _MemberBangumiState extends State<MemberBangumi>
   @override
   bool get wantKeepAlive => true;
 
-  late final _controller = Get.put(
-    MemberBangumiCtr(
-      heroTag: widget.heroTag,
-      mid: widget.mid,
-    ),
-    tag: widget.heroTag,
-  );
+  late final MemberBangumiCtr _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      MemberBangumiCtr(
+        heroTag: widget.heroTag,
+        mid: widget.mid,
+      ),
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +77,7 @@ class _MemberBangumiState extends State<MemberBangumi>
   Widget _buildBody(LoadingState<List<SpaceArchiveItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -86,7 +92,7 @@ class _MemberBangumiState extends State<MemberBangumi>
                 itemCount: response.length,
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

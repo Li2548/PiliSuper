@@ -5,6 +5,7 @@ import 'package:PiliSuper/models_new/space/space_opus/data.dart';
 import 'package:PiliSuper/models_new/space/space_opus/item.dart';
 import 'package:PiliSuper/pages/common/common_list_controller.dart';
 import 'package:PiliSuper/pages/member/controller.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 import 'package:get/get.dart';
 
 class MemberOpusController

@@ -2,13 +2,15 @@ import 'dart:io' show File;
 
 import 'package:PiliSuper/common/widgets/button/icon_button.dart';
 import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
+import 'package:PiliSuper/common/widgets/time_picker.dart';
 import 'package:PiliSuper/models/dynamics/vote_model.dart';
 import 'package:PiliSuper/pages/dynamics_create_vote/controller.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/file_ext.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide showTimePicker;
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -24,13 +26,19 @@ class CreateVotePage extends StatefulWidget {
 }
 
 class _CreateVotePageState extends State<CreateVotePage> {
-  late final _controller = Get.put(
-    CreateVoteController(widget.voteId),
-    tag: Utils.generateRandomString(8),
-  );
+  late final CreateVoteController _controller;
   late final imagePicker = ImagePicker();
 
   late TextStyle _leadingStyle;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      CreateVoteController(widget.voteId),
+      tag: Utils.generateRandomString(8),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,6 +150,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
                           top: 4,
                           bottom: 4,
                         ),
+                        visualDensity: .standard,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         foregroundColor: theme.colorScheme.onSurfaceVariant,
                         backgroundColor: theme.colorScheme.onInverseSurface,
@@ -319,7 +328,9 @@ class _CreateVotePageState extends State<CreateVotePage> {
               src: imgUrl,
               width: 40,
               height: 40,
-              radius: 6,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(6),
+              ),
             ),
           ),
         if (showDel)
@@ -369,7 +380,12 @@ class _CreateVotePageState extends State<CreateVotePage> {
                 ..updateCanCreate(),
               child: Text(
                 '${const ['文字', '图片'][index]}投票',
-                strutStyle: const StrutStyle(forceStrutHeight: true),
+                style: const TextStyle(fontSize: 14, height: 1),
+                strutStyle: const StrutStyle(
+                  height: 1,
+                  leading: 0,
+                  fontSize: 14,
+                ),
               ),
             );
             if (isEnable) {
@@ -419,7 +435,7 @@ class _CreateVotePageState extends State<CreateVotePage> {
           if (pickedFile != null) {
             final path = pickedFile.path;
             _controller.onUpload(index, path).whenComplete(() {
-              if (Utils.isMobile) {
+              if (PlatformUtils.isMobile) {
                 File(path).tryDel();
               }
             });

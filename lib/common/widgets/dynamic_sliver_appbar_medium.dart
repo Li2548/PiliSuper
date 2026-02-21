@@ -1,8 +1,8 @@
+import 'package:PiliSuper/common/widgets/only_layout_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// https://github.com/flutter/flutter/issues/18345#issuecomment-1627644396
 class DynamicSliverAppBarMedium extends StatefulWidget {
   const DynamicSliverAppBarMedium({
     this.flexibleSpace,
@@ -43,10 +43,10 @@ class DynamicSliverAppBarMedium extends StatefulWidget {
     this.forceMaterialTransparency = false,
     this.clipBehavior,
     this.appBarClipper,
-    this.callback,
+    this.onPerformLayout,
   });
 
-  final ValueChanged<double>? callback;
+  final ValueChanged<double>? onPerformLayout;
   final Widget? flexibleSpace;
   final Widget? leading;
   final bool automaticallyImplyLeading;
@@ -93,56 +93,43 @@ class DynamicSliverAppBarMedium extends StatefulWidget {
 }
 
 class _DynamicSliverAppBarMediumState extends State<DynamicSliverAppBarMedium> {
-  final GlobalKey _childKey = GlobalKey();
-
-  // As long as the height is 0 instead of the sliver app bar a sliver to box adapter will be used
-  // to calculate dynamically the size for the sliver app bar
-  double _height = 0;
-
-  void _updateHeight() {
-    // Gets the new height and updates the sliver app bar. Needs to be called after the last frame has been rebuild
-    // otherwise this will throw an error
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (_childKey.currentContext == null) return;
-      setState(() {
-        _height = (_childKey.currentContext!.findRenderObject()! as RenderBox)
-            .size
-            .height;
-        widget.callback?.call(_height);
-      });
-    });
-  }
-
+  double? _height;
   double? _width;
+  late double _topPadding;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _topPadding = MediaQuery.viewPaddingOf(context).top;
     final width = MediaQuery.widthOf(context);
     if (_width != width) {
       _width = width;
-      _height = 0;
-      _updateHeight();
+      _height = null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    //Needed to lay out the flexibleSpace the first time, so we can calculate its intrinsic height
-    if (_height == 0) {
+    if (_height == null) {
       return SliverToBoxAdapter(
-        child: UnconstrainedBox(
-          alignment: Alignment.topLeft,
-          child: SizedBox(
-            key: _childKey,
-            width: _width,
-            child: widget.flexibleSpace,
+        child: OnlyLayoutWidget(
+          onPerformLayout: (Size size) {
+            if (!mounted) return;
+            _height = size.height;
+            widget.onPerformLayout?.call(_height!);
+            setState(() {});
+          },
+          child: UnconstrainedBox(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: _width,
+              child: widget.flexibleSpace,
+            ),
           ),
         ),
       );
     }
 
-    final padding = MediaQuery.viewPaddingOf(context).top;
     return SliverAppBar.medium(
       leading: widget.leading,
       automaticallyImplyLeading: widget.automaticallyImplyLeading,
@@ -170,8 +157,8 @@ class _DynamicSliverAppBarMediumState extends State<DynamicSliverAppBarMedium> {
       onStretchTrigger: widget.onStretchTrigger,
       shape: widget.shape,
       toolbarHeight: kToolbarHeight,
-      collapsedHeight: kToolbarHeight + padding + 1,
-      expandedHeight: _height - padding,
+      collapsedHeight: kToolbarHeight + _topPadding + 1,
+      expandedHeight: _height! - _topPadding,
       leadingWidth: widget.leadingWidth,
       toolbarTextStyle: widget.toolbarTextStyle,
       titleTextStyle: widget.titleTextStyle,

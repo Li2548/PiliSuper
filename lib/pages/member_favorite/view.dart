@@ -29,10 +29,16 @@ class _MemberFavoriteState extends State<MemberFavorite>
   @override
   bool get wantKeepAlive => true;
 
-  late final _controller = Get.put(
-    MemberFavoriteCtr(mid: widget.mid),
-    tag: widget.heroTag,
-  );
+  late final MemberFavoriteCtr _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      MemberFavoriteCtr(mid: widget.mid),
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +94,7 @@ class _MemberFavoriteState extends State<MemberFavorite>
                 ],
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),
@@ -154,7 +160,6 @@ class _MemberFavoriteState extends State<MemberFavorite>
                 },
               ),
             ),
-            bgColor: null,
           ),
         ),
         Obx(() {
@@ -172,8 +177,8 @@ class _MemberFavoriteState extends State<MemberFavorite>
                   height: 98,
                   child: MemberFavItem(
                     item: item,
-                    callback: (res) {
-                      if (res == true) {
+                    onDelete: (isDeleted) {
+                      if (isDeleted ?? false) {
                         _controller.favState
                           ..value.mediaListResponse?.list?.remove(item)
                           ..refresh();

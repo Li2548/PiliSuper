@@ -1,7 +1,8 @@
+import 'package:PiliSuper/common/widgets/time_picker.dart';
 import 'package:PiliSuper/pages/dynamics_create_reserve/controller.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide showTimePicker;
 import 'package:flutter/services.dart'
     show TextInputFormatter, LengthLimitingTextInputFormatter;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -17,11 +18,17 @@ class CreateReservePage extends StatefulWidget {
 }
 
 class _CreateReservePageState extends State<CreateReservePage> {
-  late final _controller = Get.put(
-    CreateReserveController(widget.sid),
-    tag: Utils.generateRandomString(6),
-  );
+  late final CreateReserveController _controller;
   late TextStyle _leadingStyle;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      CreateReserveController(widget.sid),
+      tag: Utils.generateRandomString(6),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

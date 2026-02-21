@@ -13,6 +13,7 @@ import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -80,7 +81,7 @@ class VideoCardV extends StatelessWidget {
           child: InkWell(
             onTap: () => onPushDetail(Utils.makeHeroTag(videoItem.aid)),
             onLongPress: onLongPress,
-            onSecondaryTap: Utils.isMobile ? null : onLongPress,
+            onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -97,7 +98,7 @@ class VideoCardV extends StatelessWidget {
                             src: videoItem.cover,
                             width: maxWidth,
                             height: maxHeight,
-                            radius: 0,
+                            type: .emote,
                           ),
                           if (videoItem.duration > 0)
                             PBadge(
@@ -123,8 +124,9 @@ class VideoCardV extends StatelessWidget {
           Positioned(
             right: -5,
             bottom: -2,
+            width: 29,
+            height: 29,
             child: VideoPopupMenu(
-              size: 29,
               iconSize: 17,
               videoItem: videoItem,
               onRemove: onRemove,

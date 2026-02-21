@@ -9,7 +9,7 @@ import 'package:PiliSuper/utils/app_scheme.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 // 视频卡片 - 垂直布局
@@ -74,7 +74,7 @@ class VideoCardVMemberHome extends StatelessWidget {
       child: InkWell(
         onTap: onPushDetail,
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -91,7 +91,7 @@ class VideoCardVMemberHome extends StatelessWidget {
                         src: videoItem.cover,
                         width: maxWidth,
                         height: maxHeight,
-                        radius: 0,
+                        type: .emote,
                       ),
                       if (videoItem.duration > 0)
                         PBadge(

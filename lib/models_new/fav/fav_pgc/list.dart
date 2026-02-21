@@ -12,7 +12,7 @@ import 'package:PiliSuper/models_new/fav/fav_pgc/section.dart';
 import 'package:PiliSuper/models_new/fav/fav_pgc/series.dart';
 import 'package:PiliSuper/models_new/fav/fav_pgc/stat.dart';
 import 'package:PiliSuper/pages/common/multi_select/base.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class FavPgcItemModel with MultiSelectData {
   int? seasonId;

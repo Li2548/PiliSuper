@@ -4,6 +4,7 @@ import 'package:PiliSuper/common/widgets/image/image_save.dart';
 import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/models_new/sub/sub/list.dart';
 import 'package:PiliSuper/pages/subscription_detail/view.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -55,7 +56,7 @@ class SubItem extends StatelessWidget {
           }
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Row(
@@ -139,17 +140,15 @@ class SubItem extends StatelessWidget {
           Positioned(
             bottom: 0,
             right: 0,
-            child: SizedBox(
-              height: 35,
-              width: 35,
-              child: IconButton(
-                onPressed: cancelSub,
-                style: TextButton.styleFrom(
-                  foregroundColor: theme.colorScheme.outline,
-                  padding: EdgeInsets.zero,
-                ),
-                icon: const Icon(Icons.delete_outline, size: 18),
+            height: 35,
+            width: 35,
+            child: IconButton(
+              onPressed: cancelSub,
+              style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.outline,
+                padding: EdgeInsets.zero,
               ),
+              icon: const Icon(Icons.delete_outline, size: 18),
             ),
           ),
         ],

@@ -15,11 +15,11 @@ import 'package:PiliSuper/pages/download/downloading/view.dart';
 import 'package:PiliSuper/services/download/download_service.dart';
 import 'package:PiliSuper/utils/cache_manager.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
 import 'package:PiliSuper/utils/path_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -41,7 +41,7 @@ class DetailItem extends StatelessWidget {
   });
 
   final BiliDownloadEntryInfo entry;
-  final ValueNotifier? progress;
+  final ChangeNotifier? progress;
   final DownloadService downloadService;
   final VoidCallback? onDelete;
   final bool showTitle;
@@ -61,51 +61,49 @@ class DetailItem extends StatelessWidget {
     void onLongPress() => canDel && !enableMultiSelect
         ? showDialog(
             context: context,
-            builder: (context) {
-              return AlertDialog(
-                clipBehavior: Clip.hardEdge,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      onTap: () {
-                        Get.back();
-                        showConfirmDialog(
-                          context: context,
-                          title: '确定删除该视频？',
-                          onConfirm: onDelete,
-                        );
-                      },
-                      dense: true,
-                      title: const Text(
-                        '删除',
-                        style: TextStyle(fontSize: 14),
-                      ),
+            builder: (context) => AlertDialog(
+              clipBehavior: Clip.hardEdge,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    onTap: () {
+                      Get.back();
+                      showConfirmDialog(
+                        context: context,
+                        title: '确定删除该视频？',
+                        onConfirm: onDelete,
+                      );
+                    },
+                    dense: true,
+                    title: const Text(
+                      '删除',
+                      style: TextStyle(fontSize: 14),
                     ),
-                    ListTile(
-                      onTap: () async {
-                        Get.back();
-                        final res = await downloadService.downloadDanmaku(
-                          entry: entry,
-                          isUpdate: true,
-                        );
-                        if (res) {
-                          SmartDialog.showToast('更新成功');
-                        } else {
-                          SmartDialog.showToast('更新失败');
-                        }
-                      },
-                      dense: true,
-                      title: const Text(
-                        '更新弹幕',
-                        style: TextStyle(fontSize: 14),
-                      ),
+                  ),
+                  ListTile(
+                    onTap: () async {
+                      Get.back();
+                      final res = await downloadService.downloadDanmaku(
+                        entry: entry,
+                        isUpdate: true,
+                      );
+                      if (res) {
+                        SmartDialog.showToast('更新成功');
+                      } else {
+                        SmartDialog.showToast('更新失败');
+                      }
+                    },
+                    dense: true,
+                    title: const Text(
+                      '更新弹幕',
+                      style: TextStyle(fontSize: 14),
                     ),
-                  ],
-                ),
-              );
-            },
+                  ),
+                ],
+              ),
+            ),
           )
         : null;
 
@@ -145,7 +143,7 @@ class DetailItem extends StatelessWidget {
             final curDownload = downloadService.curDownload.value;
             if (curDownload != null &&
                 curDownload.cid == cid &&
-                curDownload.status!.index <= 3) {
+                curDownload.status.isDownloading) {
               downloadService.cancelDownload(
                 isDelete: false,
                 downloadNext: false,
@@ -156,7 +154,7 @@ class DetailItem extends StatelessWidget {
           }
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,
@@ -175,17 +173,24 @@ class DetailItem extends StatelessWidget {
                         final cover = File(
                           path.join(entry.entryDirPath, PathUtils.coverName),
                         );
+                        final maxWidth = constraints.maxWidth;
+                        final maxHeight = constraints.maxHeight;
+                        int? cacheWidth, cacheHeight;
+                        if (entry.pageData?.cacheWidth ?? false) {
+                          cacheWidth = maxWidth.cacheSize(context);
+                        } else {
+                          cacheHeight = maxHeight.cacheSize(context);
+                        }
                         return cover.existsSync()
                             ? ClipRRect(
                                 borderRadius: StyleString.mdRadius,
                                 child: Image.file(
                                   cover,
-                                  width: constraints.maxWidth,
-                                  height: constraints.maxHeight,
+                                  width: maxWidth,
+                                  height: maxHeight,
                                   fit: BoxFit.cover,
-                                  cacheHeight: constraints.maxWidth.cacheSize(
-                                    context,
-                                  ),
+                                  cacheWidth: cacheWidth,
+                                  cacheHeight: cacheHeight,
                                   colorBlendMode: NetworkImgLayer.reduce
                                       ? BlendMode.modulate
                                       : null,
@@ -196,8 +201,9 @@ class DetailItem extends StatelessWidget {
                               )
                             : NetworkImgLayer(
                                 src: entry.cover,
-                                width: constraints.maxWidth,
-                                height: constraints.maxHeight,
+                                width: maxWidth,
+                                height: maxHeight,
+                                cacheWidth: entry.pageData?.cacheWidth,
                               );
                       },
                     ),
@@ -210,9 +216,9 @@ class DetailItem extends StatelessWidget {
                       type: PBadgeType.gray,
                     ),
                   if (progress != null)
-                    ValueListenableBuilder(
-                      valueListenable: progress!,
-                      builder: (_, _, _) {
+                    ListenableBuilder(
+                      listenable: progress!,
+                      builder: (_, _) {
                         final progress = GStorage.watchProgress.get(
                           cid.toString(),
                         );
@@ -224,8 +230,11 @@ class DetailItem extends StatelessWidget {
                             child: Stack(
                               clipBehavior: Clip.none,
                               children: [
-                                videoProgressIndicator(
-                                  progress / entry.totalTimeMilli,
+                                VideoProgressIndicator(
+                                  color: theme.colorScheme.primary,
+                                  backgroundColor:
+                                      theme.colorScheme.secondaryContainer,
+                                  progress: progress / entry.totalTimeMilli,
                                 ),
                                 PBadge(
                                   text: progress >= entry.totalTimeMilli - 400
@@ -264,7 +273,7 @@ class DetailItem extends StatelessWidget {
                       type: PBadgeType.gray,
                     ),
                   Positioned.fill(
-                    child: selectMask(theme, checked ?? entry.checked ?? false),
+                    child: selectMask(theme, checked ?? entry.checked),
                   ),
                 ],
               ),
@@ -352,7 +361,7 @@ class DetailItem extends StatelessWidget {
                                           ? theme.colorScheme.primary
                                           : theme.colorScheme.outline;
                                       return progressWidget(
-                                        statusMsg: status!.message,
+                                        statusMsg: status.message,
                                         progressStr:
                                             status ==
                                                     DownloadStatus
@@ -385,7 +394,7 @@ class DetailItem extends StatelessWidget {
   }
 
   Widget entryProgress(ThemeData theme) => progressWidget(
-    statusMsg: entry.status?.message ?? '暂停中',
+    statusMsg: entry.status.message,
     progressStr: entry.totalBytes == 0
         ? ''
         : '${CacheManager.formatSize(entry.downloadedBytes)}/${CacheManager.formatSize(entry.totalBytes)}',

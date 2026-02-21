@@ -27,10 +27,16 @@ class SeasonSeriesPage extends StatefulWidget {
 
 class _SeasonSeriesPageState extends State<SeasonSeriesPage>
     with AutomaticKeepAliveClientMixin, GridMixin {
-  late final _controller = Get.put(
-    SeasonSeriesController(widget.mid),
-    tag: widget.heroTag,
-  );
+  late final SeasonSeriesController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      SeasonSeriesController(widget.mid),
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -55,7 +61,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
   Widget _buildBody(LoadingState<List<SpaceSsModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -95,7 +101,7 @@ class _SeasonSeriesPageState extends State<SeasonSeriesPage>
                 itemCount: response.length,
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

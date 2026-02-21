@@ -1,7 +1,6 @@
 import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliSuper/common/widgets/view_sliver_safe_area.dart';
-import 'package:PiliSuper/pages/search/controller.dart'
-    show DebounceStreamState;
+import 'package:PiliSuper/pages/search/controller.dart' show DebounceStreamState;
 import 'package:PiliSuper/pages/setting/models/extra_settings.dart';
 import 'package:PiliSuper/pages/setting/models/model.dart';
 import 'package:PiliSuper/pages/setting/models/play_settings.dart';
@@ -67,7 +66,7 @@ class _SettingsSearchPageState
             onPressed: () {
               if (_textEditingController.text.isNotEmpty) {
                 _textEditingController.clear();
-                _list.value = <SettingsModel>[];
+                _list.clear();
               } else {
                 Get.back();
               }
@@ -84,6 +83,7 @@ class _SettingsSearchPageState
           decoration: const InputDecoration(
             isDense: true,
             hintText: '搜索',
+            visualDensity: .standard,
             border: InputBorder.none,
           ),
         ),

@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:PiliSuper/common/constants.dart';
 import 'package:PiliSuper/common/widgets/pair.dart';
-import 'package:PiliSuper/utils/context_ext.dart';
+import 'package:PiliSuper/utils/extension/context_ext.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 import 'package:webdav_client/webdav_client.dart' as webdav;
 
 class WebDav {
@@ -53,12 +53,12 @@ class WebDav {
   }
 
   String _getFileName() {
-    final type = Utils.isDesktop
+    final type = PlatformUtils.isDesktop
         ? 'desktop'
         : Get.context!.isTablet
         ? 'pad'
         : 'phone';
-    return 'PiliSuper_settings_$type.json';
+    return 'pilisuper_settings_$type.json';
   }
 
   Future<void> backup() async {

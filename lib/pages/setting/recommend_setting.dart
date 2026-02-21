@@ -1,4 +1,5 @@
 import 'package:PiliSuper/common/widgets/flutter/list_tile.dart';
+import 'package:PiliSuper/pages/setting/models/model.dart';
 import 'package:PiliSuper/pages/setting/models/recommend_settings.dart';
 import 'package:flutter/material.dart' hide ListTile;
 

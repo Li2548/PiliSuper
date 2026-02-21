@@ -51,6 +51,16 @@ jobs:
         shell: pwsh
         run: lib/scripts/build.ps1
 
+      - name: apply modal barrier patch
+        working-directory: ${{ env.FLUTTER_ROOT }}
+        run: git apply $GITHUB_WORKSPACE/lib/scripts/modal_barrier_patch.diff || true
+        continue-on-error: true
+
+      - name: apply mouse cursor patch
+        working-directory: ${{ env.FLUTTER_ROOT }}
+        run: git apply $GITHUB_WORKSPACE/lib/scripts/mouse_cursor_patch.diff || true
+        continue-on-error: true
+
         #TODO: deb and rpm packages need to be build
       - name: Build Linux
         run: flutter build linux --release -v --pub --dart-define-from-file=pili_release.json
@@ -70,7 +80,7 @@ jobs:
           printf "复制文件...\n"
           cp -r ../build/linux/x64/release/bundle/* opt/PiliSuper
           cp -r ../assets/linux/DEBIAN .
-          cp ../assets/linux/PiliSuper.desktop usr/share/applications
+          cp ../assets/linux/com.example.pilisuper.desktop usr/share/applications
           cp ../assets/images/logo/logo.png usr/share/icons/hicolor/512x512/apps/PiliSuper.png
 
           printf "修改控制文件...\n"
@@ -84,7 +94,7 @@ jobs:
           sed -i "9s/size_need_change/${SIZE_KB}/g" DEBIAN/control
 
           printf "生成并写入 md5sums ...\n"
-          md5sum opt/PiliSuper/PiliSuper >> DEBIAN/md5sums
+          md5sum opt/PiliSuper/pilisuper >> DEBIAN/md5sums
           md5sum opt/PiliSuper/lib/* >> DEBIAN/md5sums
           md5sum opt/PiliSuper/data/icudtl.dat >> DEBIAN/md5sums
 
@@ -109,28 +119,28 @@ jobs:
 
           printf "准备源码归档（仅包含运行时与元数据）...\n"
           DATE="$(date '+%a %b %d %Y')"
-          SRC_DIR="$PWD/PiliSuper-${{ env.version }}"
+          SRC_DIR="$PWD/pilisuper-${{ env.version }}"
           mkdir -p "$SRC_DIR/bundle" "$SRC_DIR/assets"
           cp -r build/linux/x64/release/bundle/* "$SRC_DIR/bundle/"
-          cp assets/linux/PiliSuper.desktop "$SRC_DIR/assets/PiliSuper.desktop"
+          cp assets/linux/com.example.pilisuper.desktop "$SRC_DIR/assets/com.example.pilisuper.desktop"
           cp assets/images/logo/logo.png "$SRC_DIR/assets/PiliSuper.png"
           tar -zcvf "$RPM_BUILD_ROOT/SOURCES/PiliSuper-${{ env.version }}.tar.gz" -C "$PWD" "PiliSuper-${{ env.version }}"
 
           printf "生成 spec 文件...\n"
-          cat > "$RPM_BUILD_ROOT/SPECS/PiliSuper.spec" <<EOF
-          Name:           PiliSuper
+          cat > "$RPM_BUILD_ROOT/SPECS/pilisuper.spec" <<EOF
+          Name:           pilisuper
           Version:        ${{ env.version }}
           Release:        1%{?dist}
           Summary:        PiliSuper Linux Version
           License:        GPL-3.0
-          Source0:        PiliSuper-${{ env.version }}.tar.gz
+          Source0:        pilisuper-${{ env.version }}.tar.gz
           Requires:       desktop-file-utils, hicolor-icon-theme
 
           %description
           使用 Flutter 开发的 BiliBili 第三方客户端
 
           %prep
-          %setup -q -n PiliSuper-${{ env.version }}
+          %setup -q -n pilisuper-${{ env.version }}
 
           %build
 
@@ -139,16 +149,16 @@ jobs:
           cp -r bundle/* %{buildroot}/opt/PiliSuper/
 
           # 二进制权限与命令行入口
-          chmod 755 %{buildroot}/opt/PiliSuper/PiliSuper
+          chmod 755 %{buildroot}/opt/PiliSuper/pilisuper
           mkdir -p %{buildroot}/usr/bin
-          ln -sf /opt/PiliSuper/PiliSuper %{buildroot}/usr/bin/PiliSuper
+          ln -sf /opt/PiliSuper/pilisuper %{buildroot}/usr/bin/pilisuper
 
           # 桌面集成
           mkdir -p %{buildroot}/usr/share/applications
-          install -m 644 assets/PiliSuper.desktop %{buildroot}/usr/share/applications/PiliSuper.desktop
+          install -m 644 assets/com.example.pilisuper.desktop %{buildroot}/usr/share/applications/com.example.pilisuper.desktop
 
           mkdir -p %{buildroot}/usr/share/icons/hicolor/512x512/apps
-          install -m 644 assets/PiliSuper.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/PiliSuper.png
+          install -m 644 assets/pilisuper.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/pilisuper.png
 
           %post
           update-desktop-database -q || true
@@ -160,19 +170,19 @@ jobs:
 
           %files
           /opt/PiliSuper
-          /usr/bin/PiliSuper
-          /usr/share/applications/PiliSuper.desktop
-          /usr/share/icons/hicolor/512x512/apps/PiliSuper.png
+          /usr/bin/pilisuper
+          /usr/share/applications/com.example.pilisuper.desktop
+          /usr/share/icons/hicolor/512x512/apps/pilisuper.png
 
           %changelog
           * DATE - ${{ env.version }}-1
           - Initial RPM release
           EOF
 
-          sed -i "s/DATE/${DATE}/g" "$RPM_BUILD_ROOT/SPECS/PiliSuper.spec"
+          sed -i "s/DATE/${DATE}/g" "$RPM_BUILD_ROOT/SPECS/pilisuper.spec"
 
           printf "构建 RPM 包...\n"
-          rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/PiliSuper.spec"
+          rpmbuild --define "_topdir $RPM_BUILD_ROOT" -bb "$RPM_BUILD_ROOT/SPECS/pilisuper.spec"
 
           printf "移动生成的 RPM...\n"
           find "$RPM_BUILD_ROOT/RPMS" -name "*.rpm" -exec mv {} "PiliSuper_linux_${{ env.version }}_amd64.rpm" \;
@@ -197,8 +207,8 @@ jobs:
           cp -r build/linux/x64/release/bundle/* "$APPDIR/usr/bin/"
 
           printf "复制桌面文件和图标...\n"
-          cp assets/linux/PiliSuper.desktop "$APPDIR/PiliSuper.desktop"
-          cp assets/linux/PiliSuper.desktop "$APPDIR/usr/share/applications/PiliSuper.desktop"
+          cp assets/linux/com.example.pilisuper.desktop "$APPDIR/com.example.pilisuper.desktop"
+          cp assets/linux/com.example.pilisuper.desktop "$APPDIR/usr/share/applications/com.example.pilisuper.desktop"
           cp assets/images/logo/logo.png "$APPDIR/PiliSuper.png"
           cp assets/images/logo/logo.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/PiliSuper.png"
           
@@ -209,13 +219,13 @@ jobs:
           HERE=${SELF%/*}
           export PATH="${HERE}/usr/bin:${PATH}"
           export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
-          exec "${HERE}/usr/bin/PiliSuper" "$@"
+          exec "${HERE}/usr/bin/pilisuper" "$@"
           APPRUN_EOF
           chmod +x "$APPDIR/AppRun"
 
           printf "修改桌面文件中的 Exec 路径...\n"
-          sed -i 's|Exec=PiliSuper|Exec=PiliSuper|g' "$APPDIR/PiliSuper.desktop"
-          sed -i 's|Icon=PiliSuper|Icon=PiliSuper|g' "$APPDIR/PiliSuper.desktop"
+          sed -i 's|Exec=pilisuper|Exec=pilisuper|g' "$APPDIR/com.example.pilisuper.desktop"
+          sed -i 's|Icon=pilisuper|Icon=pilisuper|g' "$APPDIR/com.example.pilisuper.desktop"
 
           printf "打包 AppImage...\n"
           ARCH=x86_64 ./appimagetool-x86_64.AppImage "$APPDIR" "PiliSuper_linux_${{ env.version }}_amd64.AppImage"

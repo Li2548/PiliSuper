@@ -6,10 +6,9 @@ import 'package:PiliSuper/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/reply.dart';
 import 'package:PiliSuper/models/common/reply/reply_sort_type.dart';
-import 'package:PiliSuper/models_new/reply/data.dart';
 import 'package:PiliSuper/utils/accounts.dart';
 import 'package:PiliSuper/utils/accounts/account.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -17,7 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
-class ReplyUtils {
+abstract final class ReplyUtils {
   static void onCheckReply({
     required ReplyInfo replyInfo,
     required bool biliSendCommAntifraud,
@@ -99,45 +98,47 @@ class ReplyUtils {
       await Future.delayed(const Duration(seconds: 8));
     }
     void showReplyCheckResult(String message, {bool isBan = false}) {
-      Get.dialog(
+      final actions = [
+        if (isBan)
+          TextButton(
+            onPressed: () {
+              Get.back();
+              String? uri;
+              switch (type) {
+                case 1:
+                  uri = IdUtils.av2bv(oid);
+                case 17:
+                  uri = 'https://www.bilibili.com/opus/$oid';
+              }
+              if (uri != null) {
+                Utils.copyText(uri);
+              }
+              Get.toNamed(
+                '/webview',
+                parameters: {
+                  'url':
+                      'https://www.bilibili.com/h5/comment/appeal?${Utils.themeUrl(Get.isDarkMode)}',
+                },
+              );
+            },
+            child: const Text('申诉'),
+          ),
+        if (!isManual)
+          TextButton(
+            onPressed: Get.back,
+            child: Text(
+              '关闭',
+              style: TextStyle(color: Get.theme.colorScheme.outline),
+            ),
+          ),
+      ];
+      showDialog(
+        context: Get.context!,
         barrierDismissible: isManual,
-        AlertDialog(
+        builder: (context) => AlertDialog(
           title: const Text('评论检查结果'),
           content: SelectableText(message),
-          actions: [
-            if (isBan)
-              TextButton(
-                onPressed: () {
-                  Get.back();
-                  String? uri;
-                  switch (type) {
-                    case 1:
-                      uri = IdUtils.av2bv(oid);
-                    case 17:
-                      uri = 'https://www.bilibili.com/opus/$oid';
-                  }
-                  if (uri != null) {
-                    Utils.copyText(uri);
-                  }
-                  Get.toNamed(
-                    '/webview',
-                    parameters: {
-                      'url':
-                          'https://www.bilibili.com/h5/comment/appeal?native.theme=2&night=${Get.isDarkMode ? 1 : 0}',
-                    },
-                  );
-                },
-                child: const Text('申诉'),
-              ),
-            if (!isManual)
-              TextButton(
-                onPressed: Get.back,
-                child: Text(
-                  '关闭',
-                  style: TextStyle(color: Get.theme.colorScheme.outline),
-                ),
-              ),
-          ],
+          actions: actions.isEmpty ? null : actions,
         ),
       );
     }
@@ -145,7 +146,7 @@ class ReplyUtils {
     // root reply
     if (root == 0) {
       // no cookie check
-      var res = await ReplyHttp.replyList(
+      final res = await ReplyHttp.replyList(
         isLogin: false,
         oid: oid,
         nextOffset: '',
@@ -154,13 +155,12 @@ class ReplyUtils {
         page: 1,
       );
 
-      if (res is Error) {
-        SmartDialog.showToast('获取评论主列表时发生错误：${res.errMsg}');
+      if (res case Error(:final errMsg)) {
+        SmartDialog.showToast('获取评论主列表时发生错误：$errMsg');
         return;
-      } else if (res.isSuccess) {
-        ReplyData replies = res.data;
-        int index =
-            replies.replies?.indexWhere((item) => item.rpid == id) ?? -1;
+      } else if (res case Success(:final response)) {
+        final index =
+            response.replies?.indexWhere((item) => item.rpid == id) ?? -1;
         if (index != -1) {
           // found
           showReplyCheckResult('无账号状态下找到了你的评论，评论正常！\n\n你的评论：$message');

@@ -6,17 +6,19 @@ import 'package:PiliSuper/models_new/emote/data.dart';
 import 'package:PiliSuper/models_new/emote/package.dart';
 import 'package:PiliSuper/models_new/reply/data.dart';
 import 'package:PiliSuper/models_new/reply2reply/data.dart';
+import 'package:PiliSuper/models_new/reply_interaction/data.dart';
 import 'package:PiliSuper/utils/accounts.dart';
 import 'package:PiliSuper/utils/accounts/account.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-class ReplyHttp {
+abstract final class ReplyHttp {
   static final Options options = Options(
     headers: {...Constants.baseHeaders, 'cookie': ''},
     extra: {'account': const NoAccount()},
   );
 
-  static Future<LoadingState> replyList({
+  static Future<LoadingState<ReplyData>> replyList({
     required bool isLogin,
     required int oid,
     required String nextOffset,
@@ -24,7 +26,7 @@ class ReplyHttp {
     required int page,
     int sort = 1,
   }) async {
-    var res = !isLogin
+    final res = !isLogin
         ? await Request().get(
             '${Api.replyList}/main',
             queryParameters: {
@@ -48,8 +50,7 @@ class ReplyHttp {
             options: !isLogin ? options : null,
           );
     if (res.data['code'] == 0) {
-      ReplyData replyData = ReplyData.fromJson(res.data['data']);
-      return Success(replyData);
+      return Success(ReplyData.fromJson(res.data['data']));
     } else {
       return Error(res.data['message']);
     }
@@ -63,7 +64,7 @@ class ReplyHttp {
     required int type,
     bool isCheck = false,
   }) async {
-    var res = await Request().get(
+    final res = await Request().get(
       Api.replyReplyList,
       queryParameters: {
         'oid': oid,
@@ -87,13 +88,13 @@ class ReplyHttp {
     }
   }
 
-  static Future hateReply({
+  static Future<LoadingState<Null>> hateReply({
     required int type,
     required int action,
     required int oid,
     required int rpid,
   }) async {
-    var res = await Request().post(
+    final res = await Request().post(
       Api.hateReply,
       data: {
         'type': type,
@@ -105,20 +106,20 @@ class ReplyHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
   // 评论点赞
-  static Future likeReply({
+  static Future<LoadingState<Null>> likeReply({
     required int type,
     required int oid,
     required int rpid,
     required int action,
   }) async {
-    var res = await Request().post(
+    final res = await Request().post(
       Api.likeReply,
       data: {
         'type': type,
@@ -130,16 +131,16 @@ class ReplyHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
   static Future<LoadingState<List<Package>?>> getEmoteList({
     String? business,
   }) async {
-    var res = await Request().get(
+    final res = await Request().get(
       Api.myEmote,
       queryParameters: {
         'business': business ?? 'reply',
@@ -153,13 +154,13 @@ class ReplyHttp {
     }
   }
 
-  static Future replyTop({
-    required oid,
-    required type,
-    required rpid,
+  static Future<LoadingState<Null>> replyTop({
+    required Object oid,
+    required Object type,
+    required Object rpid,
     required bool isUpTop,
   }) async {
-    var res = await Request().post(
+    final res = await Request().post(
       Api.replyTop,
       data: {
         'oid': oid,
@@ -171,9 +172,89 @@ class ReplyHttp {
       options: Options(contentType: Headers.formUrlEncodedContentType),
     );
     if (res.data['code'] == 0) {
-      return {'status': true};
+      return const Success(null);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<Null>> report({
+    required Object rpid,
+    required Object oid,
+    required int reasonType,
+    bool banUid = true,
+    String? reasonDesc,
+  }) async {
+    final res = await Request().post(
+      '/x/v2/reply/report',
+      data: {
+        'add_blacklist': banUid,
+        'csrf': Accounts.main.csrf,
+        'gaia_source': 'main_h5',
+        'oid': oid,
+        'platform': 'android',
+        'reason': reasonType,
+        'rpid': rpid,
+        'scene': 'main',
+        'type': 1,
+        if (reasonType == 0) 'content': reasonDesc!,
+      },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+    );
+
+    if (res.data['code'] == 0) {
+      return const Success(null);
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<ReplyInteractData>> replyInteraction({
+    required Object oid,
+    required Object type,
+  }) async {
+    final res = await Request().get(
+      Api.replyInteraction,
+      queryParameters: {
+        'oid': oid,
+        'type': type,
+        'web_location': 333.1369,
+      },
+    );
+    if (res.data['code'] == 0) {
+      try {
+        return Success(ReplyInteractData.fromJson(res.data['data']));
+      } catch (e) {
+        return Error(e.toString());
+      }
+    } else {
+      return Error(res.data['message']);
+    }
+  }
+
+  static Future<LoadingState<Null>> replySubjectModify({
+    required int oid,
+    required int type,
+    required int action,
+  }) async {
+    final res = await Request().post(
+      Api.replySubjectModify,
+      data: {
+        'oid': oid,
+        'type': type,
+        'action': action,
+        'csrf': Accounts.main.csrf,
+      },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+    );
+    if (res.data['code'] == 0) {
+      if (res.data['data']?['action_toast'] case final String toast) {
+        SmartDialog.showToast(toast);
+      }
+      return const Success(null);
+    } else {
+      SmartDialog.showToast(res.data['message'].toString());
+      return const Error(null);
     }
   }
 }

@@ -9,23 +9,26 @@ import 'package:PiliSuper/common/widgets/flutter/text_field/text_field.dart';
 import 'package:PiliSuper/common/widgets/view_safe_area.dart';
 import 'package:PiliSuper/grpc/bilibili/main/community/reply/v1.pb.dart'
     show ReplyInfo;
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/video.dart';
 import 'package:PiliSuper/main.dart';
 import 'package:PiliSuper/models/common/publish_panel_type.dart';
+import 'package:PiliSuper/models/dynamics/result.dart' show FilePicModel;
 import 'package:PiliSuper/pages/common/publish/common_rich_text_pub_page.dart';
 import 'package:PiliSuper/pages/dynamics_mention/controller.dart';
+import 'package:PiliSuper/pages/emote/controller.dart';
 import 'package:PiliSuper/pages/emote/view.dart';
 import 'package:PiliSuper/pages/video/controller.dart';
 import 'package:PiliSuper/pages/video/reply_search_item/view.dart';
-import 'package:PiliSuper/utils/context_ext.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
+import 'package:PiliSuper/utils/extension/context_ext.dart';
 import 'package:PiliSuper/utils/grid.dart';
 import 'package:PiliSuper/utils/path_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart' hide TextField;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 
 class ReplyPage extends CommonRichTextPubPage {
   final int oid;
@@ -60,7 +63,9 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
 
   @override
   void dispose() {
-    Get.delete<DynMentionController>();
+    Get
+      ..delete<EmotePanelController>()
+      ..delete<DynMentionController>();
     super.dispose();
   }
 
@@ -110,20 +115,15 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   Widget buildImagePreview() {
     return Obx(
       () {
-        if (pathList.isNotEmpty) {
+        if (imageList.isNotEmpty) {
           return SizedBox(
             height: 85,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(15, 0, 15, 10),
-              child: Row(
-                spacing: 10,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: List.generate(
-                  pathList.length,
-                  (index) => buildImage(index, 75),
-                ),
-              ),
+            child: ListView.separated(
+              scrollDirection: .horizontal,
+              padding: const .fromLTRB(15, 0, 15, 10),
+              itemCount: imageList.length,
+              itemBuilder: (_, index) => buildImage(index, 75),
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
             ),
           );
         } else {
@@ -142,31 +142,29 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
           left: 15,
           bottom: 10,
         ),
-        child: Form(
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: Listener(
-            onPointerUp: (event) {
-              if (readOnly.value) {
-                updatePanelType(PanelType.keyboard);
-              }
-            },
-            child: Obx(
-              () => RichTextField(
-                key: key,
-                controller: editController,
-                minLines: 4,
-                maxLines: 8,
-                autofocus: false,
-                readOnly: readOnly.value,
-                onChanged: onChanged,
-                focusNode: focusNode,
-                decoration: InputDecoration(
-                  hintText: widget.hint ?? "输入回复内容",
-                  border: InputBorder.none,
-                  hintStyle: const TextStyle(fontSize: 14),
-                ),
-                style: themeData.textTheme.bodyLarge,
+        child: Listener(
+          onPointerUp: (event) {
+            if (readOnly.value) {
+              updatePanelType(PanelType.keyboard);
+            }
+          },
+          child: Obx(
+            () => RichTextField(
+              key: key,
+              controller: editController,
+              minLines: 4,
+              maxLines: 8,
+              autofocus: false,
+              readOnly: readOnly.value,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              focusNode: focusNode,
+              decoration: InputDecoration(
+                hintText: widget.hint ?? "输入回复内容",
+                border: InputBorder.none,
+                hintStyle: const TextStyle(fontSize: 14),
               ),
+              style: themeData.textTheme.bodyLarge,
             ),
           ),
         ),
@@ -314,13 +312,14 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
     return SizedBox(
       height: height,
       child: GridView(
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.only(left: 12, bottom: 12, right: 12),
         gridDelegate: gridDelegate,
         children: [
           item(
             onTap: () async {
               controller.keepChatPanel();
-              ({String title, String url})? res = await Get.to(
+              final ({String title, String url})? res = await Get.to(
                 ReplySearchPage(type: widget.replyType, oid: widget.oid),
               );
               if (res != null) {
@@ -367,10 +366,10 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
               icon: Icon(Icons.my_location, size: 28, color: color),
               title: '视频进度',
             ),
-            if (isRoot)
+            if (isRoot && widget.canUploadPic)
               item(
                 onTap: () async {
-                  if (pathList.length >= limit) {
+                  if (imageList.length >= limit) {
                     SmartDialog.showToast('最多选择$limit张图片');
                     return;
                   }
@@ -387,7 +386,7 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
                         '$tmpDirPath/${Utils.generateRandomString(8)}.png',
                       );
                       await file.writeAsBytes(res);
-                      pathList.add(file.path);
+                      imageList.add(FilePicModel(path: file.path));
                     } else {
                       debugPrint('null screenshot');
                     }
@@ -411,13 +410,13 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
   @override
   Future<void> onCustomPublish({List? pictures}) async {
     Map<String, int> atNameToMid = {};
-    for (var e in editController.items) {
+    for (final e in editController.items) {
       if (e.type == RichTextType.at) {
         atNameToMid[e.rawText] ??= int.parse(e.id!);
       }
     }
     String message = editController.rawText;
-    var result = await VideoHttp.replyAdd(
+    final res = await VideoHttp.replyAdd(
       type: widget.replyType,
       oid: widget.oid,
       root: widget.root,
@@ -429,12 +428,12 @@ class _ReplyPageState extends CommonRichTextPubPageState<ReplyPage> {
       pictures: pictures,
       syncToDynamic: _syncToDynamic.value,
     );
-    if (result['status']) {
+    if (res case Success(:final response)) {
       hasPub = true;
-      SmartDialog.showToast(result['data']['success_toast']);
-      Get.back(result: result['data']['reply']);
+      SmartDialog.showToast(response['success_toast']);
+      Get.back(result: response['reply']);
     } else {
-      SmartDialog.showToast(result['msg']);
+      res.toast();
     }
   }
 }

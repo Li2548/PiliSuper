@@ -5,7 +5,7 @@ import 'package:PiliSuper/common/widgets/stat/stat.dart';
 import 'package:PiliSuper/models/common/stat_type.dart';
 import 'package:PiliSuper/models_new/pgc/pgc_rank/pgc_rank_item_model.dart';
 import 'package:PiliSuper/utils/app_scheme.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class PgcRankItem extends StatelessWidget {
@@ -28,7 +28,7 @@ class PgcRankItem extends StatelessWidget {
           }
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,
@@ -42,10 +42,12 @@ class PgcRankItem extends StatelessWidget {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return NetworkImgLayer(
-                      radius: 6,
                       width: constraints.maxWidth,
                       height: constraints.maxHeight,
                       src: item.cover,
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(6),
+                      ),
                     );
                   },
                 ),

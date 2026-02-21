@@ -1,5 +1,5 @@
 import 'package:PiliSuper/models_new/article/article_list/category.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class Last {
   int? id;

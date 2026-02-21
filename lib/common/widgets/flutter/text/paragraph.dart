@@ -24,7 +24,7 @@ import 'dart:ui'
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter/rendering.dart' hide RenderParagraph;
 import 'package:flutter/services.dart';
 
 /// The start and end positions for a text boundary.
@@ -409,6 +409,9 @@ class RenderParagraph extends RenderBox
     if (_textPainter.textScaler == value) {
       return;
     }
+    _morePainter
+      ?..textScaler = value
+      ..layout();
     _textPainter.textScaler = value;
     _overflowShader = null;
     markNeedsLayout();

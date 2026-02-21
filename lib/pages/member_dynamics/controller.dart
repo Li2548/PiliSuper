@@ -27,7 +27,7 @@ class MemberDynamicsController
   @override
   Future<void> queryData([bool isRefresh = true]) {
     if (!isRefresh && (isEnd || offset == '-1')) {
-      return Future.value();
+      return Future.syncValue(null);
     }
     return super.queryData(isRefresh);
   }
@@ -49,30 +49,34 @@ class MemberDynamicsController
       );
 
   Future<void> onRemove(dynamic dynamicId) async {
-    var res = await MsgHttp.removeDynamic(dynIdStr: dynamicId);
-    if (res['status']) {
+    final res = await MsgHttp.removeDynamic(dynIdStr: dynamicId);
+    if (res.isSuccess) {
       loadingState
         ..value.data!.removeWhere((item) => item.idStr == dynamicId)
         ..refresh();
       SmartDialog.showToast('删除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 
-  Future<void> onSetTop(bool isTop, dynamic dynamicId) async {
-    var res = isTop
-        ? await DynamicsHttp.rmTop(dynamicId: dynamicId)
-        : await DynamicsHttp.setTop(dynamicId: dynamicId);
-    if (res['status']) {
+  Future<void> onSetTop(bool isTop, Object dynamicId) async {
+    final res = await (isTop
+        ? DynamicsHttp.rmTop(dynamicId: dynamicId)
+        : DynamicsHttp.setTop(dynamicId: dynamicId));
+    if (res.isSuccess) {
       List<DynamicItemModel> list = loadingState.value.data!;
-      list[0].modules.moduleTag = null;
+      list[0].modules
+        ..moduleTag = null
+        ..moduleAuthor?.isTop = false;
       if (isTop) {
         loadingState.refresh();
         SmartDialog.showToast('取消置顶成功');
       } else {
         final item = list.firstWhere((item) => item.idStr == dynamicId);
-        item.modules.moduleTag = ModuleTag(text: '置顶');
+        item.modules
+          ..moduleTag = ModuleTag(text: '置顶')
+          ..moduleAuthor?.isTop = true;
         list
           ..remove(item)
           ..insert(0, item);
@@ -80,7 +84,7 @@ class MemberDynamicsController
         SmartDialog.showToast('置顶成功');
       }
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 }

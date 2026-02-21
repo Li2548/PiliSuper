@@ -7,7 +7,7 @@ import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:fixnum/fixnum.dart';
 
-class ReplyGrpc {
+abstract final class ReplyGrpc {
   static bool antiGoodsReply = Pref.antiGoodsReply;
   static RegExp replyRegExp = RegExp(
     Pref.banWordForReply,
@@ -30,8 +30,8 @@ class ReplyGrpc {
             reply.content.urls.values.any((url) {
               return url.hasExtra() &&
                   (url.extra.goodsCmControl == Int64.ONE ||
-                      url.extra.goodsItemId != Int64.ZERO ||
-                      url.extra.goodsPrefetchedCache.isNotEmpty);
+                      url.extra.hasGoodsItemId() ||
+                      url.extra.hasGoodsPrefetchedCache());
             })) ||
         reply.content.message.contains(Constants.goodsUrlPrefix);
   }
@@ -54,23 +54,23 @@ class ReplyGrpc {
         oid: Int64(oid),
         type: Int64(type),
         rpid: Int64.ZERO,
-        cursor: CursorReq(
-          mode: mode,
-          next: cursorNext,
-        ),
-        // pagination: FeedPagination(offset: offset ?? ''),
+        // cursor: CursorReq(
+        //   mode: mode,
+        //   next: cursorNext,
+        // ),
+        mode: mode,
+        pagination: offset == null ? null : FeedPagination(offset: offset),
       ),
       MainListReply.fromBuffer,
     );
-    if (res.isSuccess) {
-      final mainListReply = res.data;
+    if (res case Success(:final response)) {
       // keyword filter
-      if (mainListReply.hasUpTop() && needRemoveGrpc(mainListReply.upTop)) {
-        mainListReply.clearUpTop();
+      if (response.hasUpTop() && needRemoveGrpc(response.upTop)) {
+        response.clearUpTop();
       }
 
-      if (mainListReply.replies.isNotEmpty) {
-        mainListReply.replies.removeWhere((item) {
+      if (response.replies.isNotEmpty) {
+        response.replies.removeWhere((item) {
           final hasMatch = needRemoveGrpc(item);
           if (!hasMatch && item.replies.isNotEmpty) {
             item.replies.removeWhere(needRemoveGrpc);
@@ -99,7 +99,7 @@ class ReplyGrpc {
         rpid: Int64(rpid),
         scene: DetailListScene.REPLY,
         mode: mode,
-        pagination: FeedPagination(offset: offset ?? ''),
+        pagination: offset == null ? null : FeedPagination(offset: offset),
       ),
       DetailListReply.fromBuffer,
     );
@@ -120,7 +120,7 @@ class ReplyGrpc {
         type: Int64(type),
         root: Int64(root),
         dialog: Int64(dialog),
-        pagination: FeedPagination(offset: offset ?? ''),
+        pagination: offset == null ? null : FeedPagination(offset: offset),
       ),
       DialogListReply.fromBuffer,
     );

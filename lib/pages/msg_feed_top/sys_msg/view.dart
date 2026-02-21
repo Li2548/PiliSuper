@@ -2,6 +2,7 @@ import 'package:PiliSuper/common/skeleton/msg_feed_sys_msg_.dart';
 import 'package:PiliSuper/common/widgets/dialog/dialog.dart';
 import 'package:PiliSuper/common/widgets/flutter/list_tile.dart';
 import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models_new/msg/msg_sys/data.dart';
@@ -9,8 +10,7 @@ import 'package:PiliSuper/pages/msg_feed_top/sys_msg/controller.dart';
 import 'package:PiliSuper/utils/app_scheme.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
-import 'package:flutter/gestures.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -23,8 +23,9 @@ class SysMsgPage extends StatefulWidget {
 }
 
 class _SysMsgPageState extends State<SysMsgPage> {
-  late final _sysMsgController = Get.put(SysMsgController());
-  late final RegExp urlRegExp = RegExp(
+  final _sysMsgController = Get.put(SysMsgController());
+
+  static final RegExp _urlRegExp = RegExp(
     r'#\{([^}]*)\}\{([^}]*)\}|https?:\/\/[^\s/\$.?#].[^\s]*|www\.[^\s/\$.?#].[^\s]*|【(.*?)】|（(\d+)）',
   );
 
@@ -70,7 +71,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
           itemBuilder: (context, index) => const MsgFeedSysMsgSkeleton(),
         ),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemCount: response.length,
@@ -87,7 +88,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
                   return ListTile(
                     safeArea: true,
                     onLongPress: onLongPress,
-                    onSecondaryTap: Utils.isMobile ? null : onLongPress,
+                    onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
                     title: Text(
                       "${item.title}",
                       style: theme.textTheme.titleMedium,
@@ -125,7 +126,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
                 separatorBuilder: (context, index) => divider,
               )
             : HttpError(onReload: _sysMsgController.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _sysMsgController.onReload,
       ),
@@ -135,7 +136,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
   InlineSpan _buildContent(ThemeData theme, String content) {
     final List<InlineSpan> spanChildren = <InlineSpan>[];
     content.splitMapJoin(
-      urlRegExp,
+      _urlRegExp,
       onMatch: (Match match) {
         final matchStr = match[0]!;
         if (matchStr.startsWith('#')) {
@@ -145,7 +146,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
               TextSpan(
                 text: match[1],
                 style: TextStyle(color: theme.colorScheme.primary),
-                recognizer: TapGestureRecognizer()
+                recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () {
                     try {
                       PiliScheme.routePushFromUrl(url);
@@ -176,7 +177,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
                 TextSpan(
                   text: match[3],
                   style: TextStyle(color: theme.colorScheme.primary),
-                  recognizer: TapGestureRecognizer()
+                  recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () {
                       PiliScheme.videoPush(validAv, validBv);
                     },
@@ -195,7 +196,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
                 TextSpan(
                   text: '查看动态',
                   style: TextStyle(color: theme.colorScheme.primary),
-                  recognizer: TapGestureRecognizer()
+                  recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () {
                       PageUtils.pushDynFromId(id: dynId).catchError(
                         (err) => SmartDialog.showToast(err.toString()),
@@ -212,7 +213,7 @@ class _SysMsgPageState extends State<SysMsgPage> {
             TextSpan(
               text: '\u{1F517}网页链接',
               style: TextStyle(color: theme.colorScheme.primary),
-              recognizer: TapGestureRecognizer()
+              recognizer: NoDeadlineTapGestureRecognizer()
                 ..onTap = () {
                   PiliScheme.routePushFromUrl(matchStr);
                 },

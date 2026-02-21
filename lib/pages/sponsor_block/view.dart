@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:PiliSuper/common/widgets/pair.dart';
 import 'package:PiliSuper/http/constants.dart';
 import 'package:PiliSuper/http/init.dart';
@@ -13,12 +11,14 @@ import 'package:PiliSuper/utils/page_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:PiliSuper/utils/utils.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 class SponsorBlockPage extends StatefulWidget {
   const SponsorBlockPage({super.key});
@@ -31,7 +31,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
   final _url = 'https://github.com/hanydd/BilibiliSponsorBlock';
   final _textController = TextEditingController();
   double _blockLimit = Pref.blockLimit;
-  final List<Pair<SegmentType, SkipType>> _blockSettings = Pref.blockSettings;
+  final _blockSettings = Pref.blockSettings;
   final List<Color> _blockColor = Pref.blockColor;
   String _userId = Pref.blockUserID;
   bool _blockToast = Pref.blockToast;
@@ -79,45 +79,42 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           _textController.text = _blockLimit.toString();
           showDialog(
             context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: Text('最短片段时长', style: titleStyle),
-                content: TextFormField(
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  controller: _textController,
-                  autofocus: true,
-                  decoration: const InputDecoration(suffixText: 's'),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
-                  ],
+            builder: (_) => AlertDialog(
+              title: Text('最短片段时长', style: titleStyle),
+              content: TextFormField(
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: Get.back,
-                    child: Text(
-                      '取消',
-                      style: TextStyle(
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
+                controller: _textController,
+                autofocus: true,
+                decoration: const InputDecoration(suffixText: 's'),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d\.]+')),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: Get.back,
+                  child: Text(
+                    '取消',
+                    style: TextStyle(color: theme.colorScheme.outline),
                   ),
-                  TextButton(
-                    onPressed: () {
+                ),
+                TextButton(
+                  onPressed: () {
+                    try {
+                      _blockLimit = double.parse(_textController.text);
                       Get.back();
-                      _blockLimit = max(
-                        0.0,
-                        double.tryParse(_textController.text) ?? 0.0,
-                      );
                       setting.put(SettingBoxKey.blockLimit, _blockLimit);
                       (context as Element).markNeedsBuild();
-                    },
-                    child: const Text('确定'),
-                  ),
-                ],
-              );
-            },
+                    } catch (e) {
+                      SmartDialog.showToast(e.toString());
+                    }
+                  },
+                  child: const Text('确定'),
+                ),
+              ],
+            ),
           );
         },
         title: Text('最短片段时长', style: titleStyle),
@@ -179,7 +176,9 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                   TextButton(
                     onPressed: () {
                       Get.back();
-                      _userId = const Uuid().v4().replaceAll('-', '');
+                      _userId = Digest(
+                        List.generate(16, (_) => Utils.random.nextInt(256)),
+                      ).toString();
                       setting.put(SettingBoxKey.blockUserID, _userId);
                       (context as Element).markNeedsBuild();
                     },
@@ -319,49 +318,47 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
           _textController.text = _blockServer;
           showDialog(
             context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: Text('服务器地址', style: titleStyle),
-                content: TextFormField(
-                  keyboardType: TextInputType.url,
-                  controller: _textController,
-                  autofocus: true,
+            builder: (_) => AlertDialog(
+              title: Text('服务器地址', style: titleStyle),
+              content: TextFormField(
+                keyboardType: TextInputType.url,
+                controller: _textController,
+                autofocus: true,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Get.back();
+                    _blockServer = HttpString.sponsorBlockBaseUrl;
+                    setting.put(SettingBoxKey.blockServer, _blockServer);
+                    Request.accountManager.blockServer = _blockServer;
+                    (context as Element).markNeedsBuild();
+                  },
+                  child: const Text('重置'),
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Get.back();
-                      _blockServer = HttpString.sponsorBlockBaseUrl;
-                      setting.put(SettingBoxKey.blockServer, _blockServer);
-                      Request.accountManager.blockServer = _blockServer;
-                      (context as Element).markNeedsBuild();
-                    },
-                    child: const Text('重置'),
-                  ),
-                  TextButton(
-                    onPressed: Get.back,
-                    child: Text(
-                      '取消',
-                      style: TextStyle(
-                        color: theme.colorScheme.outline,
-                      ),
+                TextButton(
+                  onPressed: Get.back,
+                  child: Text(
+                    '取消',
+                    style: TextStyle(
+                      color: theme.colorScheme.outline,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      Get.back();
-                      _blockServer = _textController.text;
-                      setting.put(SettingBoxKey.blockServer, _blockServer);
-                      Request.accountManager.blockServer = _blockServer;
-                      _checkServerStatus();
-                      _getUserInfo();
-                      (context as Element).markNeedsBuild();
-                    },
-                    child: const Text('确定'),
-                  ),
-                ],
-              );
-            },
+                ),
+                TextButton(
+                  onPressed: () {
+                    Get.back();
+                    _blockServer = _textController.text;
+                    setting.put(SettingBoxKey.blockServer, _blockServer);
+                    Request.accountManager.blockServer = _blockServer;
+                    _checkServerStatus();
+                    _getUserInfo();
+                    (context as Element).markNeedsBuild();
+                  },
+                  child: const Text('确定'),
+                ),
+              ],
+            ),
           );
         },
         title: Text(
@@ -445,7 +442,7 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
         content: SlideColorPicker(
           color: color,
           showResetBtn: true,
-          callback: (Color? color) {
+          onChanged: (Color? color) {
             _blockColor[index] = color ?? item.first.color;
             setting.put(
               SettingBoxKey.blockColor,
@@ -591,38 +588,44 @@ class _SponsorBlockPageState extends State<SponsorBlockPage> {
                         .map(
                           (item) => PopupMenuItem<SkipType>(
                             value: item,
-                            child: Text(item.title),
+                            child: Text(item.label),
                           ),
                         )
                         .toList(),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            item.second.title,
-                            style: TextStyle(
-                              height: 1,
-                              fontSize: 14,
-                              color: isDisable
-                                  ? theme.colorScheme.outline.withValues(
-                                      alpha: 0.7,
-                                    )
-                                  : theme.colorScheme.secondary,
+                      child: Text.rich(
+                        style: TextStyle(
+                          height: 1,
+                          fontSize: 14,
+                          color: isDisable
+                              ? theme.colorScheme.outline.withValues(
+                                  alpha: 0.7,
+                                )
+                              : theme.colorScheme.secondary,
+                        ),
+                        strutStyle: const StrutStyle(
+                          height: 1,
+                          leading: 0,
+                          fontSize: 14,
+                        ),
+                        TextSpan(
+                          children: [
+                            TextSpan(text: item.second.label),
+                            WidgetSpan(
+                              alignment: .middle,
+                              child: Icon(
+                                size: 14,
+                                MdiIcons.unfoldMoreHorizontal,
+                                color: isDisable
+                                    ? theme.colorScheme.outline.withValues(
+                                        alpha: 0.7,
+                                      )
+                                    : theme.colorScheme.secondary,
+                              ),
                             ),
-                            strutStyle: const StrutStyle(height: 1, leading: 0),
-                          ),
-                          Icon(
-                            MdiIcons.unfoldMoreHorizontal,
-                            size: MediaQuery.textScalerOf(context).scale(14),
-                            color: isDisable
-                                ? theme.colorScheme.outline.withValues(
-                                    alpha: 0.7,
-                                  )
-                                : theme.colorScheme.secondary,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );

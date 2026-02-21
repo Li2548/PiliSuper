@@ -1,3 +1,4 @@
+import 'package:PiliSuper/common/constants.dart';
 import 'package:PiliSuper/models/dynamics/result.dart';
 import 'package:PiliSuper/models/dynamics/vote_model.dart';
 
@@ -48,7 +49,7 @@ class Pic {
     style = json['style'];
     liveUrl = json['live_url'];
     if (width != null && height != null) {
-      isLongPic = (height! / width!) > 22 / 9;
+      isLongPic = (height! / width!) > StyleString.imgMaxRatio;
     }
   }
 }

@@ -38,10 +38,16 @@ class FollowChildPage extends StatefulWidget {
 
 class _FollowChildPageState extends State<FollowChildPage>
     with AutomaticKeepAliveClientMixin {
-  late final _followController = Get.put(
-    FollowChildController(widget.controller, widget.mid, widget.tagid),
-    tag: '${widget.tag ?? Utils.generateRandomString(8)}${widget.tagid}',
-  );
+  late final FollowChildController _followController;
+
+  @override
+  void initState() {
+    super.initState();
+    _followController = Get.put(
+      FollowChildController(widget.controller, widget.mid, widget.tagid),
+      tag: '${widget.tag ?? Utils.generateRandomString(8)}${widget.tagid}',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +112,7 @@ class _FollowChildPageState extends State<FollowChildPage>
         itemCount: 12,
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.builder(
                 itemCount: response.length,
@@ -119,7 +125,7 @@ class _FollowChildPageState extends State<FollowChildPage>
                     item: item,
                     isOwner: widget.controller?.isOwner,
                     onSelect: widget.onSelect,
-                    callback: (attr) {
+                    afterMod: (attr) {
                       item.attribute = attr == 0 ? -1 : 0;
                       _followController.loadingState.refresh();
                     },
@@ -127,7 +133,7 @@ class _FollowChildPageState extends State<FollowChildPage>
                 },
               )
             : HttpError(onReload: _followController.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _followController.onReload,
       ),
@@ -139,7 +145,7 @@ class _FollowChildPageState extends State<FollowChildPage>
     LoadingState<List<FollowItemModel>?> state,
   ) {
     return switch (state) {
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverMainAxisGroup(
                 slivers: [

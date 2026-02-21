@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:PiliSuper/models/model_owner.dart';
 import 'package:PiliSuper/models/user/danmaku_rule_adapter.dart';
@@ -13,7 +14,7 @@ import 'package:PiliSuper/utils/utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as path;
 
-abstract class GStorage {
+abstract final class GStorage {
   static late final Box<UserInfoData> userInfo;
   static late final Box<dynamic> historyWord;
   static late final Box<dynamic> localCache;
@@ -59,6 +60,11 @@ abstract class GStorage {
         },
       ).then((res) => watchProgress = res),
     ]);
+  }
+
+  static Future<File> syncToDisk([_]) {
+    final jsonPath = path.join(appSupportDirPath, 'settings.json');
+    return File(jsonPath).writeAsString(exportAllSettings());
   }
 
   static String exportAllSettings() {

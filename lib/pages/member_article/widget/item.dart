@@ -5,7 +5,7 @@ import 'package:PiliSuper/common/widgets/stat/stat.dart';
 import 'package:PiliSuper/models/common/stat_type.dart';
 import 'package:PiliSuper/models_new/space/space_article/item.dart';
 import 'package:PiliSuper/utils/app_scheme.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class MemberArticleItem extends StatelessWidget {
@@ -30,7 +30,7 @@ class MemberArticleItem extends StatelessWidget {
           }
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,

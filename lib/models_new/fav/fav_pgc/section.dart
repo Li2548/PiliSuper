@@ -1,4 +1,4 @@
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class Section {
   int? sectionId;

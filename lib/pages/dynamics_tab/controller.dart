@@ -7,7 +7,7 @@ import 'package:PiliSuper/pages/common/common_list_controller.dart';
 import 'package:PiliSuper/pages/dynamics/controller.dart';
 import 'package:PiliSuper/pages/main/controller.dart';
 import 'package:PiliSuper/services/account_service.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/scroll_controller_ext.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
@@ -52,14 +52,14 @@ class DynamicsTabController
       );
 
   Future<void> onRemove(int index, dynamic dynamicId) async {
-    var res = await MsgHttp.removeDynamic(dynIdStr: dynamicId);
-    if (res['status']) {
+    final res = await MsgHttp.removeDynamic(dynIdStr: dynamicId);
+    if (res.isSuccess) {
       loadingState
         ..value.data!.removeAt(index)
         ..refresh();
       SmartDialog.showToast('删除成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

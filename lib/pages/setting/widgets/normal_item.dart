@@ -1,16 +1,14 @@
 import 'package:PiliSuper/common/widgets/flutter/list_tile.dart';
 import 'package:flutter/material.dart' hide ListTile;
 
-typedef StringGetter = String Function();
-
 class NormalItem extends StatefulWidget {
   final String? title;
-  final StringGetter? getTitle;
+  final ValueGetter<String>? getTitle;
   final String? subtitle;
-  final StringGetter? getSubtitle;
+  final ValueGetter<String>? getSubtitle;
   final Widget? leading;
-  final Widget Function()? getTrailing;
-  final void Function(BuildContext context, void Function() setState)? onTap;
+  final Widget Function(ThemeData theme)? getTrailing;
+  final void Function(BuildContext context, VoidCallback setState)? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? titleStyle;
 
@@ -35,6 +33,15 @@ class _NormalItemState extends State<NormalItem> {
   @override
   Widget build(BuildContext context) {
     late final theme = Theme.of(context);
+    Widget? subtitle;
+    if ((widget.subtitle ?? widget.getSubtitle?.call()) case final text?) {
+      subtitle = Text(
+        text,
+        style: theme.textTheme.labelMedium!.copyWith(
+          color: theme.colorScheme.outline,
+        ),
+      );
+    }
     return ListTile(
       contentPadding: widget.contentPadding,
       onTap: widget.onTap == null
@@ -44,16 +51,9 @@ class _NormalItemState extends State<NormalItem> {
         widget.title ?? widget.getTitle!(),
         style: widget.titleStyle ?? theme.textTheme.titleMedium!,
       ),
-      subtitle: widget.subtitle != null || widget.getSubtitle != null
-          ? Text(
-              widget.subtitle ?? widget.getSubtitle!(),
-              style: theme.textTheme.labelMedium!.copyWith(
-                color: theme.colorScheme.outline,
-              ),
-            )
-          : null,
+      subtitle: subtitle,
       leading: widget.leading,
-      trailing: widget.getTrailing?.call(),
+      trailing: widget.getTrailing?.call(theme),
     );
   }
 

@@ -2,14 +2,17 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:math' show max;
 
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/common/widgets/scroll_physics.dart';
+import 'package:PiliSuper/pages/common/publish/publish_route.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/size_ext.dart';
+import 'package:PiliSuper/utils/extension/widget_ext.dart';
 import 'package:PiliSuper/utils/global_data.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
-import 'package:get/get_navigation/src/dialog/dialog_route.dart';
+import 'package:get/get.dart';
 
 class PayCoinsPage extends StatefulWidget {
   const PayCoinsPage({
@@ -31,8 +34,8 @@ class PayCoinsPage extends StatefulWidget {
     int copyright = 1,
     bool hasCoin = false,
   }) {
-    Navigator.of(Get.context!).push(
-      GetDialogRoute(
+    Get.key.currentState!.push(
+      PublishRoute(
         pageBuilder: (buildContext, animation, secondaryAnimation) {
           return PayCoinsPage(
             onPayCoin: onPayCoin,
@@ -43,12 +46,7 @@ class PayCoinsPage extends StatefulWidget {
         transitionDuration: const Duration(milliseconds: 225),
         transitionBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
-            opacity: animation.drive(
-              Tween<double>(
-                begin: 0.0,
-                end: 1.0,
-              ).chain(CurveTween(curve: Curves.linear)),
-            ),
+            opacity: animation,
             child: child,
           );
         },
@@ -70,16 +68,15 @@ class _PayCoinsPageState extends State<PayCoinsPage>
   late final Animation<Offset> _slide22Anim;
   late final AnimationController _scale22Controller;
   late final Animation<double> _scale22Anim;
-  late final AnimationController _coinSlideController;
+  late final AnimationController _coinController;
   late final Animation<Offset> _coinSlideAnim;
-  late final AnimationController _coinFadeController;
   late final Animation<double> _coinFadeAnim;
   late final AnimationController _boxAnimController;
   late final Animation<Offset> _boxAnim;
 
   Timer? _timer;
   late final RxInt _thunderIndex = (-1).obs;
-  late final List<String> _thunderImages = const [
+  static const List<String> _thunderImages = [
     'assets/images/paycoins/ic_thunder_1.png',
     'assets/images/paycoins/ic_thunder_2.png',
     'assets/images/paycoins/ic_thunder_3.png',
@@ -152,7 +149,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
       duration: const Duration(milliseconds: 50),
     );
     _slide22Anim = _slide22Controller.drive(
-      Tween(
+      Tween<Offset>(
         begin: Offset.zero,
         end: const Offset(0.0, -0.2),
       ),
@@ -162,38 +159,36 @@ class _PayCoinsPageState extends State<PayCoinsPage>
       duration: const Duration(milliseconds: 50),
     );
     _scale22Anim = _scale22Controller.drive(
-      Tween(begin: 1, end: 1.1),
+      Tween<double>(begin: 1.0, end: 1.1),
     );
-    _coinSlideController = AnimationController(
+    _coinController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300),
     );
-    _coinSlideAnim = _coinSlideController.drive(
-      Tween(
+    _coinSlideAnim = _coinController.drive(
+      Tween<Offset>(
         begin: Offset.zero,
-        end: const Offset(0.0, -2),
-      ),
+        end: const Offset(0.0, -2.0),
+      ).chain(CurveTween(curve: const Interval(0.0, 2 / 3))),
     );
-    _coinFadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
+    _coinFadeAnim = _coinController.drive(
+      Tween<double>(
+        begin: 1.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: const Interval(2 / 3, 1.0))),
     );
-    _coinFadeAnim = Tween<double>(
-      begin: 1,
-      end: 0,
-    ).animate(_coinFadeController);
     _boxAnimController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 50),
     );
     _boxAnim = _boxAnimController.drive(
-      Tween(
+      Tween<Offset>(
         begin: Offset.zero,
         end: const Offset(0.0, -0.2),
       ),
     );
 
-    _scale();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scale());
   }
 
   @override
@@ -201,8 +196,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
     _cancelTimer();
     _slide22Controller.dispose();
     _scale22Controller.dispose();
-    _coinSlideController.dispose();
-    _coinFadeController.dispose();
+    _coinController.dispose();
     _boxAnimController.dispose();
     _controller?.dispose();
     super.dispose();
@@ -227,12 +221,9 @@ class _PayCoinsPageState extends State<PayCoinsPage>
     final isPortrait = size.isPortrait;
     return isPortrait
         ? _buildBody(isPortrait)
-        : Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: math.min(525, size.width * 0.6),
-              ),
-              child: _buildBody(isPortrait),
+        : _buildBody(isPortrait).constraintWidth(
+            constraints: BoxConstraints(
+              maxWidth: math.min(525, size.width * 0.6),
             ),
           );
   }
@@ -300,7 +291,12 @@ class _PayCoinsPageState extends State<PayCoinsPage>
           child: SizedBox(
             width: 110,
             height: 155,
-            child: Image.asset(payImg),
+            child: Image.asset(
+              payImg,
+              width: 110,
+              height: 155,
+              cacheWidth: 110.cacheSize(context),
+            ),
           ),
         ),
       ),
@@ -338,8 +334,10 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                       child: SizedBox(
                         height: 100,
                         child: PageView(
-                          key: const PageStorageKey('PageView'),
-                          physics: const ClampingScrollPhysics(),
+                          key: const PageStorageKey(_PayCoinsPageState),
+                          physics: const CustomTabBarViewScrollPhysics(
+                            parent: ClampingScrollPhysics(),
+                          ),
                           controller: _controller,
                           onPageChanged: (index) {
                             _scale();
@@ -393,6 +391,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                                 index == 0
                                     ? 'assets/images/paycoins/ic_left_disable.png'
                                     : 'assets/images/paycoins/ic_left.png',
+                                cacheWidth: 16.cacheSize(context),
                               ),
                             ),
                           );
@@ -417,6 +416,7 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                               index == 1
                                   ? 'assets/images/paycoins/ic_right_disable.png'
                                   : 'assets/images/paycoins/ic_right.png',
+                              cacheWidth: 16.cacheSize(context),
                             ),
                           ),
                         );
@@ -491,6 +491,9 @@ class _PayCoinsPageState extends State<PayCoinsPage>
                         height: 30,
                         child: Image.asset(
                           'assets/images/paycoins/ic_panel_close.png',
+                          width: 30,
+                          height: 30,
+                          cacheWidth: 30.cacheSize(context),
                         ),
                       ),
                     ),
@@ -558,11 +561,9 @@ class _PayCoinsPageState extends State<PayCoinsPage>
           });
         }
         _boxAnimController.forward().whenComplete(_boxAnimController.reverse);
-        _coinSlideController.forward().whenComplete(() {
-          _coinFadeController.forward().whenComplete(() {
-            Get.back();
-            widget.onPayCoin(_pageIndex.value + 1, _coinWithLike.value);
-          });
+        _coinController.forward().whenComplete(() {
+          Get.back();
+          widget.onPayCoin(_pageIndex.value + 1, _coinWithLike.value);
         });
       });
     });

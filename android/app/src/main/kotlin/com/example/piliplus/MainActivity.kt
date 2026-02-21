@@ -1,4 +1,4 @@
-package com.example.PiliSuper
+package com.example.pilisuper
 
 import android.app.PictureInPictureParams
 import android.app.SearchManager

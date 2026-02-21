@@ -5,7 +5,7 @@ import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/models/search/result.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class SearchPgcItem extends StatelessWidget {
@@ -29,7 +29,7 @@ class SearchPgcItem extends StatelessWidget {
       child: InkWell(
         onTap: () => PageUtils.viewPgc(seasonId: item.seasonId),
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,

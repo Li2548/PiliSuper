@@ -4,7 +4,7 @@ import 'package:PiliSuper/common/widgets/select_mask.dart';
 import 'package:PiliSuper/models_new/fav/fav_note/list.dart';
 import 'package:PiliSuper/pages/fav/note/controller.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class FavNoteItem extends StatelessWidget {
@@ -45,7 +45,7 @@ class FavNoteItem extends StatelessWidget {
           }
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,
@@ -71,7 +71,7 @@ class FavNoteItem extends StatelessWidget {
                           Positioned.fill(
                             child: selectMask(
                               theme,
-                              item.checked == true,
+                              item.checked,
                             ),
                           ),
                         ],

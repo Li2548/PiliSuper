@@ -6,16 +6,18 @@ import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliSuper/common/widgets/scroll_physics.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/pages/login/controller.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/size_ext.dart';
+import 'package:PiliSuper/utils/extension/widget_ext.dart';
 import 'package:PiliSuper/utils/image_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -31,6 +33,12 @@ class _LoginPageState extends State<LoginPage> {
   // 二维码生成时间
   bool showPassword = false;
   GlobalKey globalKey = GlobalKey();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loginPageCtr.didChangeDependencies(context);
+  }
 
   Widget loginByQRCode(ThemeData theme) {
     return Column(
@@ -62,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                 RenderRepaintBoundary boundary =
                     globalKey.currentContext!.findRenderObject()!
                         as RenderRepaintBoundary;
-                var image = await boundary.toImage(pixelRatio: 3);
+                final image = await boundary.toImage(pixelRatio: 3);
                 ByteData? byteData = await image.toByteData(
                   format: ImageByteFormat.png,
                 );
@@ -75,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
               icon: const Icon(Icons.save),
               label: const Text('保存至相册'),
             ),
-            if (kDebugMode || Utils.isMobile)
+            if (kDebugMode || PlatformUtils.isMobile)
               TextButton.icon(
                 onPressed: () => PageUtils.launchURL(
                   'bilibili://browser?url=${Uri.encodeComponent(_loginPageCtr.codeInfo.value.data.url)}',
@@ -98,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                   semanticsLabel: '二维码加载中',
                 ),
               ),
-              Success(:var response) => Container(
+              Success(:final response) => Container(
                 width: 200,
                 height: 200,
                 color: Colors.white,
@@ -112,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              Error(:var errMsg) => errorWidget(
+              Error(:final errMsg) => errorWidget(
                 errMsg: errMsg,
                 onReload: _loginPageCtr.refreshQRCode,
               ),
@@ -263,67 +271,65 @@ class _LoginPageState extends State<LoginPage> {
                 //https://passport.bilibili.com/passport/findPassword
                 showDialog(
                   context: context,
-                  builder: (context) {
-                    return SimpleDialog(
-                      clipBehavior: Clip.hardEdge,
-                      title: const Text('忘记密码？'),
-                      contentPadding: const EdgeInsets.fromLTRB(
-                        0.0,
-                        2.0,
-                        0.0,
-                        16.0,
+                  builder: (context) => SimpleDialog(
+                    clipBehavior: Clip.hardEdge,
+                    title: const Text('忘记密码？'),
+                    contentPadding: const EdgeInsets.fromLTRB(
+                      0.0,
+                      2.0,
+                      0.0,
+                      16.0,
+                    ),
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(25, 0, 25, 10),
+                        child: Text("试试扫码、手机号登录，或选择"),
                       ),
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(25, 0, 25, 10),
-                          child: Text("试试扫码、手机号登录，或选择"),
+                      ListTile(
+                        title: const Text(
+                          '找回密码（手机版）',
                         ),
-                        ListTile(
-                          title: const Text(
-                            '找回密码（手机版）',
-                          ),
-                          leading: const Icon(Icons.smartphone_outlined),
-                          subtitle: const Text(
-                            'https://passport.bilibili.com/h5-app/passport/login/findPassword',
-                          ),
-                          dense: false,
-                          onTap: () => Get
-                            ..back()
-                            ..toNamed(
-                              '/webview',
-                              parameters: {
-                                'url':
-                                    'https://passport.bilibili.com/h5-app/passport/login/findPassword',
-                                'type': 'url',
-                                'pageTitle': '忘记密码',
-                              },
-                            ),
+                        leading: const Icon(Icons.smartphone_outlined),
+                        subtitle: const Text(
+                          'https://passport.bilibili.com/h5-app/passport/login/findPassword',
                         ),
-                        ListTile(
-                          title: const Text(
-                            '找回密码（电脑版）',
+                        dense: false,
+                        onTap: () => Get
+                          ..back()
+                          ..toNamed(
+                            '/webview',
+                            parameters: {
+                              'url':
+                                  'https://passport.bilibili.com/h5-app/passport/login/findPassword',
+                              'type': 'url',
+                              'pageTitle': '忘记密码',
+                            },
                           ),
-                          leading: const Icon(Icons.desktop_windows_outlined),
-                          subtitle: const Text(
-                            'https://passport.bilibili.com/pc/passport/findPassword',
-                          ),
-                          dense: false,
-                          onTap: () => Get
-                            ..back()
-                            ..toNamed(
-                              '/webview',
-                              parameters: {
-                                'url':
-                                    'https://passport.bilibili.com/pc/passport/findPassword',
-                                'type': 'url',
-                                'pageTitle': '忘记密码',
-                                'uaType': 'pc',
-                              },
-                            ),
+                      ),
+                      ListTile(
+                        title: const Text(
+                          '找回密码（电脑版）',
                         ),
-                      ],
-                    );
-                  },
+                        leading: const Icon(Icons.desktop_windows_outlined),
+                        subtitle: const Text(
+                          'https://passport.bilibili.com/pc/passport/findPassword',
+                        ),
+                        dense: false,
+                        onTap: () => Get
+                          ..back()
+                          ..toNamed(
+                            '/webview',
+                            parameters: {
+                              'url':
+                                  'https://passport.bilibili.com/pc/passport/findPassword',
+                              'type': 'url',
+                              'pageTitle': '忘记密码',
+                              'uaType': 'pc',
+                            },
+                          ),
+                      ),
+                    ],
+                  ),
                 );
               },
               child: const Text('忘记密码'),
@@ -606,13 +612,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget tabViewOuter(Widget child) {
     return SingleChildScrollView(
       padding: padding,
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: child,
-        ),
-      ),
+      child: child.constraintWidth(),
     );
   }
 }

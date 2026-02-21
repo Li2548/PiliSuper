@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 
-abstract class CacheManager {
+abstract final class CacheManager {
   // 获取缓存目录
   @pragma('vm:notify-debugger-on-exception')
   static Future<int> loadApplicationCache([
@@ -14,7 +13,7 @@ abstract class CacheManager {
   ]) async {
     try {
       final Directory tempDirectory = await getTemporaryDirectory();
-      if (Utils.isDesktop) {
+      if (PlatformUtils.isDesktop) {
         final dir = Directory('${tempDirectory.path}/libCachedImageData');
         if (dir.existsSync()) {
           return await getTotalSizeOfFilesInDir(dir, maxSize);
@@ -55,14 +54,14 @@ abstract class CacheManager {
       value = value / 1024;
     }
     String size = value.toStringAsFixed(2);
-    return size + (unitArr.getOrNull(index) ?? '');
+    return size + (unitArr.elementAtOrNull(index) ?? '');
   }
 
   // 清除 Library/Caches 目录及文件缓存
   static Future<void> clearLibraryCache() async {
     try {
       final Directory tempDirectory = await getTemporaryDirectory();
-      if (Utils.isDesktop) {
+      if (PlatformUtils.isDesktop) {
         final dir = Directory('${tempDirectory.path}/libCachedImageData');
         if (dir.existsSync()) {
           await dir.delete(recursive: true);

@@ -1,4 +1,3 @@
-import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliSuper/models/common/member/contribute_type.dart';
 import 'package:PiliSuper/models_new/space/space/tab2.dart';
 import 'package:PiliSuper/pages/member_article/view.dart';
@@ -8,7 +7,7 @@ import 'package:PiliSuper/pages/member_contribute/controller.dart';
 import 'package:PiliSuper/pages/member_opus/view.dart';
 import 'package:PiliSuper/pages/member_season_series/view.dart';
 import 'package:PiliSuper/pages/member_video/view.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -33,13 +32,19 @@ class _MemberContributeState extends State<MemberContribute>
   @override
   bool get wantKeepAlive => true;
 
-  late final _controller = Get.putOrFind(
-    () => MemberContributeCtr(
-      heroTag: widget.heroTag,
-      initialIndex: widget.initialIndex,
-    ),
-    tag: widget.heroTag,
-  );
+  late final MemberContributeCtr _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.putOrFind(
+      () => MemberContributeCtr(
+        heroTag: widget.heroTag,
+        initialIndex: widget.initialIndex,
+      ),
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +55,7 @@ class _MemberContributeState extends State<MemberContribute>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TabBar(
-                overlayColor: const WidgetStatePropertyAll(
-                  Colors.transparent,
-                ),
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
                 splashFactory: NoSplash.splashFactory,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 isScrollable: true,

@@ -1,19 +1,21 @@
 import 'dart:io';
 
 import 'package:PiliSuper/common/widgets/custom_icon.dart';
+import 'package:PiliSuper/models/common/super_chat_type.dart';
 import 'package:PiliSuper/models/common/video/subtitle_pref_type.dart';
 import 'package:PiliSuper/pages/main/controller.dart';
 import 'package:PiliSuper/pages/setting/models/model.dart';
 import 'package:PiliSuper/pages/setting/widgets/select_dialog.dart';
 import 'package:PiliSuper/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliSuper/plugin/pl_player/models/fullscreen_mode.dart';
+import 'package:PiliSuper/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliSuper/plugin/pl_player/utils/fullscreen.dart'
     show allowRotateScreen;
 import 'package:PiliSuper/services/service_locator.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -27,7 +29,7 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.enableShowDanmaku,
     defaultVal: true,
   ),
-  if (Utils.isMobile)
+  if (PlatformUtils.isMobile)
     const SwitchModel(
       title: '启用点击弹幕',
       subtitle: '点击弹幕悬停，支持点赞、复制、举报操作',
@@ -64,7 +66,7 @@ List<SettingsModel> get playSettings => [
     title: '全屏显示电池电量',
     leading: const Icon(Icons.battery_3_bar),
     setKey: SettingBoxKey.showBatteryLevel,
-    defaultVal: Utils.isMobile,
+    defaultVal: PlatformUtils.isMobile,
   ),
   const SwitchModel(
     title: '双击快退/快进',
@@ -118,28 +120,10 @@ List<SettingsModel> get playSettings => [
   NormalModel(
     title: '自动启用字幕',
     leading: const Icon(Icons.closed_caption_outlined),
-    getSubtitle: () =>
-        '当前选择偏好：${SubtitlePrefType.values[Pref.subtitlePreferenceV2].desc}',
-    onTap: (context, setState) async {
-      final result = await showDialog<int>(
-        context: context,
-        builder: (context) {
-          return SelectDialog<int>(
-            title: '字幕选择偏好',
-            value: Pref.subtitlePreferenceV2,
-            values: SubtitlePrefType.values
-                .map((e) => (e.index, e.desc))
-                .toList(),
-          );
-        },
-      );
-      if (result != null) {
-        await GStorage.setting.put(SettingBoxKey.subtitlePreferenceV2, result);
-        setState();
-      }
-    },
+    getSubtitle: () => '当前选择偏好：${Pref.subtitlePreferenceV2.desc}',
+    onTap: _showSubtitleDialog,
   ),
-  if (Utils.isDesktop)
+  if (PlatformUtils.isDesktop)
     SwitchModel(
       title: '最小化时暂停/还原时播放',
       leading: const Icon(Icons.pause_circle_outline),
@@ -157,11 +141,11 @@ List<SettingsModel> get playSettings => [
     setKey: SettingBoxKey.keyboardControl,
     defaultVal: true,
   ),
-  const SwitchModel(
-    title: '显示 SuperChat (醒目留言)',
-    leading: Icon(Icons.live_tv),
-    setKey: SettingBoxKey.showSuperChat,
-    defaultVal: true,
+  NormalModel(
+    title: 'SuperChat (醒目留言) 显示类型',
+    leading: const Icon(Icons.live_tv),
+    getSubtitle: () => '当前:「${Pref.superChatType.title}」',
+    onTap: _showSuperChatDialog,
   ),
   const SwitchModel(
     title: '竖屏扩大展示',
@@ -250,62 +234,34 @@ List<SettingsModel> get playSettings => [
   NormalModel(
     title: '默认全屏方向',
     leading: const Icon(Icons.open_with_outlined),
-    getSubtitle: () =>
-        '当前全屏方向：${FullScreenMode.values[Pref.fullScreenMode].desc}',
-    onTap: (context, setState) async {
-      final result = await showDialog<int>(
-        context: context,
-        builder: (context) {
-          return SelectDialog<int>(
-            title: '默认全屏方向',
-            value: Pref.fullScreenMode,
-            values: FullScreenMode.values
-                .map((e) => (e.index, e.desc))
-                .toList(),
-          );
-        },
-      );
-      if (result != null) {
-        await GStorage.setting.put(SettingBoxKey.fullScreenMode, result);
-        setState();
-      }
-    },
+    getSubtitle: () => '当前全屏方向：${Pref.fullScreenMode.desc}',
+    onTap: _showFullScreenModeDialog,
   ),
   NormalModel(
     title: '底部进度条展示',
     leading: const Icon(Icons.border_bottom_outlined),
-    getSubtitle: () =>
-        '当前展示方式：${BtmProgressBehavior.values[Pref.btmProgressBehavior].desc}',
-    onTap: (context, setState) async {
-      final result = await showDialog<int>(
-        context: context,
-        builder: (context) {
-          return SelectDialog<int>(
-            title: '底部进度条展示',
-            value: Pref.btmProgressBehavior,
-            values: BtmProgressBehavior.values
-                .map((e) => (e.index, e.desc))
-                .toList(),
-          );
-        },
-      );
-      if (result != null) {
-        await GStorage.setting.put(SettingBoxKey.btmProgressBehavior, result);
-        setState();
-      }
-    },
+    getSubtitle: () => '当前展示方式：${Pref.btmProgressBehavior.desc}',
+    onTap: _showProgressBehaviorDialog,
   ),
-  if (Utils.isMobile)
+  if (PlatformUtils.isMobile)
     SwitchModel(
       title: '后台音频服务',
       subtitle: '避免画中画没有播放暂停功能',
       leading: const Icon(Icons.volume_up_outlined),
       setKey: SettingBoxKey.enableBackgroundPlay,
       defaultVal: true,
-      onChanged: (value) {
-        videoPlayerServiceHandler!.enableBackgroundPlay = value;
-      },
+      onChanged: (value) =>
+          videoPlayerServiceHandler!.enableBackgroundPlay = value,
     ),
+  PopupModel(
+    title: '播放顺序',
+    leading: const Icon(Icons.repeat),
+    value: () => Pref.playRepeat,
+    items: PlayRepeat.values,
+    onSelected: (value, setState) => GStorage.video
+        .put(VideoBoxKey.playRepeat, value.index)
+        .whenComplete(setState),
+  ),
   const SwitchModel(
     title: '播放器设置仅对当前生效',
     subtitle: '弹幕、字幕及部分设置中没有的设置除外',
@@ -314,3 +270,81 @@ List<SettingsModel> get playSettings => [
     defaultVal: false,
   ),
 ];
+
+Future<void> _showSubtitleDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<SubtitlePrefType>(
+    context: context,
+    builder: (context) => SelectDialog<SubtitlePrefType>(
+      title: '字幕选择偏好',
+      value: Pref.subtitlePreferenceV2,
+      values: SubtitlePrefType.values.map((e) => (e, e.desc)).toList(),
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(
+      SettingBoxKey.subtitlePreferenceV2,
+      res.index,
+    );
+    setState();
+  }
+}
+
+Future<void> _showSuperChatDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<SuperChatType>(
+    context: context,
+    builder: (context) => SelectDialog<SuperChatType>(
+      title: 'SuperChat (醒目留言) 显示类型',
+      value: Pref.superChatType,
+      values: SuperChatType.values.map((e) => (e, e.title)).toList(),
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(SettingBoxKey.superChatType, res.index);
+    setState();
+  }
+}
+
+Future<void> _showFullScreenModeDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<FullScreenMode>(
+    context: context,
+    builder: (context) => SelectDialog<FullScreenMode>(
+      title: '默认全屏方向',
+      value: Pref.fullScreenMode,
+      values: FullScreenMode.values.map((e) => (e, e.desc)).toList(),
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(SettingBoxKey.fullScreenMode, res.index);
+    setState();
+  }
+}
+
+Future<void> _showProgressBehaviorDialog(
+  BuildContext context,
+  VoidCallback setState,
+) async {
+  final res = await showDialog<BtmProgressBehavior>(
+    context: context,
+    builder: (context) => SelectDialog<BtmProgressBehavior>(
+      title: '底部进度条展示',
+      value: Pref.btmProgressBehavior,
+      values: BtmProgressBehavior.values.map((e) => (e, e.desc)).toList(),
+    ),
+  );
+  if (res != null) {
+    await GStorage.setting.put(
+      SettingBoxKey.btmProgressBehavior,
+      res.index,
+    );
+    setState();
+  }
+}

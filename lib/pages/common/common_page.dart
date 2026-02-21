@@ -1,111 +1,89 @@
-import 'dart:async';
-
-import 'package:PiliSuper/pages/common/common_controller.dart';
+import 'package:PiliSuper/common/constants.dart' show StyleString;
 import 'package:PiliSuper/pages/home/controller.dart';
 import 'package:PiliSuper/pages/main/controller.dart';
-import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 
-abstract class CommonPageState<
-  T extends StatefulWidget,
-  R extends CommonController
->
-    extends State<T> {
-  R get controller;
-  StreamController<bool>? mainStream;
-  StreamController<bool>? searchBarStream;
-  // late double _downScrollCount = 0.0; // 向下滚动计数器
-  late double _upScrollCount = 0.0; // 向上滚动计数器
-  double? _lastScrollPosition; // 记录上次滚动位置
-  final _enableScrollThreshold = Pref.enableScrollThreshold;
-  late final double _scrollThreshold = Pref.scrollThreshold; // 滚动阈值
-  late final scrollController = controller.scrollController;
+abstract class CommonPageState<T extends StatefulWidget> extends State<T> {
+  RxDouble? _barOffset;
+  RxBool? _showTopBar;
+  RxBool? _showBottomBar;
+  final _mainController = Get.find<MainController>();
 
   @override
   void initState() {
     super.initState();
+    _barOffset = _mainController.barOffset;
+    _showBottomBar = _mainController.showBottomBar;
     try {
-      mainStream = Get.find<MainController>().bottomBarStream;
-      searchBarStream = Get.find<HomeController>().searchBarStream;
+      _showTopBar = Get.find<HomeController>().showTopBar;
     } catch (_) {}
-    if (_enableScrollThreshold &&
-        (mainStream != null || searchBarStream != null)) {
-      controller.scrollController.addListener(listener);
-    }
   }
 
   Widget onBuild(Widget child) {
-    if (!_enableScrollThreshold &&
-        (mainStream != null || searchBarStream != null)) {
+    if (_barOffset != null) {
+      return NotificationListener<ScrollNotification>(
+        onNotification: onNotificationType2,
+        child: child,
+      );
+    }
+    if (_showTopBar != null || _showBottomBar != null) {
       return NotificationListener<UserScrollNotification>(
-        onNotification: onNotification,
+        onNotification: onNotificationType1,
         child: child,
       );
     }
     return child;
   }
 
-  bool onNotification(UserScrollNotification notification) {
-    if (notification.metrics.axis == Axis.horizontal) return false;
-    final direction = notification.direction;
-    if (direction == ScrollDirection.forward) {
-      mainStream?.add(true);
-      searchBarStream?.add(true);
-    } else if (direction == ScrollDirection.reverse) {
-      mainStream?.add(false);
-      searchBarStream?.add(false);
+  bool onNotificationType1(UserScrollNotification notification) {
+    if (!_mainController.useBottomNav) return false;
+    if (notification.metrics.axis == .horizontal) return false;
+    switch (notification.direction) {
+      case .forward:
+        _showTopBar?.value = true;
+        _showBottomBar?.value = true;
+      case .reverse:
+        _showTopBar?.value = false;
+        _showBottomBar?.value = false;
+      case _:
     }
     return false;
   }
 
-  void listener() {
-    final direction = scrollController.position.userScrollDirection;
+  void _updateOffset(double scrollDelta) {
+    _barOffset!.value = clampDouble(
+      _barOffset!.value + scrollDelta,
+      0.0,
+      StyleString.topBarHeight,
+    );
+  }
 
-    final double currentPosition = scrollController.position.pixels;
+  bool onNotificationType2(ScrollNotification notification) {
+    if (!_mainController.useBottomNav) return false;
 
-    // 初始化上次位置
-    _lastScrollPosition ??= currentPosition;
+    if (notification.metrics.axis == .horizontal) return false;
 
-    // 计算滚动距离
-    final double scrollDelta = currentPosition - _lastScrollPosition!;
-
-    if (direction == ScrollDirection.reverse) {
-      mainStream?.add(false);
-      searchBarStream?.add(false); // // 向下滚动，累加向下滚动距离，重置向上滚动计数器
-      _upScrollCount = 0.0; // 重置向上滚动计数器
-      // if (scrollDelta > 0) {
-      //   _downScrollCount += scrollDelta;
-      //   // _upScrollCount = 0.0; // 重置向上滚动计数器
-
-      //   // 当累计向下滚动距离超过阈值时，隐藏顶底栏
-      //   if (_downScrollCount >= _scrollThreshold) {
-      //     mainStream?.add(false);
-      //     searchBarStream?.add(false);
-      //   }
-      // }
-    } else if (direction == ScrollDirection.forward) {
-      // 向上滚动，累加向上滚动距离，重置向下滚动计数器
-      if (scrollDelta < 0) {
-        _upScrollCount += (-scrollDelta); // 使用绝对值
-        // _downScrollCount = 0.0; // 重置向下滚动计数器
-
-        // 当累计向上滚动距离超过阈值时，显示顶底栏
-        if (_upScrollCount >= _scrollThreshold) {
-          mainStream?.add(true);
-          searchBarStream?.add(true);
-        }
-      }
+    if (notification is ScrollUpdateNotification) {
+      if (notification.dragDetails == null) return false;
+      _updateOffset(notification.scrollDelta ?? 0.0);
+      return false;
     }
 
-    // 更新上次位置
-    _lastScrollPosition = currentPosition;
+    if (notification is OverscrollNotification) {
+      _updateOffset(notification.overscroll);
+      return false;
+    }
+
+    return false;
   }
 
   @override
   void dispose() {
-    controller.scrollController.removeListener(listener);
+    _barOffset = null;
+    _showTopBar = null;
+    _showBottomBar = null;
     super.dispose();
   }
 }

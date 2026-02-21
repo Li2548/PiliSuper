@@ -4,6 +4,7 @@ import 'package:PiliSuper/common/widgets/badge.dart';
 import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/models/common/badge_type.dart';
 import 'package:PiliSuper/models/dynamics/result.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -111,11 +112,11 @@ Widget videoSeasonWidget(
                         ],
                         if (video.stat case final stat?) ...[
                           Text(
-                            '${NumUtils.numFormat(stat.play)}次围观',
+                            '${NumUtils.numFormat(stat.play)}播放',
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            '${NumUtils.numFormat(stat.danmu)}条弹幕',
+                            '${NumUtils.numFormat(stat.danmu)}弹幕',
                           ),
                         ],
                         const Spacer(),
@@ -123,6 +124,7 @@ Widget videoSeasonWidget(
                           'assets/images/play.png',
                           width: 50,
                           height: 50,
+                          cacheHeight: 50.cacheSize(context),
                         ),
                       ],
                     ),

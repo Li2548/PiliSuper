@@ -44,7 +44,7 @@
 - [x] Windows
 - [x] Linux
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/piliplus.svg)](https://repology.org/project/piliplus/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/pilisuper.svg)](https://repology.org/project/pilisuper/versions)
 
 ## refactor
 
@@ -54,6 +54,7 @@
 
 ## feat
 
+- [x] 编辑动态
 - [x] DLNA 投屏
 - [x] 离线缓存/播放
 - [x] 移动端支持点击弹幕悬停，点赞、复制、举报 by [@My-Responsitories](https://github.com/My-Responsitories)

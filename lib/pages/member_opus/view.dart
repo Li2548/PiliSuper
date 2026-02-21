@@ -31,15 +31,21 @@ class MemberOpus extends StatefulWidget {
 
 class _MemberOpusState extends State<MemberOpus>
     with AutomaticKeepAliveClientMixin {
-  late final _controller = Get.put(
-    MemberOpusController(
-      mid: widget.mid,
-      heroTag: widget.heroTag,
-    ),
-    tag: widget.heroTag,
-  );
+  late final MemberOpusController _controller;
 
   late double _maxWidth;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      MemberOpusController(
+        mid: widget.mid,
+        heroTag: widget.heroTag,
+      ),
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,40 +77,38 @@ class _MemberOpusState extends State<MemberOpus>
             child: FloatingActionButton.extended(
               onPressed: () => showDialog(
                 context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    clipBehavior: Clip.hardEdge,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: _controller.filter!
-                          .map(
-                            (e) => ListTile(
-                              onTap: () {
-                                if (e == _controller.type.value) {
-                                  return;
-                                }
-                                Get.back();
-                                _controller
-                                  ..type.value = e
-                                  ..onReload();
-                              },
-                              tileColor: e == _controller.type.value
-                                  ? Theme.of(
-                                      context,
-                                    ).colorScheme.onInverseSurface
-                                  : null,
-                              dense: true,
-                              title: Text(
-                                e.text ?? e.tabName!,
-                                style: const TextStyle(fontSize: 14),
-                              ),
+                builder: (context) => AlertDialog(
+                  clipBehavior: Clip.hardEdge,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: _controller.filter!
+                        .map(
+                          (e) => ListTile(
+                            onTap: () {
+                              if (e == _controller.type.value) {
+                                return;
+                              }
+                              Get.back();
+                              _controller
+                                ..type.value = e
+                                ..onReload();
+                            },
+                            tileColor: e == _controller.type.value
+                                ? Theme.of(
+                                    context,
+                                  ).colorScheme.onInverseSurface
+                                : null,
+                            dense: true,
+                            title: Text(
+                              e.text ?? e.tabName!,
+                              style: const TextStyle(fontSize: 14),
                             ),
-                          )
-                          .toList(),
-                    ),
-                  );
-                },
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
               ),
               icon: const Icon(size: 20, Icons.sort),
               label: Obx(
@@ -123,7 +127,7 @@ class _MemberOpusState extends State<MemberOpus>
     maxCrossAxisExtent: Grid.smallCardWidth,
     mainAxisSpacing: StyleString.safeSpace,
     crossAxisSpacing: StyleString.safeSpace,
-    callback: (value) => _maxWidth = value,
+    afterCalc: (value) => _maxWidth = value,
   );
 
   Widget _buildBody(LoadingState<List<SpaceOpusItemModel>?> loadingState) {
@@ -135,7 +139,7 @@ class _MemberOpusState extends State<MemberOpus>
           childCount: 10,
         ),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverWaterfallFlow(
                 gridDelegate: gridDelegate,
@@ -153,7 +157,7 @@ class _MemberOpusState extends State<MemberOpus>
                 ),
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

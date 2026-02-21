@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:PiliSuper/http/api.dart';
 import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/retry_interceptor.dart';
 import 'package:PiliSuper/http/user.dart';
 import 'package:PiliSuper/utils/accounts.dart';
@@ -48,8 +49,8 @@ class Request {
 
   static Future<void> setCoin() async {
     final res = await UserHttp.getCoin();
-    if (res['status']) {
-      GlobalData().coins = res['data'];
+    if (res case Success(:final response)) {
+      GlobalData().coins = response;
     }
   }
 

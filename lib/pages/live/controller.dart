@@ -7,7 +7,6 @@ import 'package:PiliSuper/models_new/live/live_feed_index/data.dart';
 import 'package:PiliSuper/models_new/live/live_second_list/data.dart';
 import 'package:PiliSuper/models_new/live/live_second_list/tag.dart';
 import 'package:PiliSuper/pages/common/common_list_controller.dart';
-import 'package:PiliSuper/services/account_service.dart';
 import 'package:get/get.dart';
 
 class LiveController extends CommonListController with AccountMixin {
@@ -48,17 +47,17 @@ class LiveController extends CommonListController with AccountMixin {
   bool customHandleResponse(bool isRefresh, Success response) {
     if (isRefresh) {
       final res = response.response;
-      if (res case LiveIndexData data) {
-        if (data.hasMore == 0) {
+      if (res is LiveIndexData) {
+        if (res.hasMore == 0) {
           isEnd = true;
         }
         topState.value = Pair(
-          first: data.followItem,
-          second: data.areaItem,
+          first: res.followItem,
+          second: res.areaItem,
         );
-      } else if (res case LiveSecondData data) {
-        count = data.count;
-        newTags = data.newTags;
+      } else if (res is LiveSecondData) {
+        count = res.count;
+        newTags = res.newTags;
         if (sortType != null) {
           tagIndex.value =
               newTags?.indexWhere((e) => e.sortType == sortType) ?? -1;
@@ -94,14 +93,13 @@ class LiveController extends CommonListController with AccountMixin {
 
   Future<void> queryTop() async {
     final res = await LiveHttp.liveFeedIndex(pn: page, moduleSelect: true);
-    if (res.isSuccess) {
-      final data = res.data;
+    if (res case Success(:final response)) {
       topState.value = Pair(
-        first: data.followItem,
-        second: data.areaItem,
+        first: response.followItem,
+        second: response.areaItem,
       );
       areaIndex.value =
-          (data.areaItem?.cardData?.areaEntranceV3?.list?.indexWhere(
+          (response.areaItem?.cardData?.areaEntranceV3?.list?.indexWhere(
                 (e) => e.areaV2Id == areaId && e.areaV2ParentId == parentAreaId,
               ) ??
               -2) +

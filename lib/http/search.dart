@@ -10,17 +10,18 @@ import 'package:PiliSuper/models_new/dynamic/dyn_topic_pub_search/data.dart';
 import 'package:PiliSuper/models_new/pgc/pgc_info_model/result.dart';
 import 'package:PiliSuper/models_new/search/search_rcmd/data.dart';
 import 'package:PiliSuper/models_new/search/search_trending/data.dart';
-import 'package:PiliSuper/utils/extension.dart';
 import 'package:PiliSuper/utils/request_utils.dart';
 import 'package:PiliSuper/utils/wbi_sign.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 
-class SearchHttp {
+abstract final class SearchHttp {
   // 获取搜索建议
-  static Future searchSuggest({required String term}) async {
-    var res = await Request().get(
+  static Future<LoadingState<SearchSuggestModel>> searchSuggest({
+    required String term,
+  }) async {
+    final res = await Request().get(
       Api.searchSuggest,
       queryParameters: {
         'term': term,
@@ -32,14 +33,11 @@ class SearchHttp {
       Map<String, dynamic> resultMap = json.decode(res.data);
       if (resultMap['code'] == 0) {
         if (resultMap['result'] is Map) {
-          return {
-            'status': true,
-            'data': SearchSuggestModel.fromJson(resultMap['result']),
-          };
+          return Success(SearchSuggestModel.fromJson(resultMap['result']));
         }
       }
     }
-    return {'status': false, 'msg': '请求错误'};
+    return const Error(null);
   }
 
   // 分类搜索
@@ -59,7 +57,7 @@ class SearchHttp {
     String? gaiaVtoken,
     required ValueChanged<String> onSuccess,
   }) async {
-    var params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'search_type': searchType.name,
       'keyword': keyword,
       'page': page,
@@ -76,7 +74,7 @@ class SearchHttp {
       'web_location': 1430654,
       'gaia_vtoken': ?gaiaVtoken,
     });
-    var res = await Request().get(
+    final res = await Request().get(
       Api.searchByType,
       queryParameters: params,
       options: Options(
@@ -143,7 +141,7 @@ class SearchHttp {
     int? pubBegin,
     int? pubEnd,
   }) async {
-    var params = await WbiSign.makSign({
+    final params = await WbiSign.makSign({
       'keyword': keyword,
       'page': page,
       if (order != null && order.isNotEmpty) 'order': order,
@@ -155,7 +153,7 @@ class SearchHttp {
       'pubtime_begin_s': ?pubBegin,
       'pubtime_end_s': ?pubEnd,
     });
-    var res = await Request().get(
+    final res = await Request().get(
       Api.searchAll,
       queryParameters: params,
     );
@@ -174,7 +172,7 @@ class SearchHttp {
   }
 
   static Future<int?> ab2c({dynamic aid, dynamic bvid, int? part}) async {
-    var res = await Request().get(
+    final res = await Request().get(
       Api.ab2c,
       queryParameters: {
         'aid': ?aid,
@@ -184,7 +182,8 @@ class SearchHttp {
     if (res.data['code'] == 0) {
       if (res.data['data'] case List list) {
         return part != null
-            ? (list.getOrNull(part - 1)?['cid'] ?? list.firstOrNull?['cid'])
+            ? (list.elementAtOrNull(part - 1)?['cid'] ??
+                  list.firstOrNull?['cid'])
             : list.firstOrNull?['cid'];
       } else {
         return null;
@@ -199,7 +198,7 @@ class SearchHttp {
     dynamic seasonId,
     dynamic epId,
   }) async {
-    var res = await Request().get(
+    final res = await Request().get(
       Api.pgcInfo,
       queryParameters: {
         'season_id': ?seasonId,
@@ -217,7 +216,7 @@ class SearchHttp {
     dynamic seasonId,
     dynamic epId,
   }) async {
-    var res = await Request().get(
+    final res = await Request().get(
       Api.pugvInfo,
       queryParameters: {
         'season_id': ?seasonId,
@@ -231,19 +230,19 @@ class SearchHttp {
     }
   }
 
-  static Future<LoadingState> episodeInfo({dynamic epId}) async {
-    var res = await Request().get(
-      Api.episodeInfo,
-      queryParameters: {
-        'ep_id': ?epId,
-      },
-    );
-    if (res.data['code'] == 0) {
-      return Success(res.data['data']);
-    } else {
-      return Error(res.data['message']);
-    }
-  }
+  // static Future<LoadingState> episodeInfo({dynamic epId}) async {
+  //   final res = await Request().get(
+  //     Api.episodeInfo,
+  //     queryParameters: {
+  //       'ep_id': ?epId,
+  //     },
+  //   );
+  //   if (res.data['code'] == 0) {
+  //     return Success(res.data['data']);
+  //   } else {
+  //     return Error(res.data['message']);
+  //   }
+  // }
 
   static Future<LoadingState<SearchTrendingData>> searchTrending({
     int limit = 30,

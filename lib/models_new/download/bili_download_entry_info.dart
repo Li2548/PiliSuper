@@ -36,7 +36,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
 
   late String pageDirPath;
   late String entryDirPath;
-  DownloadStatus? status;
+  late DownloadStatus status = .wait;
 
   int get cid => source?.cid ?? pageData!.cid;
 
@@ -45,8 +45,8 @@ class BiliDownloadEntryInfo with MultiSelectData {
   int get sortKey => ep?.sortIndex ?? pageData!.cid;
 
   String get showTitle {
-    if (pageData case final pageData?) {
-      return pageData.part?.isNotEmpty == true ? pageData.part! : title;
+    if (pageData case PageInfo(:final part)) {
+      return part != null && part.isNotEmpty ? part : title;
     }
     if (ep case final ep?) {
       return ep.showTitle ?? '${ep.index} ${ep.indexTitle}';
@@ -67,7 +67,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
       ),
       itemBuilder: (_) => [
         PopupMenuItem(
-          height: 35,
+          height: 38,
           child: const Text(
             '查看详情页',
             style: TextStyle(fontSize: 13),
@@ -99,7 +99,7 @@ class BiliDownloadEntryInfo with MultiSelectData {
         ),
         if (ownerId case final mid?)
           PopupMenuItem(
-            height: 35,
+            height: 38,
             child: Text(
               '访问${ownerName != null ? '：$ownerName' : '用户主页'}',
               style: const TextStyle(
@@ -238,6 +238,8 @@ class PageInfo {
   final int rotate;
   final String? downloadTitle;
   final String? downloadSubtitle;
+
+  bool get cacheWidth => width <= height;
 
   PageInfo({
     required this.cid,
@@ -398,4 +400,6 @@ enum DownloadStatus {
 
   final String message;
   const DownloadStatus(this.message);
+
+  bool get isDownloading => index <= 3;
 }

@@ -5,8 +5,9 @@ import 'package:PiliSuper/pages/live_room/controller.dart';
 import 'package:PiliSuper/pages/video/widgets/header_control.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
 import 'package:PiliSuper/plugin/pl_player/widgets/common_btn.dart';
-import 'package:PiliSuper/utils/page_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/services/shutdown_timer_service.dart'
+    show shutdownTimerService;
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:floating/floating.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -58,8 +59,8 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
     final liveController = widget.liveController;
     Widget child;
     child = Obx(
+      key: titleKey,
       () => MarqueeText(
-        key: titleKey,
         liveController.title.value,
         spacing: 30,
         velocity: 30,
@@ -121,16 +122,56 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
           child,
           ...?timeBatteryWidgets,
           const SizedBox(width: 10),
-          ComBtn(
-            height: 30,
-            tooltip: '发弹幕',
-            icon: const Icon(
-              size: 18,
-              Icons.comment_outlined,
-              color: Colors.white,
+          if (PlatformUtils.isDesktop && !plPlayerController.isDesktopPip)
+            Obx(() {
+              final isAlwaysOnTop = plPlayerController.isAlwaysOnTop.value;
+              return ComBtn(
+                height: 30,
+                tooltip: '${isAlwaysOnTop ? '取消' : ''}置顶',
+                icon: isAlwaysOnTop
+                    ? const Icon(
+                        size: 18,
+                        Icons.push_pin,
+                        color: Colors.white,
+                      )
+                    : const Icon(
+                        size: 18,
+                        Icons.push_pin_outlined,
+                        color: Colors.white,
+                      ),
+                onTap: () => plPlayerController.setAlwaysOnTop(!isAlwaysOnTop),
+              );
+            }),
+          if (isFullScreen || PlatformUtils.isDesktop)
+            ComBtn(
+              height: 30,
+              tooltip: '发弹幕',
+              icon: const Icon(
+                size: 18,
+                Icons.comment_outlined,
+                color: Colors.white,
+              ),
+              onTap: widget.onSendDanmaku,
             ),
-            onTap: widget.onSendDanmaku,
-          ),
+          if (Platform.isAndroid || (PlatformUtils.isDesktop && !isFullScreen))
+            ComBtn(
+              height: 30,
+              tooltip: '画中画',
+              onTap: () async {
+                if (PlatformUtils.isDesktop) {
+                  plPlayerController.toggleDesktopPip();
+                  return;
+                }
+                if (await Floating().isPipAvailable) {
+                  plPlayerController.enterPip();
+                }
+              },
+              icon: const Icon(
+                size: 18,
+                Icons.picture_in_picture_outlined,
+                color: Colors.white,
+              ),
+            ),
           Obx(
             () {
               final onlyPlayAudio = plPlayerController.onlyPlayAudio.value;
@@ -155,31 +196,34 @@ class _LiveHeaderControlState extends State<LiveHeaderControl>
               );
             },
           ),
-          if (Platform.isAndroid || (Utils.isDesktop && !isFullScreen))
-            ComBtn(
+          Obx(() {
+            final continuePlayInBackground =
+                plPlayerController.continuePlayInBackground.value;
+            return ComBtn(
               height: 30,
-              tooltip: '画中画',
-              onTap: () async {
-                if (Utils.isDesktop) {
-                  plPlayerController.toggleDesktopPip();
-                  return;
-                }
-                if (await Floating().isPipAvailable) {
-                  plPlayerController
-                    ..showControls.value = false
-                    ..enterPip();
-                }
-              },
-              icon: const Icon(
-                size: 18,
-                Icons.picture_in_picture_outlined,
-                color: Colors.white,
-              ),
-            ),
+              tooltip: '${continuePlayInBackground ? '关闭' : ''}后台播放',
+              onTap: plPlayerController.setContinuePlayInBackground,
+              icon: continuePlayInBackground
+                  ? const Icon(
+                      size: 18,
+                      Icons.play_circle,
+                      color: Colors.white,
+                    )
+                  : const Icon(
+                      size: 18,
+                      Icons.play_circle_outline,
+                      color: Colors.white,
+                    ),
+            );
+          }),
           ComBtn(
             height: 30,
             tooltip: '定时关闭',
-            onTap: () => PageUtils.scheduleExit(context, isFullScreen, true),
+            onTap: () => shutdownTimerService.showScheduleExitDialog(
+              context,
+              isFullScreen: isFullScreen,
+              isLive: true,
+            ),
             icon: const Icon(
               size: 18,
               Icons.schedule,

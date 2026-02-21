@@ -96,17 +96,7 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
     touchSlop: Platform.isIOS ? 9 : 4,
   );
 
-  late final _scaleGestureRecognizer =
-      ScaleGestureRecognizer(
-          debugOwner: this,
-          allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
-          trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
-          trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
-        )
-        ..gestureSettings = gestureSettings
-        ..onStart = _onScaleStart
-        ..onUpdate = _onScaleUpdate
-        ..onEnd = _onScaleEnd;
+  late final ScaleGestureRecognizer _scaleGestureRecognizer;
 
   final bool _rotateEnabled = false;
 
@@ -443,17 +433,15 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
           details.velocity.pixelsPerSecond.distance,
           widget.interactionEndFrictionCoefficient,
         );
-        _animation =
-            Tween<Offset>(
-                begin: translation,
-                end: Offset(
-                  frictionSimulationX.finalX,
-                  frictionSimulationY.finalX,
-                ),
-              ).animate(
-                CurvedAnimation(parent: _controller, curve: Curves.decelerate),
-              )
-              ..addListener(_handleInertiaAnimation);
+        _animation = _controller.drive(
+          Tween<Offset>(
+            begin: translation,
+            end: Offset(
+              frictionSimulationX.finalX,
+              frictionSimulationY.finalX,
+            ),
+          ).chain(CurveTween(curve: Curves.decelerate)),
+        )..addListener(_handleInertiaAnimation);
         _controller
           ..duration = Duration(milliseconds: (tFinal * 1000).round())
           ..forward();
@@ -473,17 +461,12 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
           widget.interactionEndFrictionCoefficient,
           effectivelyMotionless: 0.1,
         );
-        _scaleAnimation =
-            Tween<double>(
-                begin: scale,
-                end: frictionSimulation.x(tFinal),
-              ).animate(
-                CurvedAnimation(
-                  parent: _scaleController,
-                  curve: Curves.decelerate,
-                ),
-              )
-              ..addListener(_handleScaleAnimation);
+        _scaleAnimation = _scaleController.drive(
+          Tween<double>(
+            begin: scale,
+            end: frictionSimulation.x(tFinal),
+          ).chain(CurveTween(curve: Curves.decelerate)),
+        )..addListener(_handleScaleAnimation);
         _scaleController
           ..duration = Duration(milliseconds: (tFinal * 1000).round())
           ..forward();
@@ -700,6 +683,17 @@ class _MouseInteractiveViewerState extends State<MouseInteractiveViewer>
   @override
   void initState() {
     super.initState();
+    _scaleGestureRecognizer =
+        ScaleGestureRecognizer(
+            debugOwner: this,
+            allowedButtonsFilter: (buttons) => buttons == kPrimaryButton,
+            trackpadScrollToScaleFactor: Offset(0, -1 / widget.scaleFactor),
+            trackpadScrollCausesScale: widget.trackpadScrollCausesScale,
+          )
+          ..gestureSettings = gestureSettings
+          ..onStart = _onScaleStart
+          ..onUpdate = _onScaleUpdate
+          ..onEnd = _onScaleEnd;
     _controller = AnimationController(vsync: this);
     _scaleController = AnimationController(vsync: this);
 

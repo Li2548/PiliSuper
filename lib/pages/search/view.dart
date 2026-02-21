@@ -4,17 +4,17 @@ import 'package:PiliSuper/common/widgets/disabled_icon.dart';
 import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models_new/search/search_rcmd/data.dart';
-import 'package:PiliSuper/pages/about/view.dart' show showImportExportDialog;
+import 'package:PiliSuper/pages/about/view.dart' show showInportExportDialog;
 import 'package:PiliSuper/pages/search/controller.dart';
 import 'package:PiliSuper/pages/search/widgets/hot_keyword.dart';
 import 'package:PiliSuper/pages/search/widgets/search_text.dart';
 import 'package:PiliSuper/utils/em.dart' show Em;
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/size_ext.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -25,10 +25,16 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final _tag = Utils.generateRandomString(6);
-  late final SSearchController _searchController = Get.put(
-    SSearchController(_tag),
-    tag: _tag,
-  );
+  late final SSearchController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = Get.put(
+      SSearchController(_tag),
+      tag: _tag,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +79,7 @@ class _SearchPageState extends State<SearchPage> {
           textInputAction: TextInputAction.search,
           onChanged: _searchController.onChange,
           decoration: InputDecoration(
+            visualDensity: .standard,
             hintText: _searchController.hintText ?? '搜索',
             border: InputBorder.none,
           ),
@@ -311,9 +318,14 @@ class _SearchPageState extends State<SearchPage> {
                           child: IconButton(
                             iconSize: 22,
                             tooltip: enable ? '记录搜索' : '无痕搜索',
-                            icon: enable
-                                ? historyIcon(theme)
-                                : historyIcon(theme).disable(),
+                            icon: DisabledIcon(
+                              disable: !enable,
+                              child: Icon(
+                                Icons.history,
+                                color: theme.colorScheme.onSurfaceVariant
+                                    .withValues(alpha: 0.8),
+                              ),
+                            ),
                             style: IconButton.styleFrom(
                               padding: EdgeInsets.zero,
                             ),
@@ -405,17 +417,12 @@ class _SearchPageState extends State<SearchPage> {
     ),
   );
 
-  Icon historyIcon(ThemeData theme) => Icon(
-    Icons.history,
-    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
-  );
-
   Widget _buildHotKey(
     LoadingState<SearchRcmdData> loadingState,
     bool isTrending,
   ) {
     return switch (loadingState) {
-      Success(:var response) =>
+      Success(:final response) =>
         response.list?.isNotEmpty == true
             ? LayoutBuilder(
                 builder: (context, constraints) => HotKeyword(
@@ -425,7 +432,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
               )
             : const SizedBox.shrink(),
-      Error(:var errMsg) => errorWidget(
+      Error(:final errMsg) => errorWidget(
         errMsg: errMsg,
         onReload: isTrending
             ? _searchController.queryTrendingList

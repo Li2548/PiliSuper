@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:PiliSuper/models_new/video/video_detail/page.dart';
 import 'package:PiliSuper/pages/video/controller.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/controller.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -199,6 +200,7 @@ class _PagesPanelState extends State<PagesPanel> {
                               'assets/images/live.png',
                               color: theme.colorScheme.primary,
                               height: 12,
+                              cacheHeight: 12.cacheSize(context),
                               semanticLabel: "正在播放：",
                             ),
                             const SizedBox(width: 6),

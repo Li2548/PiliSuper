@@ -1,11 +1,11 @@
 import 'package:PiliSuper/common/constants.dart';
 import 'package:PiliSuper/main.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-abstract class ThemeUtils {
+abstract final class ThemeUtils {
   static ThemeData getThemeData({
     required ColorScheme colorScheme,
     required bool isDynamic,
@@ -91,6 +91,7 @@ abstract class ThemeUtils {
           fontWeight: fontWeight,
         ),
         backgroundColor: colorScheme.surface,
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 420),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colorScheme.surface,
@@ -114,6 +115,8 @@ abstract class ThemeUtils {
         selectionHandleColor: colorScheme.primary,
       ),
       switchTheme: const SwitchThemeData(
+        padding: .zero,
+        materialTapTargetSize: .shrinkWrap,
         thumbIcon: WidgetStateProperty<Icon?>.fromMap(
           <WidgetStatesConstraint, Icon?>{
             WidgetState.selected: Icon(Icons.done),

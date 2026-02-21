@@ -5,7 +5,7 @@ import 'package:PiliSuper/grpc/bilibili/app/im/v1.pb.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/pages/whisper/widgets/item.dart';
 import 'package:PiliSuper/pages/whisper_secondary/controller.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/three_dot_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,10 +24,16 @@ class WhisperSecPage extends StatefulWidget {
 }
 
 class _WhisperSecPageState extends State<WhisperSecPage> {
-  late final WhisperSecController _controller = Get.put(
-    WhisperSecController(sessionPageType: widget.sessionPageType),
-    tag: widget.sessionPageType.name,
-  );
+  late final WhisperSecController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      WhisperSecController(sessionPageType: widget.sessionPageType),
+      tag: widget.sessionPageType.name,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +100,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
         itemCount: 12,
         itemBuilder: (context, index) => const WhisperItemSkeleton(),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemCount: response.length,
@@ -116,7 +122,7 @@ class _WhisperSecPageState extends State<WhisperSecPage> {
                 separatorBuilder: (context, index) => divider,
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

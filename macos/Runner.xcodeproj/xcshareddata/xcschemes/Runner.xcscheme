@@ -11,7 +11,7 @@
                               buildForAnalyzing="YES">
                 <BuildableReference BuildableIdentifier="primary"
                                     BlueprintIdentifier="33CC10EC2044A3C60003C045"
-                                    BuildableName="PiliSuper.app"
+                                    BuildableName="pilisuper.app"
                                     BlueprintName="Runner"
                                     ReferencedContainer="container:Runner.xcodeproj" />
             </BuildActionEntry>
@@ -24,7 +24,7 @@
         <MacroExpansion>
             <BuildableReference BuildableIdentifier="primary"
                                 BlueprintIdentifier="33CC10EC2044A3C60003C045"
-                                BuildableName="PiliSuper.app"
+                                BuildableName="pilisuper.app"
                                 BlueprintName="Runner"
                                 ReferencedContainer="container:Runner.xcodeproj" />
         </MacroExpansion>
@@ -42,7 +42,7 @@
         <BuildableProductRunnable runnableDebuggingMode="0">
             <BuildableReference BuildableIdentifier="primary"
                                 BlueprintIdentifier="33CC10EC2044A3C60003C045"
-                                BuildableName="PiliSuper.app"
+                                BuildableName="pilisuper.app"
                                 BlueprintName="Runner"
                                 ReferencedContainer="container:Runner.xcodeproj" />
         </BuildableProductRunnable>
@@ -55,7 +55,7 @@
         <BuildableProductRunnable runnableDebuggingMode="0">
             <BuildableReference BuildableIdentifier="primary"
                                 BlueprintIdentifier="33CC10EC2044A3C60003C045"
-                                BuildableName="PiliSuper.app"
+                                BuildableName="pilisuper.app"
                                 BlueprintName="Runner"
                                 ReferencedContainer="container:Runner.xcodeproj" />
         </BuildableProductRunnable>

@@ -206,7 +206,7 @@ class TextSelectionGestureDetectorBuilder {
       offset,
     );
     final TextSelection selection = renderEditable.selection!;
-    // bggRGjQaUbCoE on select
+    // FRBLanApps on select
     final TextSelection nextSelection = selection.copyWith(
       extentOffset: controller.tapOffsetSimple(tappedPosition.offset),
     );
@@ -2286,7 +2286,7 @@ class TextSelectionOverlay {
       handleTargetGlobal,
     );
 
-    // bggRGjQaUbCoE right drag
+    // FRBLanApps right drag
     position = controller.dragOffset(position);
 
     final TextSelection newSelection;
@@ -2432,7 +2432,7 @@ class TextSelectionOverlay {
       handleTargetGlobal,
     );
 
-    // bggRGjQaUbCoE single drag, left drag
+    // FRBLanApps single drag, left drag
     position = controller.dragOffset(position);
 
     final TextSelection newSelection;
@@ -3573,7 +3573,7 @@ class _SelectionHandleOverlayState extends State<_SelectionHandleOverlay>
     final Size handleSize = widget.selectionControls.getHandleSize(
       preferredLineHeight,
     );
-    return Rect.fromLTWH(0.0, 0.0, handleSize.width, handleSize.height);
+    return Rect.fromLTRB(0.0, 0.0, handleSize.width, handleSize.height);
   }
 
   @override

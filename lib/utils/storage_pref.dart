@@ -3,13 +3,17 @@ import 'dart:math' show pow, sqrt;
 
 import 'package:PiliSuper/common/widgets/pair.dart';
 import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/models/common/bar_hide_type.dart';
 import 'package:PiliSuper/models/common/dynamic/dynamic_badge_mode.dart';
+import 'package:PiliSuper/models/common/dynamic/dynamics_type.dart';
 import 'package:PiliSuper/models/common/dynamic/up_panel_position.dart';
-import 'package:PiliSuper/models/common/follow_order_type.dart';
 import 'package:PiliSuper/models/common/member/tab_type.dart';
 import 'package:PiliSuper/models/common/msg/msg_unread_type.dart';
+import 'package:PiliSuper/models/common/nav_bar_config.dart';
+import 'package:PiliSuper/models/common/reply/reply_sort_type.dart';
 import 'package:PiliSuper/models/common/sponsor_block/segment_type.dart';
 import 'package:PiliSuper/models/common/sponsor_block/skip_type.dart';
+import 'package:PiliSuper/models/common/super_chat_type.dart';
 import 'package:PiliSuper/models/common/super_resolution_type.dart';
 import 'package:PiliSuper/models/common/theme/theme_type.dart';
 import 'package:PiliSuper/models/common/video/audio_quality.dart';
@@ -20,23 +24,27 @@ import 'package:PiliSuper/models/common/video/video_decode_type.dart';
 import 'package:PiliSuper/models/common/video/video_quality.dart';
 import 'package:PiliSuper/models/user/danmaku_rule.dart';
 import 'package:PiliSuper/models/user/info.dart';
+import 'package:PiliSuper/plugin/pl_player/models/audio_output_type.dart';
 import 'package:PiliSuper/plugin/pl_player/models/bottom_progress_behavior.dart';
 import 'package:PiliSuper/plugin/pl_player/models/fullscreen_mode.dart';
 import 'package:PiliSuper/plugin/pl_player/models/hwdec_type.dart';
 import 'package:PiliSuper/plugin/pl_player/models/play_repeat.dart';
-import 'package:PiliSuper/utils/context_ext.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/context_ext.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 import 'package:PiliSuper/utils/global_data.dart';
 import 'package:PiliSuper/utils/login_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/utils.dart';
+import 'package:crypto/crypto.dart';
+import 'package:flex_seed_scheme/flex_seed_scheme.dart' show FlexSchemeVariant;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:uuid/uuid.dart';
 
-abstract class Pref {
+abstract final class Pref {
   static final Box _setting = GStorage.setting;
   static final Box _video = GStorage.video;
   static final Box _localCache = GStorage.localCache;
@@ -54,25 +62,23 @@ abstract class Pref {
   static Set<int> get blackMids =>
       _localCache.get(LocalCacheKey.blackMids, defaultValue: <int>{});
 
-  static set blackMids(Set<int> blackMidsSet) {
-    _localCache.put(LocalCacheKey.blackMids, blackMidsSet);
-  }
+  static set blackMids(Set<int> blackMidsSet) =>
+      _localCache.put(LocalCacheKey.blackMids, blackMidsSet);
 
   static RuleFilter get danmakuFilterRule => _localCache.get(
     LocalCacheKey.danmakuFilterRules,
     defaultValue: RuleFilter.empty(),
   );
 
-  static void setBlackMid(int mid) {
-    _localCache.put(LocalCacheKey.blackMids, GlobalData().blackMids..add(mid));
-  }
+  static void setBlackMid(int mid) => _localCache.put(
+    LocalCacheKey.blackMids,
+    GlobalData().blackMids..add(mid),
+  );
 
-  static void removeBlackMid(int mid) {
-    _localCache.put(
-      LocalCacheKey.blackMids,
-      GlobalData().blackMids..remove(mid),
-    );
-  }
+  static void removeBlackMid(int mid) => _localCache.put(
+    LocalCacheKey.blackMids,
+    GlobalData().blackMids..remove(mid),
+  );
 
   static MemberTabType get memberTab =>
       MemberTabType.values[_setting.get(
@@ -85,13 +91,13 @@ abstract class Pref {
     defaultValue: ThemeType.system.index,
   );
 
-  static ThemeMode get themeMode {
-    return switch (_themeTypeInt) {
-      0 => ThemeMode.light,
-      1 => ThemeMode.dark,
-      _ => ThemeMode.system,
-    };
-  }
+  static ThemeType get themeType => ThemeType.values[_themeTypeInt];
+
+  static ThemeMode get themeMode => switch (_themeTypeInt) {
+    0 => ThemeMode.light,
+    1 => ThemeMode.dark,
+    _ => ThemeMode.system,
+  };
 
   static List<double> get springDescription => List<double>.from(
     _setting.get(SettingBoxKey.springDescription) ??
@@ -107,22 +113,24 @@ abstract class Pref {
 
   static List<Pair<SegmentType, SkipType>> get blockSettings {
     final list = _setting.get(SettingBoxKey.blockSettings) as List?;
-    if (list == null) {
+    if (list == null || list.length != SegmentType.values.length) {
       return SegmentType.values
           .map((i) => Pair(first: i, second: SkipType.skipOnce))
           .toList();
     }
     return SegmentType.values
         .map(
-          (item) =>
-              Pair(first: item, second: SkipType.values[list[item.index]]),
+          (item) => Pair(
+            first: item,
+            second: SkipType.values[list[item.index]],
+          ),
         )
         .toList();
   }
 
   static List<Color> get blockColor {
     final list = _setting.get(SettingBoxKey.blockColor) as List?;
-    if (list == null) {
+    if (list == null || list.length != SegmentType.values.length) {
       return SegmentType.values.map((i) => i.color).toList();
     }
     return SegmentType.values.map(
@@ -134,16 +142,11 @@ abstract class Pref {
     ).toList();
   }
 
-  static bool get hiddenSettingUnlocked =>
-      _setting.get(SettingBoxKey.hiddenSettingUnlocked, defaultValue: false);
-
   static bool get feedBackEnable =>
       _setting.get(SettingBoxKey.feedBackEnable, defaultValue: false);
 
   static int get picQuality =>
       _setting.get(SettingBoxKey.defaultPicQa, defaultValue: 10);
-
-  static ThemeType get themeType => ThemeType.values[_themeTypeInt];
 
   static DynamicBadgeMode get dynamicBadgeType =>
       DynamicBadgeMode.values[_setting.get(
@@ -163,8 +166,13 @@ abstract class Pref {
           .toSet() ??
       MsgUnReadType.values.toSet();
 
-  static int get defaultHomePage =>
-      _setting.get(SettingBoxKey.defaultHomePage, defaultValue: 0);
+  static NavigationBarType get defaultHomePage =>
+      NavigationBarType.values[defaultHomePageIndex];
+
+  static int get defaultHomePageIndex => _setting.get(
+    SettingBoxKey.defaultHomePage,
+    defaultValue: NavigationBarType.home.index,
+  );
 
   static int get previewQ =>
       _setting.get(SettingBoxKey.previewQuality, defaultValue: 100);
@@ -181,20 +189,23 @@ abstract class Pref {
         defaultValue: UpPanelPosition.leftFixed.index,
       )];
 
-  static int get fullScreenMode => _setting.get(
-    SettingBoxKey.fullScreenMode,
-    defaultValue: FullScreenMode.auto.index,
-  );
+  static FullScreenMode get fullScreenMode =>
+      FullScreenMode.values[_setting.get(
+        SettingBoxKey.fullScreenMode,
+        defaultValue: FullScreenMode.auto.index,
+      )];
 
-  static int get btmProgressBehavior => _setting.get(
-    SettingBoxKey.btmProgressBehavior,
-    defaultValue: BtmProgressBehavior.alwaysShow.index,
-  );
+  static BtmProgressBehavior get btmProgressBehavior =>
+      BtmProgressBehavior.values[_setting.get(
+        SettingBoxKey.btmProgressBehavior,
+        defaultValue: BtmProgressBehavior.alwaysShow.index,
+      )];
 
-  static int get subtitlePreferenceV2 => _setting.get(
-    SettingBoxKey.subtitlePreferenceV2,
-    defaultValue: SubtitlePrefType.off.index,
-  );
+  static SubtitlePrefType get subtitlePreferenceV2 =>
+      SubtitlePrefType.values[_setting.get(
+        SettingBoxKey.subtitlePreferenceV2,
+        defaultValue: SubtitlePrefType.off.index,
+      )];
 
   static bool get useRelativeSlide =>
       _setting.get(SettingBoxKey.useRelativeSlide, defaultValue: false);
@@ -242,6 +253,11 @@ abstract class Pref {
   static String get videoSync =>
       _setting.get(SettingBoxKey.videoSync, defaultValue: 'display-resample');
 
+  static String get autosync => _setting.get(
+    SettingBoxKey.autosync,
+    defaultValue: Platform.isAndroid ? '30' : '0',
+  );
+
   static CDNService get defaultCDNService {
     if (_setting.get(SettingBoxKey.CDNService) case final String cdnName) {
       return CDNService.values.byName(cdnName);
@@ -267,8 +283,16 @@ abstract class Pref {
   static String get systemProxyPort =>
       _setting.get(SettingBoxKey.systemProxyPort, defaultValue: '');
 
-  static int get defaultDynamicType =>
-      _setting.get(SettingBoxKey.defaultDynamicType, defaultValue: 0);
+  static DynamicsTabType get defaultDynamicType =>
+      DynamicsTabType.values[defaultDynamicTypeIndex];
+
+  static int get defaultDynamicTypeIndex => _setting.get(
+    SettingBoxKey.defaultDynamicType,
+    defaultValue: DynamicsTabType.all.index,
+  );
+
+  static bool get showDynInteraction =>
+      _setting.get(SettingBoxKey.showDynInteraction, defaultValue: true);
 
   static double get blockLimit =>
       _setting.get(SettingBoxKey.blockLimit, defaultValue: 0.0);
@@ -278,16 +302,15 @@ abstract class Pref {
 
   static double get refreshDisplacement => _setting.get(
     SettingBoxKey.refreshDisplacement,
-    defaultValue: Utils.isMobile ? 20.0 : 40.0,
+    defaultValue: PlatformUtils.isMobile ? 20.0 : 40.0,
   );
 
   static String get blockUserID {
-    String blockUserID = _setting.get(
-      SettingBoxKey.blockUserID,
-      defaultValue: '',
-    );
-    if (blockUserID.isEmpty) {
-      blockUserID = const Uuid().v4().replaceAll('-', '');
+    String? blockUserID = _setting.get(SettingBoxKey.blockUserID);
+    if (blockUserID == null || blockUserID.isEmpty) {
+      blockUserID = Digest(
+        List.generate(16, (_) => Utils.random.nextInt(256)),
+      ).toString();
       _setting.put(SettingBoxKey.blockUserID, blockUserID);
     }
     return blockUserID;
@@ -302,7 +325,7 @@ abstract class Pref {
   );
 
   static bool get blockTrack =>
-      _setting.get(SettingBoxKey.blockTrack, defaultValue: true);
+      _setting.get(SettingBoxKey.blockTrack, defaultValue: !kDebugMode);
 
   static bool get checkDynamic =>
       _setting.get(SettingBoxKey.checkDynamic, defaultValue: true);
@@ -310,14 +333,25 @@ abstract class Pref {
   static int get dynamicPeriod =>
       _setting.get(SettingBoxKey.dynamicPeriod, defaultValue: 5);
 
-  static int get schemeVariant =>
-      _setting.get(SettingBoxKey.schemeVariant, defaultValue: 10);
+  static FlexSchemeVariant get schemeVariant =>
+      FlexSchemeVariant.values[_setting.get(
+        SettingBoxKey.schemeVariant,
+        defaultValue: FlexSchemeVariant.material3Legacy.index,
+      )];
 
-  static double get danmakuFontScaleFS =>
-      _setting.get(SettingBoxKey.danmakuFontScaleFS, defaultValue: 1.2);
+  static double get danmakuFontScaleFS => _setting.get(
+    SettingBoxKey.danmakuFontScaleFS,
+    defaultValue: PlatformUtils.isMobile ? 1.2 : 1.7,
+  );
 
   static bool get danmakuMassiveMode =>
       _setting.get(SettingBoxKey.danmakuMassiveMode, defaultValue: false);
+
+  static bool get danmakuFixedV =>
+      _setting.get(SettingBoxKey.danmakuFixedV, defaultValue: false);
+
+  static bool get danmakuStatic2Scroll =>
+      _setting.get(SettingBoxKey.danmakuStatic2Scroll, defaultValue: false);
 
   static double get subtitleFontScale =>
       _setting.get(SettingBoxKey.subtitleFontScale, defaultValue: 1.0);
@@ -343,11 +377,15 @@ abstract class Pref {
   static bool get expandIntroPanelH =>
       _setting.get(SettingBoxKey.expandIntroPanelH, defaultValue: false);
 
-  static bool get horizontalSeasonPanel =>
-      _setting.get(SettingBoxKey.horizontalSeasonPanel, defaultValue: false);
+  static bool get horizontalSeasonPanel => _setting.get(
+    SettingBoxKey.horizontalSeasonPanel,
+    defaultValue: PlatformUtils.isDesktop,
+  );
 
-  static bool get horizontalMemberPage =>
-      _setting.get(SettingBoxKey.horizontalMemberPage, defaultValue: false);
+  static bool get horizontalMemberPage => _setting.get(
+    SettingBoxKey.horizontalMemberPage,
+    defaultValue: PlatformUtils.isDesktop,
+  );
 
   static int? get replyLengthLimit {
     int length = _setting.get(SettingBoxKey.replyLengthLimit, defaultValue: 6);
@@ -424,10 +462,9 @@ abstract class Pref {
     SuperResolutionType? superResolutionType;
     final index = _setting.get(SettingBoxKey.superResolutionType);
     if (index != null) {
-      superResolutionType = SuperResolutionType.values.getOrNull(index);
+      superResolutionType = SuperResolutionType.values.elementAtOrNull(index);
     }
-    superResolutionType ??= SuperResolutionType.disable;
-    return superResolutionType;
+    return superResolutionType ?? SuperResolutionType.disable;
   }
 
   static bool get preInitPlayer =>
@@ -455,6 +492,7 @@ abstract class Pref {
       _setting.get(SettingBoxKey.enableCommAntifraud, defaultValue: false);
 
   static bool get biliSendCommAntifraud =>
+      Platform.isAndroid &&
       _setting.get(SettingBoxKey.biliSendCommAntifraud, defaultValue: false);
 
   static bool get enableCreateDynAntifraud =>
@@ -618,17 +656,27 @@ abstract class Pref {
   static double get defaultTextScale =>
       _setting.get(SettingBoxKey.defaultTextScale, defaultValue: 1.0);
 
+  static double get uiScale =>
+      _setting.get(SettingBoxKey.uiScale, defaultValue: 1.0);
+
   static bool get dynamicsWaterfallFlow =>
       _setting.get(SettingBoxKey.dynamicsWaterfallFlow, defaultValue: true);
 
-  static bool get hideSearchBar =>
-      _setting.get(SettingBoxKey.hideSearchBar, defaultValue: true);
+  static bool get hideTopBar => _setting.get(
+    SettingBoxKey.hideTopBar,
+    defaultValue: PlatformUtils.isMobile,
+  );
 
-  static bool get enableScrollThreshold =>
-      _setting.get(SettingBoxKey.enableScrollThreshold, defaultValue: false);
+  static bool get hideBottomBar => _setting.get(
+    SettingBoxKey.hideBottomBar,
+    defaultValue: PlatformUtils.isMobile,
+  );
 
-  static double get scrollThreshold =>
-      _setting.get(SettingBoxKey.scrollThreshold, defaultValue: 50.0);
+  static BarHideType get barHideType =>
+      BarHideType.values[_setting.get(
+        SettingBoxKey.barHideType,
+        defaultValue: BarHideType.sync.index,
+      )];
 
   static bool get enableSearchWord =>
       _setting.get(SettingBoxKey.enableSearchWord, defaultValue: false);
@@ -657,7 +705,8 @@ abstract class Pref {
       _setting.get(SettingBoxKey.customColor, defaultValue: 0);
 
   static bool get dynamicColor =>
-      _setting.get(SettingBoxKey.dynamicColor, defaultValue: !Platform.isIOS);
+      !Platform.isIOS &&
+      _setting.get(SettingBoxKey.dynamicColor, defaultValue: true);
 
   static bool get autoClearCache =>
       _setting.get(SettingBoxKey.autoClearCache, defaultValue: false);
@@ -668,16 +717,17 @@ abstract class Pref {
   static bool get enableHttp2 =>
       _setting.get(SettingBoxKey.enableHttp2, defaultValue: false);
 
-  static int get replySortType =>
-      _setting.get(SettingBoxKey.replySortType, defaultValue: 1);
+  static ReplySortType get replySortType =>
+      ReplySortType.values[_setting.get(
+        SettingBoxKey.replySortType,
+        defaultValue: ReplySortType.hot.index,
+      )];
 
-  static bool get hideTabBar =>
-      _setting.get(SettingBoxKey.hideTabBar, defaultValue: true);
-
-  static int get dynamicBadgeMode => _setting.get(
-    SettingBoxKey.dynamicBadgeMode,
-    defaultValue: DynamicBadgeMode.number.index,
-  );
+  static DynamicBadgeMode get dynamicBadgeMode =>
+      DynamicBadgeMode.values[_setting.get(
+        SettingBoxKey.dynamicBadgeMode,
+        defaultValue: DynamicBadgeMode.number.index,
+      )];
 
   static bool get enableMYBar =>
       _setting.get(SettingBoxKey.enableMYBar, defaultValue: true);
@@ -716,8 +766,10 @@ abstract class Pref {
   static double get danmakuOpacity =>
       _setting.get(SettingBoxKey.danmakuOpacity, defaultValue: 1.0);
 
-  static double get danmakuFontScale =>
-      _setting.get(SettingBoxKey.danmakuFontScale, defaultValue: 1.0);
+  static double get danmakuFontScale => _setting.get(
+    SettingBoxKey.danmakuFontScale,
+    defaultValue: PlatformUtils.isMobile ? 1.0 : 1.4,
+  );
 
   static double get danmakuDuration =>
       _setting.get(SettingBoxKey.danmakuDuration, defaultValue: 7.0);
@@ -725,11 +777,15 @@ abstract class Pref {
   static double get danmakuStaticDuration =>
       _setting.get(SettingBoxKey.danmakuStaticDuration, defaultValue: 4.0);
 
-  static double get strokeWidth =>
-      _setting.get(SettingBoxKey.strokeWidth, defaultValue: 1.5);
+  static double get danmakuStrokeWidth => _setting.get(
+    SettingBoxKey.danmakuStrokeWidth,
+    defaultValue: PlatformUtils.isMobile ? 1.5 : 2.5,
+  );
 
-  static int get fontWeight =>
-      _setting.get(SettingBoxKey.fontWeight, defaultValue: 5);
+  static int get danmakuFontWeight => _setting.get(
+    SettingBoxKey.danmakuFontWeight,
+    defaultValue: PlatformUtils.isMobile ? 5 : 6,
+  );
 
   static bool get enableLongShowControl =>
       _setting.get(SettingBoxKey.enableLongShowControl, defaultValue: false);
@@ -737,8 +793,10 @@ abstract class Pref {
   static bool get expandBuffer =>
       _setting.get(SettingBoxKey.expandBuffer, defaultValue: false);
 
-  static bool get useOpenSLES =>
-      _setting.get(SettingBoxKey.useOpenSLES, defaultValue: true);
+  static String get audioOutput => _setting.get(
+    SettingBoxKey.audioOutput,
+    defaultValue: AudioOutput.defaultValue,
+  );
 
   static bool get enableAi =>
       _setting.get(SettingBoxKey.enableAi, defaultValue: false);
@@ -768,14 +826,16 @@ abstract class Pref {
       _setting.get(SettingBoxKey.enableSearchRcmd, defaultValue: true);
 
   static bool get enableSaveLastData =>
-      _setting.get(SettingBoxKey.enableSaveLastData, defaultValue: false);
+      _setting.get(SettingBoxKey.enableSaveLastData, defaultValue: true);
 
   static double get defaultToastOp =>
       _setting.get(SettingBoxKey.defaultToastOp, defaultValue: 1.0);
 
-  static int get playRepeat =>
-      (_video.get(VideoBoxKey.playRepeat) as num?)?.toInt() ??
-      PlayRepeat.pause.index;
+  static PlayRepeat get playRepeat =>
+      PlayRepeat.values[_video.get(
+        VideoBoxKey.playRepeat,
+        defaultValue: PlayRepeat.pause.index,
+      )];
 
   static int get cacheVideoFit =>
       _video.get(VideoBoxKey.cacheVideoFit, defaultValue: 1);
@@ -823,8 +883,11 @@ abstract class Pref {
   static bool get showMemberShop =>
       _setting.get(SettingBoxKey.showMemberShop, defaultValue: false);
 
-  static bool get showSuperChat =>
-      _setting.get(SettingBoxKey.showSuperChat, defaultValue: true);
+  static SuperChatType get superChatType =>
+      SuperChatType.values[_setting.get(
+        SettingBoxKey.superChatType,
+        defaultValue: SuperChatType.valid.index,
+      )];
 
   static bool get minimizeOnExit =>
       _setting.get(SettingBoxKey.minimizeOnExit, defaultValue: true);
@@ -849,6 +912,9 @@ abstract class Pref {
 
   static bool get showWindowTitleBar =>
       _setting.get(SettingBoxKey.showWindowTitleBar, defaultValue: true);
+
+  static bool get useSSD =>
+      _setting.get(SettingBoxKey.useSSD, defaultValue: false);
 
   static double get desktopVolume =>
       _setting.get(SettingBoxKey.desktopVolume, defaultValue: 1.0);
@@ -879,7 +945,7 @@ abstract class Pref {
 
   static bool get showBatteryLevel => _setting.get(
     SettingBoxKey.showBatteryLevel,
-    defaultValue: Utils.isMobile,
+    defaultValue: PlatformUtils.isMobile,
   );
 
   static FollowOrderType get followOrderType =>
@@ -887,4 +953,13 @@ abstract class Pref {
         SettingBoxKey.followOrderType,
         defaultValue: FollowOrderType.def.index,
       )];
+
+  static bool get enableImgMenu =>
+      _setting.get(SettingBoxKey.enableImgMenu, defaultValue: false);
+
+  static bool get showDynDispute =>
+      _setting.get(SettingBoxKey.showDynDispute, defaultValue: false);
+
+  static double get touchSlopH =>
+      _setting.get(SettingBoxKey.touchSlopH, defaultValue: 24.0);
 }

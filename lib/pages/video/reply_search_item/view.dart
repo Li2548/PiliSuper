@@ -22,10 +22,16 @@ class ReplySearchPage extends StatefulWidget {
 }
 
 class _ReplySearchPageState extends State<ReplySearchPage> {
-  late final _controller = Get.put(
-    ReplySearchController(widget.type, widget.oid),
-    tag: Utils.generateRandomString(8),
-  );
+  late final ReplySearchController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      ReplySearchController(widget.type, widget.oid),
+      tag: Utils.generateRandomString(8),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +54,7 @@ class _ReplySearchPageState extends State<ReplySearchPage> {
           textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             hintText: '搜索',
+            visualDensity: .standard,
             border: InputBorder.none,
             suffixIcon: IconButton(
               tooltip: '清空',

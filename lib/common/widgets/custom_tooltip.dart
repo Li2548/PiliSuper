@@ -1,135 +1,63 @@
-import 'dart:math' as math;
-import 'dart:ui' show clampDouble;
-
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-
-enum TooltipType { top, right }
+import 'package:flutter/rendering.dart'
+    show
+        ContainerRenderObjectMixin,
+        RenderBoxContainerDefaultsMixin,
+        MultiChildLayoutParentData;
+import 'package:flutter/widgets.dart';
 
 class CustomTooltip extends StatefulWidget {
   const CustomTooltip({
     super.key,
-    this.type = TooltipType.top,
     required this.overlayWidget,
     required this.child,
-    this.indicator,
+    required this.indicator,
   });
 
-  final TooltipType type;
   final Widget child;
-  final Widget Function() overlayWidget;
-  final Widget Function()? indicator;
-
-  static final List<CustomTooltipState> _openedTooltips =
-      <CustomTooltipState>[];
-
-  static bool dismissAllToolTips() {
-    if (_openedTooltips.isNotEmpty) {
-      final List<CustomTooltipState> openedTooltips = _openedTooltips.toList();
-      for (final CustomTooltipState state in openedTooltips) {
-        assert(state.mounted);
-        state._scheduleDismissTooltip();
-      }
-      return true;
-    }
-    return false;
-  }
+  final ValueGetter<Widget> overlayWidget;
+  final ValueGetter<Widget> indicator;
 
   @override
-  State<CustomTooltip> createState() => CustomTooltipState();
+  State<CustomTooltip> createState() => _CustomTooltipState();
 }
 
-class CustomTooltipState extends State<CustomTooltip>
-    with SingleTickerProviderStateMixin {
-  static const Duration _fadeInDuration = Duration(milliseconds: 150);
-  static const Duration _fadeOutDuration = Duration(milliseconds: 75);
-
+class _CustomTooltipState extends State<CustomTooltip> {
   final OverlayPortalController _overlayController = OverlayPortalController();
 
-  AnimationController? _backingController;
-  AnimationController get _controller {
-    return _backingController ??= AnimationController(
-      duration: _fadeInDuration,
-      reverseDuration: _fadeOutDuration,
-      vsync: this,
-    )..addStatusListener(_handleStatusChanged);
-  }
-
-  CurvedAnimation? _backingOverlayAnimation;
-  CurvedAnimation get _overlayAnimation {
-    return _backingOverlayAnimation ??= CurvedAnimation(
-      parent: _controller,
-      curve: Curves.fastOutSlowIn,
-    );
-  }
-
   LongPressGestureRecognizer? _longPressRecognizer;
-
-  AnimationStatus _animationStatus = AnimationStatus.dismissed;
-  void _handleStatusChanged(AnimationStatus status) {
-    assert(mounted);
-    switch ((_animationStatus.isDismissed, status.isDismissed)) {
-      case (false, true):
-        CustomTooltip._openedTooltips.remove(this);
-        _overlayController.hide();
-      case (true, false):
-        _overlayController.show();
-        CustomTooltip._openedTooltips.add(this);
-      case (true, true) || (false, false):
-        break;
-    }
-    _animationStatus = status;
-  }
+  LongPressGestureRecognizer get longPressRecognizer =>
+      _longPressRecognizer ??= LongPressGestureRecognizer()
+        ..onLongPress = _scheduleShowTooltip;
 
   void _scheduleShowTooltip() {
-    _controller.forward();
+    _overlayController.show();
   }
 
   void _scheduleDismissTooltip() {
-    _controller.reverse();
+    _overlayController.hide();
   }
 
   void _handlePointerDown(PointerDownEvent event) {
     assert(mounted);
-    const Set<PointerDeviceKind> triggerModeDeviceKinds = <PointerDeviceKind>{
-      PointerDeviceKind.invertedStylus,
-      PointerDeviceKind.stylus,
-      PointerDeviceKind.touch,
-      PointerDeviceKind.unknown,
-      PointerDeviceKind.trackpad,
-    };
-    _longPressRecognizer ??= LongPressGestureRecognizer(
-      debugOwner: this,
-      supportedDevices: triggerModeDeviceKinds,
-    );
-    _longPressRecognizer!
-      ..onLongPress = _scheduleShowTooltip
-      ..addPointer(event);
+    longPressRecognizer.addPointer(event);
   }
 
-  Widget _buildCustomTooltipOverlay(BuildContext context) {
-    final OverlayState overlayState = Overlay.of(
-      context,
-      debugRequiredFor: widget,
+  Widget _buildCustomTooltipOverlay(
+    BuildContext context,
+    OverlayChildLayoutInfo layoutInfo,
+  ) {
+    final target = MatrixUtils.transformPoint(
+      layoutInfo.childPaintTransform,
+      layoutInfo.childSize.topCenter(Offset.zero),
     );
-    final RenderBox box = this.context.findRenderObject()! as RenderBox;
-    final Offset target = box.localToGlobal(
-      box.size.center(Offset.zero),
-      ancestor: overlayState.context.findRenderObject(),
-    );
-
     final _CustomTooltipOverlay overlayChild = _CustomTooltipOverlay(
-      verticalOffset: box.size.height / 2,
-      horizontalOffset: box.size.width / 2,
-      type: widget.type,
-      animation: _overlayAnimation,
       target: target,
       onDismiss: _scheduleDismissTooltip,
       overlayWidget: widget.overlayWidget,
       indicator: widget.indicator,
     );
-
     return SelectionContainer.maybeOf(context) == null
         ? overlayChild
         : SelectionContainer.disabled(child: overlayChild);
@@ -138,11 +66,10 @@ class CustomTooltipState extends State<CustomTooltip>
   @protected
   @override
   void dispose() {
-    CustomTooltip._openedTooltips.remove(this);
-    _longPressRecognizer?.onLongPressCancel = null;
-    _longPressRecognizer?.dispose();
-    _backingController?.dispose();
-    _backingOverlayAnimation?.dispose();
+    _longPressRecognizer
+      ?..onLongPress = null
+      ..dispose();
+    _longPressRecognizer = null;
     super.dispose();
   }
 
@@ -150,7 +77,7 @@ class CustomTooltipState extends State<CustomTooltip>
   @override
   Widget build(BuildContext context) {
     Widget result;
-    if (Utils.isMobile) {
+    if (PlatformUtils.isMobile) {
       result = Listener(
         onPointerDown: _handlePointerDown,
         behavior: HitTestBehavior.opaque,
@@ -164,7 +91,7 @@ class CustomTooltipState extends State<CustomTooltip>
         child: widget.child,
       );
     }
-    return OverlayPortal(
+    return OverlayPortal.overlayChildLayoutBuilder(
       controller: _overlayController,
       overlayChildBuilder: _buildCustomTooltipOverlay,
       child: result,
@@ -174,232 +101,235 @@ class CustomTooltipState extends State<CustomTooltip>
 
 class _CustomTooltipOverlay extends StatelessWidget {
   const _CustomTooltipOverlay({
-    required this.verticalOffset,
-    required this.horizontalOffset,
-    required this.type,
-    required this.animation,
     required this.target,
     required this.onDismiss,
     required this.overlayWidget,
-    this.indicator,
+    required this.indicator,
   });
 
-  final double verticalOffset;
-  final double horizontalOffset;
-  final TooltipType type;
-  final Animation<double> animation;
   final Offset target;
   final VoidCallback onDismiss;
-  final Widget Function() overlayWidget;
-  final Widget Function()? indicator;
+  final ValueGetter<Widget> overlayWidget;
+  final ValueGetter<Widget> indicator;
 
   @override
   Widget build(BuildContext context) {
-    Widget child = CustomMultiChildLayout(
-      delegate: _CustomMultiTooltipPositionDelegate(
-        type: type,
-        target: target,
-        verticalOffset: verticalOffset,
-        horizontslOffset: horizontalOffset,
-        preferBelow: false,
-      ),
+    return _ToolTip(
+      target: target,
+      preferBelow: false,
+      onTap: PlatformUtils.isMobile ? onDismiss : null,
       children: [
-        LayoutId(
-          id: 'overlay',
-          child: overlayWidget(),
-        ),
-        if (indicator != null)
-          LayoutId(
-            id: 'indicator',
-            child: indicator!(),
-          ),
+        indicator(),
+        overlayWidget(),
       ],
     );
-    if (Utils.isMobile) {
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onDismiss,
-        child: child,
-      );
-    }
-    return child;
   }
 }
 
-class _CustomMultiTooltipPositionDelegate extends MultiChildLayoutDelegate {
-  _CustomMultiTooltipPositionDelegate({
-    required this.type,
+class _ToolTip extends MultiChildRenderObjectWidget {
+  const _ToolTip({
+    super.children,
+    this.onTap,
     required this.target,
-    required this.verticalOffset,
-    required this.horizontslOffset,
     required this.preferBelow,
   });
 
-  final TooltipType type;
-
+  final VoidCallback? onTap;
   final Offset target;
-
-  final double verticalOffset;
-
-  final double horizontslOffset;
-
   final bool preferBelow;
 
   @override
-  void performLayout(Size size) {
-    switch (type) {
-      case TooltipType.top:
-        Size? indicatorSize;
-        if (hasChild('indicator')) {
-          indicatorSize = layoutChild('indicator', BoxConstraints.loose(size));
-        }
+  RenderObject createRenderObject(BuildContext context) {
+    return _RenderToolTip(
+      onTap: onTap,
+      target: target,
+      preferBelow: preferBelow,
+    );
+  }
 
-        if (hasChild('overlay')) {
-          final overlaySize = layoutChild(
-            'overlay',
-            BoxConstraints.loose(size),
-          );
-          Offset offset = positionDependentBox(
-            type: type,
-            size: size,
-            childSize: overlaySize,
-            target: target,
-            verticalOffset: verticalOffset,
-            horizontslOffset: horizontslOffset,
-            preferBelow: preferBelow,
-          );
-          if (indicatorSize != null) {
-            offset = Offset(offset.dx, offset.dy - indicatorSize.height + 1);
-            positionChild(
-              'indicator',
-              Offset(
-                target.dx - indicatorSize.width / 2,
-                offset.dy + overlaySize.height - 1,
-              ),
-            );
-          }
-          positionChild('overlay', offset);
-        }
-      case TooltipType.right:
-        Size? indicatorSize;
-        if (hasChild('indicator')) {
-          indicatorSize = layoutChild('indicator', BoxConstraints.loose(size));
-        }
+  @override
+  void updateRenderObject(BuildContext context, _RenderToolTip renderObject) {
+    renderObject
+      ..onTap = onTap
+      ..target = target
+      ..preferBelow = preferBelow;
+  }
+}
 
-        if (hasChild('overlay')) {
-          final overlaySize = layoutChild(
-            'overlay',
-            BoxConstraints.loose(size),
-          );
-          Offset offset = positionDependentBox(
-            type: type,
-            size: size,
-            childSize: overlaySize,
-            target: target,
-            verticalOffset: verticalOffset,
-            horizontslOffset: horizontslOffset,
-            preferBelow: preferBelow,
-          );
-          if (indicatorSize != null) {
-            offset = Offset(offset.dx + indicatorSize.height - 1, offset.dy);
-            positionChild(
-              'indicator',
-              Offset(
-                offset.dx - indicatorSize.width + 1,
-                target.dy - indicatorSize.height / 2,
-              ),
-            );
-          }
-          positionChild('overlay', offset);
-        }
+class _RenderToolTip extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, MultiChildLayoutParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, MultiChildLayoutParentData> {
+  _RenderToolTip({
+    VoidCallback? onTap,
+    required Offset target,
+    required bool preferBelow,
+  }) : _target = target,
+       _preferBelow = preferBelow,
+       _hitTestSelf = onTap != null {
+    if (onTap != null) {
+      _tapGestureRecognizer = TapGestureRecognizer()..onTap = onTap;
+    }
+  }
+
+  TapGestureRecognizer? _tapGestureRecognizer;
+
+  set onTap(VoidCallback? value) {
+    _tapGestureRecognizer?.onTap = value;
+  }
+
+  @override
+  void dispose() {
+    _tapGestureRecognizer
+      ?..onTap = null
+      ..dispose();
+    _tapGestureRecognizer = null;
+    super.dispose();
+  }
+
+  final bool _hitTestSelf;
+  @override
+  bool hitTestSelf(Offset position) => _hitTestSelf;
+
+  @override
+  void handleEvent(PointerEvent event, HitTestEntry<HitTestTarget> entry) {
+    if (event is PointerDownEvent) {
+      _tapGestureRecognizer?.addPointer(event);
+    }
+  }
+
+  Offset _target;
+  Offset get target => _target;
+  set target(Offset value) {
+    if (_target == value) return;
+    _target = value;
+    markNeedsPaint();
+  }
+
+  bool _preferBelow;
+  bool get preferBelow => _preferBelow;
+  set preferBelow(bool value) {
+    if (_preferBelow == value) return;
+    _preferBelow = value;
+    markNeedsPaint();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! MultiChildLayoutParentData) {
+      child.parentData = MultiChildLayoutParentData();
     }
   }
 
   @override
-  bool shouldRelayout(_CustomMultiTooltipPositionDelegate oldDelegate) {
-    return target != oldDelegate.target ||
-        verticalOffset != oldDelegate.verticalOffset ||
-        preferBelow != oldDelegate.preferBelow;
+  void performLayout() {
+    size = constraints.constrain(constraints.biggest);
+
+    final c = BoxConstraints.loose(size);
+    RenderBox indicator = firstChild!..layout(c, parentUsesSize: true);
+    RenderBox overlay = lastChild!..layout(c, parentUsesSize: true);
+
+    final indicatorSize = indicator.size;
+    final overlaySize = overlay.size;
+
+    final indicatorParentData =
+        indicator.parentData as MultiChildLayoutParentData;
+    final overlayParentData = overlay.parentData as MultiChildLayoutParentData;
+
+    Offset offset = positionDependentBox(
+      size: size,
+      childSize: overlaySize,
+      target: target,
+      preferBelow: preferBelow,
+    );
+    offset = Offset(offset.dx, offset.dy - indicatorSize.height + 1);
+    overlayParentData.offset = offset;
+    indicatorParentData.offset = Offset(
+      target.dx - indicatorSize.width / 2,
+      offset.dy + overlaySize.height - 1,
+    );
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final childParentData = child.parentData as MultiChildLayoutParentData;
+      context.paintChild(child, childParentData.offset + offset);
+      child = childParentData.nextSibling;
+    }
   }
 }
 
-class TrianglePainter extends CustomPainter {
-  TrianglePainter(this.color, {this.type = TooltipType.top});
-  final TooltipType type;
+class Triangle extends LeafRenderObjectWidget {
+  const Triangle({
+    super.key,
+    required this.color,
+    required this.size,
+  });
+
   final Color color;
+  final Size size;
 
   @override
-  void paint(Canvas canvas, Size size) {
+  RenderObject createRenderObject(BuildContext context) {
+    return RenderTriangle(
+      color: color,
+      preferredSize: size,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    RenderTriangle renderObject,
+  ) {
+    renderObject
+      ..color = color
+      ..preferredSize = size;
+  }
+}
+
+class RenderTriangle extends RenderBox {
+  RenderTriangle({
+    required Color color,
+    required Size preferredSize,
+  }) : _color = color,
+       _preferredSize = preferredSize;
+
+  Color _color;
+  Color get color => _color;
+  set color(Color value) {
+    if (_color == value) return;
+    _color = value;
+    markNeedsPaint();
+  }
+
+  Size _preferredSize;
+  set preferredSize(Size value) {
+    if (_preferredSize == value) return;
+    _preferredSize = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void performLayout() {
+    size = constraints.constrain(_preferredSize);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final size = this.size;
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
 
-    Path path;
-    switch (type) {
-      case TooltipType.top:
-        path = Path()
-          ..moveTo(0, 0)
-          ..lineTo(size.width, 0)
-          ..lineTo(size.width / 2, size.height)
-          ..close();
-      case TooltipType.right:
-        path = Path()
-          ..moveTo(0, size.height / 2)
-          ..lineTo(size.width, 0)
-          ..lineTo(size.width, size.height)
-          ..close();
-    }
+    final path = Path()
+      ..moveTo(offset.dx, offset.dy)
+      ..lineTo(offset.dx + size.width, offset.dy)
+      ..lineTo(offset.dx + size.width / 2, size.height + offset.dy)
+      ..close();
 
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(TrianglePainter oldDelegate) => color != oldDelegate.color;
-}
-
-Offset positionDependentBox({
-  required TooltipType type,
-  required Size size,
-  required Size childSize,
-  required Offset target,
-  required bool preferBelow,
-  double verticalOffset = 0.0,
-  double horizontslOffset = 0.0,
-  double margin = 10.0,
-}) {
-  switch (type) {
-    case TooltipType.top:
-      // VERTICAL DIRECTION
-      final bool fitsBelow =
-          target.dy + verticalOffset + childSize.height <= size.height - margin;
-      final bool fitsAbove =
-          target.dy - verticalOffset - childSize.height >= margin;
-      final bool tooltipBelow = fitsAbove == fitsBelow
-          ? preferBelow
-          : fitsBelow;
-      final double y;
-      if (tooltipBelow) {
-        y = math.min(target.dy + verticalOffset, size.height - margin);
-      } else {
-        y = math.max(target.dy - verticalOffset - childSize.height, margin);
-      } // HORIZONTAL DIRECTION
-      final double flexibleSpace = size.width - childSize.width;
-      final double x = flexibleSpace <= 2 * margin
-          // If there's not enough horizontal space for margin + child, center the
-          // child.
-          ? flexibleSpace / 2.0
-          : clampDouble(
-              target.dx - childSize.width / 2,
-              margin,
-              flexibleSpace - margin,
-            );
-      return Offset(x, y);
-    case TooltipType.right:
-      final double dy = math.max(margin, target.dy - childSize.height / 2);
-      final double dx = math.min(
-        target.dx + horizontslOffset,
-        size.width - childSize.width - margin,
-      );
-      return Offset(dx, dy);
+    context.canvas.drawPath(path, paint);
   }
 }

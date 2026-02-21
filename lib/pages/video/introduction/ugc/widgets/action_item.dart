@@ -1,6 +1,6 @@
-import 'dart:math' show pi;
-
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/common/widgets/custom_arc.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 
 class ActionItem extends StatelessWidget {
@@ -51,16 +51,12 @@ class ActionItem extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          RepaintBoundary(
-            child: AnimatedBuilder(
-              animation: animation!,
-              builder: (context, child) => CustomPaint(
-                size: const Size.square(28),
-                painter: ArcPainter(
-                  color: primary,
-                  sweepAngle: animation!.value,
-                ),
-              ),
+          AnimatedBuilder(
+            animation: animation!,
+            builder: (context, child) => Arc(
+              size: 28,
+              color: primary,
+              progress: -animation!.value,
             ),
           ),
           child,
@@ -70,19 +66,25 @@ class ActionItem extends StatelessWidget {
       child = SizedBox.square(dimension: 28, child: child);
     }
 
-    child = InkWell(
-      borderRadius: const BorderRadius.all(Radius.circular(6)),
-      onTap: _isThumbsUp ? null : onTap,
-      onLongPress: _isThumbsUp ? null : onLongPress,
-      onTapDown: _isThumbsUp ? (_) => onStartTriple!() : null,
-      onTapUp: _isThumbsUp ? (_) => onCancelTriple!(true) : null,
-      onTapCancel: _isThumbsUp ? onCancelTriple : null,
-      child: expand
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [child, _buildText(theme)],
-            )
-          : child,
+    child = Material(
+      type: .transparency,
+      child: InkWell(
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        onTap: _isThumbsUp ? null : onTap,
+        onLongPress: _isThumbsUp ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile || _isThumbsUp
+            ? null
+            : onLongPress,
+        onTapDown: _isThumbsUp ? (_) => onStartTriple!() : null,
+        onTapUp: _isThumbsUp ? (_) => onCancelTriple!(true) : null,
+        onTapCancel: _isThumbsUp ? onCancelTriple : null,
+        child: expand
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [child, _buildText(theme)],
+              )
+            : child,
+      ),
     );
     return expand ? Expanded(child: child) : child;
   }
@@ -109,42 +111,5 @@ class ActionItem extends StatelessWidget {
       );
     }
     return child;
-  }
-}
-
-class ArcPainter extends CustomPainter {
-  const ArcPainter({
-    required this.color,
-    required this.sweepAngle,
-    this.strokeWidth = 2,
-  });
-  final Color color;
-  final double sweepAngle;
-  final double strokeWidth;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (sweepAngle == 0) {
-      return;
-    }
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final rect = Rect.fromCircle(
-      center: Offset(size.width / 2, size.height / 2),
-      radius: size.width / 2,
-    );
-
-    const startAngle = -pi / 2;
-
-    canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant ArcPainter oldDelegate) {
-    return sweepAngle != oldDelegate.sweepAngle || color != oldDelegate.color;
   }
 }

@@ -1,5 +1,5 @@
 import 'package:PiliSuper/models_new/live/live_room_play_info/url_info.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class CodecItem {
   String? codecName;

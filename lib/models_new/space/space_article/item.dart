@@ -2,7 +2,7 @@ import 'package:PiliSuper/models_new/space/space_article/author.dart';
 import 'package:PiliSuper/models_new/space/space_article/category.dart';
 import 'package:PiliSuper/models_new/space/space_article/media.dart';
 import 'package:PiliSuper/models_new/space/space_article/stats.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class SpaceArticleItem {
   int? id;

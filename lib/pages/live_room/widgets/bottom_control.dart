@@ -1,7 +1,6 @@
 import 'package:PiliSuper/common/widgets/custom_icon.dart';
 import 'package:PiliSuper/pages/live_room/controller.dart';
-import 'package:PiliSuper/pages/video/widgets/header_control.dart'
-    show HeaderMixin;
+import 'package:PiliSuper/pages/video/widgets/header_mixin.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
 import 'package:PiliSuper/plugin/pl_player/models/video_fit_type.dart';
 import 'package:PiliSuper/plugin/pl_player/widgets/common_btn.dart';

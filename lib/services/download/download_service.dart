@@ -5,6 +5,7 @@ import 'dart:io' show Directory, File;
 import 'package:PiliSuper/grpc/dm.dart';
 import 'package:PiliSuper/http/download.dart';
 import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models/common/video/video_quality.dart';
 import 'package:PiliSuper/models_new/download/bili_download_entry_info.dart';
 import 'package:PiliSuper/models_new/download/bili_download_media_file_info.dart';
@@ -15,7 +16,8 @@ import 'package:PiliSuper/models_new/video/video_detail/episode.dart' as ugc;
 import 'package:PiliSuper/models_new/video/video_detail/page.dart';
 import 'package:PiliSuper/pages/danmaku/controller.dart';
 import 'package:PiliSuper/services/download/download_manager.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/file_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/path_utils.dart';
 import 'package:flutter/foundation.dart';
@@ -33,7 +35,7 @@ class DownloadService extends GetxService {
 
   final _lock = Lock();
 
-  final flagNotifier = <void Function()>{};
+  final flagNotifier = SetNotifier();
   final waitDownloadQueue = RxList<BiliDownloadEntryInfo>();
   final downloadList = <BiliDownloadEntryInfo>[];
 
@@ -244,8 +246,7 @@ class DownloadService extends GetxService {
       ..entryDirPath = entryDir.path
       ..status = DownloadStatus.wait;
     waitDownloadQueue.add(entry);
-    final currStatus = curDownload.value?.status?.index;
-    if (currStatus == null || currStatus > 3) {
+    if (curDownload.value?.status.isDownloading != true) {
       startDownload(entry);
     }
   }
@@ -283,9 +284,10 @@ class DownloadService extends GetxService {
       await _audioDownloadManager?.cancel(isDelete: false);
       _downloadManager = null;
       _audioDownloadManager = null;
-      final prevStatus = curDownload.value?.status?.index;
-      if (prevStatus != null && prevStatus <= 3) {
-        curDownload.value?.status = DownloadStatus.pause;
+      if (curDownload.value case final curEntry?) {
+        if (curEntry.status.isDownloading) {
+          curEntry.status = DownloadStatus.pause;
+        }
       }
 
       _curCid = entry.cid;
@@ -320,9 +322,9 @@ class DownloadService extends GetxService {
         ]);
 
         final danmaku = res.removeAt(0).data;
-        for (var i in res) {
-          if (i.isSuccess) {
-            danmaku.elems.addAll(i.data.elems);
+        for (final i in res) {
+          if (i case Success(:final response)) {
+            danmaku.elems.addAll(response.elems);
           }
         }
         res.clear();
@@ -370,13 +372,12 @@ class DownloadService extends GetxService {
 
       _updateCurStatus(DownloadStatus.getPlayUrl);
 
-      final BiliDownloadMediaInfo mediaFileInfo =
-          await DownloadHttp.getVideoUrl(
-            entry: entry,
-            ep: entry.ep,
-            source: entry.source,
-            pageData: entry.pageData,
-          );
+      final mediaFileInfo = await DownloadHttp.getVideoUrl(
+        entry: entry,
+        ep: entry.ep,
+        source: entry.source,
+        pageData: entry.pageData,
+      );
 
       final videoDir = Directory(path.join(entry.entryDirPath, entry.typeTag));
       if (!videoDir.existsSync()) {
@@ -439,9 +440,9 @@ class DownloadService extends GetxService {
     }
   }
 
-  Future<void> _updateBiliDownloadEntryJson(BiliDownloadEntryInfo entry) async {
+  Future<void> _updateBiliDownloadEntryJson(BiliDownloadEntryInfo entry) {
     final entryJsonFile = File(path.join(entry.entryDirPath, _entryFile));
-    await entryJsonFile.writeAsString(jsonEncode(entry.toJson()));
+    return entryJsonFile.writeAsString(jsonEncode(entry.toJson()));
   }
 
   void _onReceive(int progress, int total) {
@@ -591,9 +592,11 @@ class DownloadService extends GetxService {
   }
 }
 
-extension SetExt on Set<void Function()> {
+typedef SetNotifier = Set<VoidCallback>;
+
+extension SetNotifierExt on SetNotifier {
   void refresh() {
-    for (var i in this) {
+    for (final i in this) {
       i();
     }
   }

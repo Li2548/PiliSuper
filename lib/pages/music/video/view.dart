@@ -6,7 +6,7 @@ import 'package:PiliSuper/models/common/image_type.dart';
 import 'package:PiliSuper/models_new/music/bgm_recommend_list.dart';
 import 'package:PiliSuper/pages/music/video/controller.dart';
 import 'package:PiliSuper/pages/music/widget/music_video_card_h.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
 import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,7 +20,7 @@ class MusicRecommendPage extends StatefulWidget {
 
 class _MusicRecommendPageState extends State<MusicRecommendPage>
     with GridMixin {
-  late final MusicRecommendController _controller = Get.putOrFind(
+  final MusicRecommendController _controller = Get.putOrFind(
     MusicRecommendController.new,
     tag: (Get.arguments as MusicRecommendArgs).id,
   );
@@ -57,7 +57,7 @@ class _MusicRecommendPageState extends State<MusicRecommendPage>
   Widget _buildBody(LoadingState<List<BgmRecommend>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -66,7 +66,7 @@ class _MusicRecommendPageState extends State<MusicRecommendPage>
                 itemCount: response.length,
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

@@ -1,22 +1,21 @@
 import 'package:PiliSuper/common/widgets/flutter/text_field/controller.dart';
 import 'package:PiliSuper/grpc/bilibili/main/community/reply/v1.pb.dart'
-    show MainListReply, ReplyInfo, SubjectControl, Mode, EditorIconState;
+    show MainListReply, ReplyInfo, SubjectControl, Mode;
 import 'package:PiliSuper/grpc/bilibili/pagination.pb.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/reply.dart';
 import 'package:PiliSuper/models/common/reply/reply_sort_type.dart';
 import 'package:PiliSuper/pages/common/common_list_controller.dart';
+import 'package:PiliSuper/pages/common/publish/publish_route.dart';
 import 'package:PiliSuper/pages/video/reply_new/view.dart';
 import 'package:PiliSuper/utils/feed_back.dart';
 import 'package:PiliSuper/utils/reply_utils.dart';
 import 'package:PiliSuper/utils/request_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
-import 'package:get/get_navigation/src/dialog/dialog_route.dart';
 
 abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   final RxInt count = (-1).obs;
@@ -45,9 +44,10 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   @override
   void onInit() {
     super.onInit();
-    int replySortType = Pref.replySortType;
-    sortType = ReplySortType.values[replySortType].obs;
-    mode = (replySortType == 0 ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT).obs;
+    final cacheSortType = Pref.replySortType;
+    sortType = cacheSortType.obs;
+    mode =
+        (cacheSortType == .time ? Mode.MAIN_LIST_TIME : Mode.MAIN_LIST_HOT).obs;
   }
 
   @override
@@ -101,36 +101,33 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
     onReload();
   }
 
-  (bool inputDisable, bool canUploadPic, String? hint) get replyHint {
-    bool inputDisable = false;
-    bool canUploadPic =
-        subjectControl?.uploadPictureIconState !=
-        EditorIconState.EditorIconState_DISABLE;
+  (bool inputDisable, String? hint) get replyHint {
     String? hint;
+    bool inputDisable = false;
     try {
-      if (subjectControl != null && subjectControl!.hasRootText()) {
-        final rootText = subjectControl!.rootText;
-        inputDisable = subjectControl!.inputDisable;
-        if (inputDisable) {
-          SmartDialog.showToast(rootText);
-        }
-        if (rootText.contains('可发') || rootText.contains('可见')) {
-          hint = rootText;
+      if (subjectControl case final subjectControl?) {
+        inputDisable = subjectControl.inputDisable;
+        if (subjectControl.hasRootText()) {
+          final rootText = subjectControl.rootText;
+          if (inputDisable) {
+            SmartDialog.showToast(rootText);
+          }
+          if (rootText.contains('可发') || rootText.contains('可见')) {
+            hint = rootText;
+          }
         }
       }
     } catch (_) {}
-    return (inputDisable, canUploadPic, hint);
+    return (inputDisable, hint);
   }
 
   void onReply(
-    BuildContext context, {
+    ReplyInfo? replyItem, {
     int? oid,
-    ReplyInfo? replyItem,
     int? replyType,
   }) {
-    if (loadingState.value case Error error) {
-      final errMsg = error.errMsg;
-      if (errMsg != null && (error.code == 12061 || error.code == 12002)) {
+    if (loadingState.value case Error(:final errMsg, :final code)) {
+      if (errMsg != null && (code == 12061 || code == 12002)) {
         SmartDialog.showToast(errMsg);
         return;
       }
@@ -138,15 +135,15 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
 
     assert(replyItem != null || (oid != null && replyType != null));
 
-    final (bool inputDisable, bool canUploadPic, String? hint) = replyHint;
+    final (bool inputDisable, String? hint) = replyHint;
     if (inputDisable) {
       return;
     }
 
     final key = oid ?? replyItem!.oid + replyItem.id;
-    Navigator.of(context)
+    Get.key.currentState!
         .push(
-          GetDialogRoute(
+          PublishRoute(
             pageBuilder: (buildContext, animation, secondaryAnimation) {
               return ReplyPage(
                 hint: hint,
@@ -156,7 +153,9 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
                 replyType: replyItem?.type.toInt() ?? replyType!,
                 replyItem: replyItem,
                 items: savedReplies[key],
-                canUploadPic: canUploadPic,
+
+                /// hd api deprecated
+                // canUploadPic: canUploadPic,
                 onSave: (reply) {
                   if (reply.isEmpty) {
                     savedReplies.remove(key);
@@ -166,22 +165,7 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
                 },
               );
             },
-            transitionDuration: const Duration(milliseconds: 500),
-            transitionBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween(
-                    begin: const Offset(0.0, 1.0),
-                    end: Offset.zero,
-                  ).chain(CurveTween(curve: Curves.linear)),
-                ),
-                child: child,
-              );
-            },
-            settings: RouteSettings(
-              arguments: Get.arguments,
-              name: '${Get.currentRoute}-copy-${Utils.generateRandomString(3)}',
-            ),
+            settings: RouteSettings(arguments: Get.arguments),
           ),
         )
         .then(
@@ -189,13 +173,12 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
             if (res != null) {
               savedReplies.remove(key);
               ReplyInfo replyInfo = RequestUtils.replyCast(res);
-              if (loadingState.value.isSuccess) {
-                List<ReplyInfo>? list = loadingState.value.data;
-                if (list == null) {
+              if (loadingState.value case Success(:final response)) {
+                if (response == null) {
                   loadingState.value = Success([replyInfo]);
                 } else {
                   if (oid != null) {
-                    list.insert(hasUpTop ? 1 : 0, replyInfo);
+                    response.insert(hasUpTop ? 1 : 0, replyInfo);
                   } else {
                     replyItem!
                       ..count += 1
@@ -218,9 +201,8 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
   }
 
   void onRemove(int index, ReplyInfo item, int? subIndex) {
-    List<ReplyInfo> list = loadingState.value.data!;
     if (subIndex == null) {
-      list.removeAt(index);
+      loadingState.value.data!.removeAt(index);
     } else {
       item
         ..count -= 1
@@ -252,18 +234,18 @@ abstract class ReplyController<R> extends CommonListController<R, ReplyInfo> {
       rpid: item.id,
       isUpTop: isUpTop,
     );
-    if (res['status']) {
-      List<ReplyInfo> list = loadingState.value.data!;
+    if (res.isSuccess) {
       item.replyControl.isUpTop = !isUpTop;
       if (!isUpTop && index != 0) {
-        list[0].replyControl.isUpTop = false;
-        final item = list.removeAt(index);
-        list.insert(0, item);
+        final list = loadingState.value.data!;
+        list
+          ..first.replyControl.isUpTop = false
+          ..insert(0, list.removeAt(index));
       }
       loadingState.refresh();
       SmartDialog.showToast('${isUpTop ? '取消' : ''}置顶成功');
     } else {
-      SmartDialog.showToast(res['msg']);
+      res.toast();
     }
   }
 

@@ -1,18 +1,18 @@
 import 'dart:io' show Platform;
 
+import 'package:PiliSuper/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliSuper/common/widgets/image/custom_grid_view.dart';
 import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/http/dynamics.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/search.dart';
 import 'package:PiliSuper/models/common/image_preview_type.dart'
     show SourceModel;
 import 'package:PiliSuper/models/common/image_type.dart';
 import 'package:PiliSuper/models/dynamics/result.dart';
 import 'package:PiliSuper/pages/dynamics/widgets/vote.dart';
-import 'package:PiliSuper/utils/app_scheme.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -32,10 +32,16 @@ TextSpan? richNode(
     List<RichTextNodeItem>? richTextNodes;
     if (moduleDynamic?.desc case final desc?) {
       richTextNodes = desc.richTextNodes;
-    } else if (moduleDynamic?.major?.opus case final opus?) {
+      if (richTextNodes == null || richTextNodes.isEmpty) {
+        return TextSpan(text: desc.text);
+      }
+    } else if (moduleDynamic?.major?.opus case DynamicOpusModel(
+      :final title,
+      :final summary,
+    )) {
       // 动态页面 richTextNodes 层级可能与主页动态层级不同
-      richTextNodes = opus.summary?.richTextNodes;
-      if (opus.title case final title?) {
+      richTextNodes = summary?.richTextNodes;
+      if (title != null && title.isNotEmpty) {
         spanChildren.add(
           TextSpan(
             text: '$title\n',
@@ -48,7 +54,7 @@ TextSpan? richNode(
     if (richTextNodes == null || richTextNodes.isEmpty) {
       return null;
     } else {
-      for (var i in richTextNodes) {
+      for (final i in richTextNodes) {
         switch (i.type) {
           case 'RICH_TEXT_NODE_TYPE_TEXT':
             spanChildren.add(
@@ -64,7 +70,7 @@ TextSpan? richNode(
               TextSpan(
                 text: ' ${i.text}',
                 style: style,
-                recognizer: TapGestureRecognizer()
+                recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () => Get.toNamed('/member?mid=${i.rid}'),
               ),
             );
@@ -73,9 +79,9 @@ TextSpan? richNode(
           case 'RICH_TEXT_NODE_TYPE_TOPIC':
             spanChildren.add(
               TextSpan(
-                text: i.origText!,
+                text: i.origText,
                 style: style,
-                recognizer: TapGestureRecognizer()
+                recognizer: NoDeadlineTapGestureRecognizer()
                   ..onTap = () => Get.toNamed(
                     '/searchResult',
                     parameters: {
@@ -107,9 +113,8 @@ TextSpan? richNode(
                   style: style,
                   recognizer: i.origText == null
                       ? null
-                      : (TapGestureRecognizer()
-                          ..onTap = () =>
-                              PiliScheme.routePushFromUrl(i.origText!)),
+                      : (NoDeadlineTapGestureRecognizer()
+                          ..onTap = () => PageUtils.handleWebview(i.origText!)),
                 ),
               );
             break;
@@ -130,7 +135,7 @@ TextSpan? richNode(
                 TextSpan(
                   text: '投票：${i.text}',
                   style: style,
-                  recognizer: TapGestureRecognizer()
+                  recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () {
                       final dynIdStr = item.basic?.commentIdStr;
                       final dynId = dynIdStr != null
@@ -172,7 +177,7 @@ TextSpan? richNode(
                 TextSpan(
                   text: '${i.origText} ',
                   style: style,
-                  recognizer: TapGestureRecognizer()
+                  recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () => Get.toNamed(
                       '/webview',
                       parameters: {
@@ -202,9 +207,8 @@ TextSpan? richNode(
                   style: style,
                   recognizer: i.jumpUrl == null
                       ? null
-                      : (TapGestureRecognizer()
-                          ..onTap = () =>
-                              PiliScheme.routePushFromUrl(i.jumpUrl!)),
+                      : (NoDeadlineTapGestureRecognizer()
+                          ..onTap = () => PageUtils.handleWebview(i.jumpUrl!)),
                 ),
               );
             break;
@@ -225,7 +229,7 @@ TextSpan? richNode(
                 TextSpan(
                   text: '${i.text} ',
                   style: style,
-                  recognizer: TapGestureRecognizer()
+                  recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () async {
                       try {
                         int? cid = await SearchHttp.ab2c(bvid: i.rid);
@@ -249,6 +253,7 @@ TextSpan? richNode(
                 ..add(
                   WidgetSpan(
                     child: CustomGridView(
+                      fullScreen: true,
                       maxWidth: maxWidth,
                       picArr: i.pics!
                           .map(
@@ -267,7 +272,7 @@ TextSpan? richNode(
                 TextSpan(
                   text: i.text,
                   style: style,
-                  recognizer: TapGestureRecognizer()
+                  recognizer: NoDeadlineTapGestureRecognizer()
                     ..onTap = () {
                       void onView(List<OpusPicModel> list) {
                         PageUtils.imageView(
@@ -287,15 +292,14 @@ TextSpan? richNode(
                       }
 
                       DynamicsHttp.dynPic(i.rid).then((res) {
-                        if (res.isSuccess) {
-                          var list = res.data;
+                        if (res case Success(:final response)) {
                           if (Platform.isAndroid) {
-                            i.pics = list;
+                            i.pics = response;
                           } else {
-                            i.dynPic = list;
+                            i.dynPic = response;
                           }
-                          if (list != null && list.isNotEmpty) {
-                            onView(list);
+                          if (response != null && response.isNotEmpty) {
+                            onView(response);
                           }
                         } else {
                           res.toast();
@@ -324,9 +328,8 @@ TextSpan? richNode(
                   style: style,
                   recognizer: i.jumpUrl == null
                       ? null
-                      : (TapGestureRecognizer()
-                          ..onTap = () =>
-                              PiliScheme.routePushFromUrl(i.jumpUrl!)),
+                      : (NoDeadlineTapGestureRecognizer()
+                          ..onTap = () => PageUtils.handleWebview(i.jumpUrl!)),
                 ),
               );
             break;
@@ -337,9 +340,8 @@ TextSpan? richNode(
                 style: style,
                 recognizer: i.jumpUrl == null
                     ? null
-                    : (TapGestureRecognizer()
-                        ..onTap = () =>
-                            PiliScheme.routePushFromUrl(i.jumpUrl!)),
+                    : (NoDeadlineTapGestureRecognizer()
+                        ..onTap = () => PageUtils.handleWebview(i.jumpUrl!)),
               ),
             );
             break;

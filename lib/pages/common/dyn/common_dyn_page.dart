@@ -10,21 +10,21 @@ import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliSuper/pages/video/reply/widgets/reply_item_grpc.dart';
 import 'package:PiliSuper/pages/video/reply_reply/view.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/size_ext.dart';
 import 'package:PiliSuper/utils/feed_back.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 
 abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     with SingleTickerProviderStateMixin {
   CommonDynController get controller;
 
-  late final scrollController = ScrollController()..addListener(listener);
+  late final ScrollController scrollController;
 
   bool get horizontalPreview => !isPortrait && controller.horizontalPreview;
 
@@ -33,32 +33,37 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
   late EdgeInsets padding;
   late bool isPortrait;
   late double maxWidth;
+  late double maxHeight;
 
   bool _showFab = true;
 
   final fabOffset = const Offset(0, 1);
 
-  late final AnimationController fabAnimationCtr = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 300),
-  )..forward();
+  late final AnimationController _fabAnimationCtr;
+  late final Animation<Offset> fabAnim;
 
-  late final Animation<Offset> fabAnim = Tween<Offset>(
-    begin: fabOffset,
-    end: Offset.zero,
-  ).animate(CurvedAnimation(parent: fabAnimationCtr, curve: Curves.easeInOut));
+  @override
+  void initState() {
+    super.initState();
+    _fabAnimationCtr = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    )..forward();
+    fabAnim = _fabAnimationCtr.drive(
+      Tween<Offset>(
+        begin: fabOffset,
+        end: Offset.zero,
+      ).chain(CurveTween(curve: Curves.easeInOut)),
+    );
+    scrollController = ScrollController()..addListener(listener);
+  }
 
   void listener() {
     final pos = scrollController.positions;
     controller.showTitle.value = pos.first.pixels > 55;
-
-    final direction1 = pos.first.userScrollDirection;
-    late final direction2 = pos.last.userScrollDirection;
-    if (direction1 == ScrollDirection.forward ||
-        direction2 == ScrollDirection.forward) {
+    if (pos.any((e) => e.userScrollDirection == .forward)) {
       showFab();
-    } else if (direction1 == ScrollDirection.reverse ||
-        direction2 == ScrollDirection.reverse) {
+    } else if (pos.any((e) => e.userScrollDirection == .reverse)) {
       hideFab();
     }
   }
@@ -66,14 +71,14 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
   void showFab() {
     if (!_showFab) {
       _showFab = true;
-      fabAnimationCtr.forward();
+      _fabAnimationCtr.forward();
     }
   }
 
   void hideFab() {
     if (_showFab) {
       _showFab = false;
-      fabAnimationCtr.reverse();
+      _fabAnimationCtr.reverse();
     }
   }
 
@@ -82,6 +87,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     super.didChangeDependencies();
     final size = MediaQuery.sizeOf(context);
     maxWidth = size.width;
+    maxHeight = size.height;
     isPortrait = size.isPortrait;
     padding = MediaQuery.viewPaddingOf(context);
   }
@@ -91,6 +97,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
     scrollController
       ..removeListener(listener)
       ..dispose();
+    _fabAnimationCtr.dispose();
     super.dispose();
   }
 
@@ -148,7 +155,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
         itemCount: 12,
         itemBuilder: (context, index) => const VideoReplySkeleton(),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.builder(
                 itemCount: response.length + 1,
@@ -173,10 +180,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
                       replyLevel: 1,
                       replyReply: (replyItem, id) =>
                           replyReply(context, replyItem, id, theme),
-                      onReply: (replyItem) => controller.onReply(
-                        context,
-                        replyItem: replyItem,
-                      ),
+                      onReply: controller.onReply,
                       onDelete: (item, subIndex) =>
                           controller.onRemove(index, item, subIndex),
                       upMid: controller.upMid,
@@ -197,7 +201,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
                 errMsg: '还没有评论',
                 onReload: controller.onReload,
               ),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: controller.onReload,
       ),
@@ -276,10 +280,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
       builder: (context) => Align(
         alignment: Alignment.topRight,
         child: Container(
-          margin: const EdgeInsets.only(
-            top: 56,
-            right: 16,
-          ),
+          margin: const EdgeInsets.only(top: 56, right: 16),
           width: maxWidth / 4,
           height: 32,
           child: Builder(
@@ -319,7 +320,7 @@ abstract class CommonDynPageState<T extends StatefulWidget> extends State<T>
       try {
         feedBack();
         controller.onReply(
-          context,
+          null,
           oid: controller.oid,
           replyType: controller.replyType,
         );

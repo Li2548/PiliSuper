@@ -2,9 +2,10 @@ import 'dart:convert';
 
 import 'package:PiliSuper/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliSuper/pages/danmaku/controller.dart';
-import 'package:PiliSuper/pages/danmaku/danmaku_model.dart';
+import 'package:PiliSuper/pages/danmaku/dnamaku_model.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
 import 'package:PiliSuper/plugin/pl_player/models/play_status.dart';
+import 'package:PiliSuper/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliSuper/utils/danmaku_utils.dart';
 import 'package:canvas_danmaku/canvas_danmaku.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class PlDanmaku extends StatefulWidget {
   final bool isPipMode;
   final bool isFullScreen;
   final bool isFileSource;
+  final Size size;
 
   const PlDanmaku({
     super.key,
@@ -25,10 +27,13 @@ class PlDanmaku extends StatefulWidget {
     this.isPipMode = false,
     required this.isFullScreen,
     required this.isFileSource,
+    required this.size,
   });
 
   @override
   State<PlDanmaku> createState() => _PlDanmakuState();
+
+  bool get notFullscreen => !isFullScreen || isPipMode;
 }
 
 class _PlDanmakuState extends State<PlDanmaku> {
@@ -52,7 +57,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
       } else {
         _plDanmakuController.queryDanmaku(
           PlDanmakuController.calcSegment(
-            playerController.position.value.inMilliseconds,
+            playerController.position.inMilliseconds,
           ),
         );
       }
@@ -65,28 +70,22 @@ class _PlDanmakuState extends State<PlDanmaku> {
   @override
   void didUpdateWidget(PlDanmaku oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isPipMode != widget.isPipMode ||
-        oldWidget.isFullScreen != widget.isFullScreen) {
-      _updateFontSize();
+    if (oldWidget.notFullscreen != widget.notFullscreen &&
+        !DanmakuOptions.sameFontScale) {
+      _controller?.updateOption(
+        DanmakuOptions.get(notFullscreen: widget.notFullscreen),
+      );
     }
   }
 
-  void _updateFontSize() {
-    _controller?.updateOption(
-      _controller!.option.copyWith(fontSize: _fontSize),
-    );
-  }
-
-  double get _fontSize => !widget.isFullScreen || widget.isPipMode
-      ? 15 * playerController.danmakuFontScale
-      : 15 * playerController.danmakuFontScaleFS;
-
   // 播放器状态监听
-  void playerListener(PlayerStatus? status) {
-    if (status == PlayerStatus.playing) {
-      _controller?.resume();
-    } else {
-      _controller?.pause();
+  void playerListener(PlayerStatus status) {
+    if (_controller case final controller?) {
+      if (status.isPlaying) {
+        controller.resume();
+      } else {
+        controller.pause();
+      }
     }
   }
 
@@ -100,7 +99,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
       return;
     }
 
-    if (!playerController.playerStatus.playing) {
+    if (!playerController.playerStatus.isPlaying) {
       return;
     }
 
@@ -114,7 +113,7 @@ class _PlDanmakuState extends State<PlDanmaku> {
     List<DanmakuElem>? currentDanmakuList = _plDanmakuController
         .getCurrentDanmaku(currentPosition);
     if (currentDanmakuList != null) {
-      final blockColorful = playerController.blockColorful;
+      final blockColorful = DanmakuOptions.blockColorful;
       for (DanmakuElem e in currentDanmakuList) {
         if (e.mode == 7) {
           try {
@@ -162,11 +161,16 @@ class _PlDanmakuState extends State<PlDanmaku> {
       ..removePositionListener(videoPositionListen)
       ..removeStatusLister(playerListener);
     _plDanmakuController.dispose();
+    _controller = null;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final option = DanmakuOptions.get(
+      notFullscreen: widget.notFullscreen,
+      speed: playerController.playbackSpeed,
+    );
     return Obx(
       () => AnimatedOpacity(
         opacity: playerController.enableShowDanmaku.value
@@ -177,23 +181,8 @@ class _PlDanmakuState extends State<PlDanmaku> {
           createdController: (e) {
             playerController.danmakuController = _controller = e;
           },
-          option: DanmakuOption(
-            fontSize: _fontSize,
-            fontWeight: playerController.danmakuFontWeight,
-            area: playerController.showArea,
-            hideTop: playerController.blockTypes.contains(5),
-            hideScroll: playerController.blockTypes.contains(2),
-            hideBottom: playerController.blockTypes.contains(4),
-            hideSpecial: playerController.blockTypes.contains(7),
-            duration:
-                playerController.danmakuDuration /
-                playerController.playbackSpeed,
-            staticDuration:
-                playerController.danmakuStaticDuration /
-                playerController.playbackSpeed,
-            strokeWidth: playerController.danmakuStrokeWidth,
-            lineHeight: playerController.danmakuLineHeight,
-          ),
+          option: option,
+          size: widget.size,
         ),
       ),
     );

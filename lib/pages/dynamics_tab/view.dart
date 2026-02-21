@@ -4,13 +4,11 @@ import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
 import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models/common/dynamic/dynamics_type.dart';
-import 'package:PiliSuper/models/common/nav_bar_config.dart';
 import 'package:PiliSuper/models/dynamics/result.dart';
-import 'package:PiliSuper/pages/common/common_page.dart';
 import 'package:PiliSuper/pages/dynamics/controller.dart';
 import 'package:PiliSuper/pages/dynamics/widgets/dynamic_panel.dart';
 import 'package:PiliSuper/pages/dynamics_tab/controller.dart';
-import 'package:PiliSuper/pages/main/controller.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
 import 'package:PiliSuper/utils/global_data.dart';
 import 'package:PiliSuper/utils/waterfall.dart';
 import 'package:flutter/material.dart';
@@ -27,45 +25,24 @@ class DynamicsTabPage extends StatefulWidget {
   State<DynamicsTabPage> createState() => _DynamicsTabPageState();
 }
 
-class _DynamicsTabPageState
-    extends CommonPageState<DynamicsTabPage, DynamicsTabController>
+class _DynamicsTabPageState extends State<DynamicsTabPage>
     with AutomaticKeepAliveClientMixin, DynMixin {
   StreamSubscription? _listener;
-  late final MainController _mainController = Get.find<MainController>();
 
-  DynamicsController dynamicsController = Get.put(DynamicsController());
-  @override
-  late DynamicsTabController controller = Get.put(
-    DynamicsTabController(dynamicsType: widget.dynamicsType)
-      ..mid = dynamicsController.mid.value,
-    tag: widget.dynamicsType.name,
-  );
+  DynamicsController dynamicsController = Get.putOrFind(DynamicsController.new);
+  late final DynamicsTabController controller;
 
   @override
   bool get wantKeepAlive => true;
 
-  bool get checkPage =>
-      _mainController.navigationBars[0] != NavigationBarType.dynamics &&
-      _mainController.selectedIndex.value == 0;
-
-  @override
-  bool onNotification(UserScrollNotification notification) {
-    if (checkPage) {
-      return false;
-    }
-    return super.onNotification(notification);
-  }
-
-  @override
-  void listener() {
-    if (checkPage) {
-      return;
-    }
-    super.listener();
-  }
-
   @override
   void initState() {
+    controller = Get.putOrFind(
+      () =>
+          DynamicsTabController(dynamicsType: widget.dynamicsType)
+            ..mid = dynamicsController.mid.value,
+      tag: widget.dynamicsType.name,
+    );
     super.initState();
     if (widget.dynamicsType == DynamicsTabType.up) {
       _listener = dynamicsController.mid.listen((mid) {
@@ -88,24 +65,22 @@ class _DynamicsTabPageState
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return onBuild(
-      refreshIndicator(
-        onRefresh: () {
-          dynamicsController.queryFollowUp();
-          return controller.onRefresh();
-        },
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          controller: controller.scrollController,
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.only(bottom: 100),
-              sliver: buildPage(
-                Obx(() => _buildBody(controller.loadingState.value)),
-              ),
+    return refreshIndicator(
+      onRefresh: () {
+        dynamicsController.queryFollowUp();
+        return controller.onRefresh();
+      },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        controller: controller.scrollController,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: 100),
+            sliver: buildPage(
+              Obx(() => _buildBody(controller.loadingState.value)),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -113,7 +88,7 @@ class _DynamicsTabPageState
   Widget _buildBody(LoadingState<List<DynamicItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => dynSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? GlobalData().dynamicsWaterfallFlow
                   ? SliverWaterfallFlow(
@@ -154,7 +129,7 @@ class _DynamicsTabPageState
                       itemCount: response.length,
                     )
             : HttpError(onReload: controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: controller.onReload,
       ),

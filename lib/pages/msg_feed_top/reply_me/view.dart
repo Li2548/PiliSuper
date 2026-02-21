@@ -13,7 +13,7 @@ import 'package:PiliSuper/pages/msg_feed_top/reply_me/controller.dart';
 import 'package:PiliSuper/pages/whisper_settings/view.dart';
 import 'package:PiliSuper/utils/app_scheme.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 
@@ -25,7 +25,7 @@ class ReplyMePage extends StatefulWidget {
 }
 
 class _ReplyMePageState extends State<ReplyMePage> {
-  late final _replyMeController = Get.put(ReplyMeController());
+  final _replyMeController = Get.put(ReplyMeController());
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +84,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
         itemCount: 12,
         itemBuilder: (context, index) => const MsgFeedTopSkeleton(),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemCount: response.length,
@@ -118,7 +118,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
                       );
                     },
                     onLongPress: onLongPress,
-                    onSecondaryTap: Utils.isMobile ? null : onLongPress,
+                    onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
                     leading: GestureDetector(
                       onTap: () => Get.toNamed('/member?mid=${item.user?.mid}'),
                       child: NetworkImgLayer(
@@ -199,7 +199,7 @@ class _ReplyMePageState extends State<ReplyMePage> {
                 separatorBuilder: (context, index) => divider,
               )
             : HttpError(onReload: _replyMeController.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _replyMeController.onReload,
       ),

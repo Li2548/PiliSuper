@@ -3,26 +3,34 @@ import 'dart:math' show min;
 import 'package:PiliSuper/common/constants.dart';
 import 'package:PiliSuper/common/widgets/button/icon_button.dart';
 import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/gesture/tap_gesture_recognizer.dart';
 import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/common/widgets/progress_bar/audio_video_progress_bar.dart';
+import 'package:PiliSuper/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliSuper/grpc/bilibili/app/listener/v1.pb.dart';
 import 'package:PiliSuper/models/common/image_preview_type.dart';
 import 'package:PiliSuper/models/common/image_type.dart';
 import 'package:PiliSuper/pages/audio/controller.dart';
 import 'package:PiliSuper/pages/video/introduction/ugc/widgets/action_item.dart';
 import 'package:PiliSuper/plugin/pl_player/models/play_repeat.dart';
+import 'package:PiliSuper/services/shutdown_timer_service.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/context_ext.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/size_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/page_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/utils.dart';
-import 'package:flutter/gestures.dart' show TapGestureRecognizer;
 import 'package:flutter/material.dart' hide DraggableScrollableSheet;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 class AudioPage extends StatefulWidget {
   const AudioPage({super.key});
@@ -78,13 +86,25 @@ class _AudioPageState extends State<AudioPage> {
     final isPortrait = MediaQuery.sizeOf(context).isPortrait;
     final padding = MediaQuery.viewPaddingOf(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         actions: [
+          if (_controller.isUgc && _controller.enableSponsorBlock)
+            Obx(() {
+              if (_controller.segmentProgressList.isNotEmpty) {
+                return IconButton(
+                  tooltip: '片段信息',
+                  onPressed: _controller.showSBDetail,
+                  icon: const Icon(MdiIcons.advertisements, size: 22),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
           Builder(
             builder: (context) {
               return PopupMenuButton<ListOrder>(
                 tooltip: '排序',
-                icon: const Icon(Icons.sort),
+                icon: const Icon(Icons.sort, size: 22),
                 initialValue: _controller.order,
                 onSelected: (value) {
                   _controller.onChangeOrder(value);
@@ -96,10 +116,22 @@ class _AudioPageState extends State<AudioPage> {
               );
             },
           ),
-          if (_controller.isVideo)
+          IconButton(
+            tooltip: '定时关闭',
+            onPressed: () => shutdownTimerService
+              ..onPause ??= _controller.onPause
+              ..isPlaying ??= _controller.isPlaying
+              ..showScheduleExitDialog(
+                context,
+                isFullScreen: false,
+              ),
+            icon: const Icon(Icons.schedule, size: 22),
+          ),
+          if (_controller.isUgc)
             IconButton(
+              tooltip: '更多',
               onPressed: _showMore,
-              icon: const Icon(Icons.more_vert),
+              icon: const Icon(Icons.more_vert, size: 22),
             ),
           const SizedBox(width: 5),
         ],
@@ -169,7 +201,8 @@ class _AudioPageState extends State<AudioPage> {
           final theme = Theme.of(context);
           final colorScheme = theme.colorScheme;
           return FractionallySizedBox(
-            heightFactor: Utils.isMobile && !context.mediaQuerySize.isPortrait
+            heightFactor:
+                PlatformUtils.isMobile && !context.mediaQuerySize.isPortrait
                 ? 1.0
                 : 0.7,
             alignment: Alignment.bottomCenter,
@@ -259,9 +292,7 @@ class _AudioPageState extends State<AudioPage> {
                                                     _controller.index!) {
                                                   _controller.index -= 1;
                                                 }
-                                                _controller.playlist!.removeAt(
-                                                  index,
-                                                );
+                                                playlist.removeAt(index);
                                                 (context as Element)
                                                     .markNeedsBuild();
                                               },
@@ -306,13 +337,14 @@ class _AudioPageState extends State<AudioPage> {
                                               children: [
                                                 if (isCurr) ...[
                                                   WidgetSpan(
-                                                    alignment:
-                                                        PlaceholderAlignment
-                                                            .bottom,
+                                                    alignment: .bottom,
                                                     child: Image.asset(
                                                       'assets/images/live.gif',
                                                       width: 16,
                                                       height: 16,
+                                                      cacheWidth: 16.cacheSize(
+                                                        context,
+                                                      ),
                                                       color:
                                                           colorScheme.primary,
                                                     ),
@@ -350,12 +382,14 @@ class _AudioPageState extends State<AudioPage> {
                                         children: [
                                           if (isCurr) ...[
                                             WidgetSpan(
-                                              alignment:
-                                                  PlaceholderAlignment.bottom,
+                                              alignment: .bottom,
                                               child: Image.asset(
                                                 'assets/images/live.gif',
                                                 width: 16,
                                                 height: 16,
+                                                cacheWidth: 16.cacheSize(
+                                                  context,
+                                                ),
                                                 color: colorScheme.primary,
                                               ),
                                             ),
@@ -375,9 +409,7 @@ class _AudioPageState extends State<AudioPage> {
                                               if (index < _controller.index!) {
                                                 _controller.index -= 1;
                                               }
-                                              _controller.playlist!.removeAt(
-                                                index,
-                                              );
+                                              playlist.removeAt(index);
                                               (context as Element)
                                                   .markNeedsBuild();
                                             },
@@ -548,7 +580,7 @@ class _AudioPageState extends State<AudioPage> {
             ),
           ),
           Text(
-            playMode.desc,
+            playMode.label,
             style: TextStyle(fontSize: 13, color: color),
           ),
         ],
@@ -735,7 +767,7 @@ class _AudioPageState extends State<AudioPage> {
     final baseBarColor = colorScheme.brightness.isDark
         ? const Color(0x33FFFFFF)
         : const Color(0x33999999);
-    final child = Obx(
+    Widget child = Obx(
       () => ProgressBar(
         progress: _controller.position.value,
         total: _controller.duration.value,
@@ -751,10 +783,27 @@ class _AudioPageState extends State<AudioPage> {
         onSeek: _onSeek,
       ),
     );
-    if (Utils.isDesktop) {
-      return MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: child,
+    if (_controller.isUgc && _controller.enableSponsorBlock) {
+      child = Stack(
+        children: [
+          child,
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 3.5,
+            child: Obx(
+              () {
+                if (_controller.segmentProgressList.isNotEmpty) {
+                  return SegmentProgressBar(
+                    height: 5,
+                    segments: _controller.segmentProgressList,
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ],
       );
     }
     return child;
@@ -863,6 +912,7 @@ class _AudioPageState extends State<AudioPage> {
                             src: cover,
                             width: 170,
                             height: 170,
+                            cacheWidth: false,
                           ),
                         ),
                       ),
@@ -870,10 +920,8 @@ class _AudioPageState extends State<AudioPage> {
                     const SizedBox(height: 12),
                     SelectableText(
                       audioItem.arc.title,
-                      style: const TextStyle(
-                        height: 1.7,
-                        fontSize: 16,
-                      ),
+                      style: const TextStyle(height: 1.7, fontSize: 16),
+                      scrollPhysics: const NeverScrollableScrollPhysics(),
                     ),
                     const SizedBox(height: 12),
                     if (audioItem.owner.hasName()) ...[
@@ -920,7 +968,7 @@ class _AudioPageState extends State<AudioPage> {
                               TextSpan(
                                 text: audioItem.arc.displayedOid,
                                 style: TextStyle(color: colorScheme.secondary),
-                                recognizer: TapGestureRecognizer()
+                                recognizer: NoDeadlineTapGestureRecognizer()
                                   ..onTap = () => Utils.copyText(
                                     audioItem.arc.displayedOid,
                                   ),

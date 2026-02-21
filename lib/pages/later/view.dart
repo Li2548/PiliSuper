@@ -1,16 +1,18 @@
 import 'package:PiliSuper/common/widgets/appbar/appbar.dart';
+import 'package:PiliSuper/common/widgets/flutter/page/tabs.dart';
+import 'package:PiliSuper/common/widgets/gesture/horizontal_drag_gesture_recognizer.dart';
 import 'package:PiliSuper/common/widgets/scroll_physics.dart';
 import 'package:PiliSuper/common/widgets/view_safe_area.dart';
 import 'package:PiliSuper/models/common/later_view_type.dart';
-import 'package:PiliSuper/models_new/later/data.dart';
 import 'package:PiliSuper/models_new/later/list.dart';
 import 'package:PiliSuper/pages/fav_detail/view.dart';
 import 'package:PiliSuper/pages/later/base_controller.dart';
 import 'package:PiliSuper/pages/later/controller.dart';
 import 'package:PiliSuper/utils/accounts.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
+import 'package:PiliSuper/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliSuper/utils/request_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide TabBarView;
 import 'package:get/get.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
@@ -24,10 +26,7 @@ class LaterPage extends StatefulWidget {
 class _LaterPageState extends State<LaterPage>
     with SingleTickerProviderStateMixin {
   final LaterBaseController _baseCtr = Get.put(LaterBaseController());
-  late final TabController _tabController = TabController(
-    length: LaterViewType.values.length,
-    vsync: this,
-  );
+  late final TabController _tabController;
 
   LaterController currCtr([int? index]) {
     final type = LaterViewType.values[index ?? _tabController.index];
@@ -37,15 +36,18 @@ class _LaterPageState extends State<LaterPage>
     );
   }
 
-  final sortKey = GlobalKey();
+  final _sortKey = GlobalKey();
   void listener() {
-    (sortKey.currentContext as Element?)?.markNeedsBuild();
+    (_sortKey.currentContext as Element?)?.markNeedsBuild();
   }
 
   @override
   void initState() {
     super.initState();
-    _tabController.addListener(listener);
+    _tabController = TabController(
+      length: LaterViewType.values.length,
+      vsync: this,
+    )..addListener(listener);
   }
 
   @override
@@ -74,9 +76,7 @@ class _LaterPageState extends State<LaterPage>
             appBar: _buildAppbar(enableMultiSelect),
             floatingActionButtonLocation: const CustomFabLocation(),
             floatingActionButton: Padding(
-              padding: const EdgeInsets.only(
-                right: kFloatingActionButtonMargin,
-              ),
+              padding: const .only(right: kFloatingActionButtonMargin),
               child: Obx(
                 () => currCtr().loadingState.value.isSuccess
                     ? AnimatedSlide(
@@ -115,7 +115,7 @@ class _LaterPageState extends State<LaterPage>
                     // tabAlignment: TabAlignment.start,
                     controller: _tabController,
                     tabs: LaterViewType.values.map((item) {
-                      final count = _baseCtr.counts[item];
+                      final count = _baseCtr.counts[item.index];
                       return Tab(
                         text: '${item.title}${count != -1 ? '($count)' : ''}',
                       );
@@ -123,19 +123,19 @@ class _LaterPageState extends State<LaterPage>
                     onTap: (_) {
                       if (!_tabController.indexIsChanging) {
                         currCtr().scrollController.animToTop();
-                      } else {
-                        if (enableMultiSelect) {
-                          currCtr(_tabController.previousIndex).handleSelect();
-                        }
+                      } else if (enableMultiSelect) {
+                        currCtr(_tabController.previousIndex).handleSelect();
                       }
                     },
                   ),
                   Expanded(
-                    child: TabBarView(
+                    child: TabBarView<CustomHorizontalDragGestureRecognizer>(
                       physics: enableMultiSelect
                           ? const NeverScrollableScrollPhysics()
                           : const CustomTabBarViewScrollPhysics(),
                       controller: _tabController,
+                      horizontalDragGestureRecognizer:
+                          CustomHorizontalDragGestureRecognizer.new,
                       children: LaterViewType.values
                           .map((item) => item.page)
                           .toList(),
@@ -153,18 +153,17 @@ class _LaterPageState extends State<LaterPage>
   PreferredSizeWidget _buildAppbar(bool enableMultiSelect) {
     final theme = Theme.of(context);
     Color color = theme.colorScheme.secondary;
-
+    final btnStyle = TextButton.styleFrom(visualDensity: .compact);
+    final textStyle = TextStyle(color: theme.colorScheme.onSurfaceVariant);
     return MultiSelectAppBarWidget(
       visible: enableMultiSelect,
       ctr: currCtr(),
       actions: [
         TextButton(
-          style: TextButton.styleFrom(
-            visualDensity: VisualDensity.compact,
-          ),
+          style: btnStyle,
           onPressed: () {
             final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
+            RequestUtils.onCopyOrMove<LaterItemModel>(
               context: context,
               isCopy: true,
               ctr: ctr,
@@ -172,20 +171,13 @@ class _LaterPageState extends State<LaterPage>
               mid: ctr.mid,
             );
           },
-          child: Text(
-            '复制',
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
+          child: Text('复制', style: textStyle),
         ),
         TextButton(
-          style: TextButton.styleFrom(
-            visualDensity: VisualDensity.compact,
-          ),
+          style: btnStyle,
           onPressed: () {
             final ctr = currCtr();
-            RequestUtils.onCopyOrMove<LaterData, LaterItemModel>(
+            RequestUtils.onCopyOrMove<LaterItemModel>(
               context: context,
               isCopy: false,
               ctr: ctr,
@@ -193,12 +185,7 @@ class _LaterPageState extends State<LaterPage>
               mid: ctr.mid,
             );
           },
-          child: Text(
-            '移动',
-            style: TextStyle(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
+          child: Text('移动', style: textStyle),
         ),
       ],
       child: AppBar(
@@ -215,109 +202,103 @@ class _LaterPageState extends State<LaterPage>
                   'mediaId': mid,
                   'mid': mid,
                   'title': '稍后再看',
-                  'count': _baseCtr.counts[LaterViewType.all],
+                  'count': _baseCtr.counts[LaterViewType.all.index],
                 },
               );
             },
             icon: const Icon(Icons.search),
           ),
-          Material(
-            clipBehavior: Clip.hardEdge,
-            type: MaterialType.transparency,
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
-            child: Builder(
-              key: sortKey,
-              builder: (context) {
-                final value = currCtr().asc.value;
-                return PopupMenuButton(
-                  initialValue: value,
-                  tooltip: '排序',
-                  onSelected: (value) {
-                    currCtr()
-                      ..asc.value = value
-                      ..onReload();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+          Builder(
+            key: _sortKey,
+            builder: (context) {
+              final value = currCtr().asc.value;
+              return PopupMenuButton(
+                initialValue: value,
+                tooltip: '排序',
+                onSelected: (value) => currCtr()
+                  ..asc.value = value
+                  ..onReload(),
+                borderRadius: const .all(.circular(20)),
+                child: Padding(
+                  padding: const .symmetric(horizontal: 12, vertical: 6),
+                  child: Text.rich(
+                    style: TextStyle(fontSize: 14, height: 1, color: color),
+                    strutStyle: const StrutStyle(
+                      leading: 0,
+                      height: 1,
+                      fontSize: 14,
                     ),
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(
-                            text: value ? '最早添加' : '最近添加',
+                    TextSpan(
+                      children: [
+                        TextSpan(text: value ? '最早添加' : '最近添加'),
+                        WidgetSpan(
+                          alignment: .middle,
+                          child: Icon(
+                            size: 14,
+                            MdiIcons.unfoldMoreHorizontal,
+                            color: color,
                           ),
-                          WidgetSpan(
-                            child: Icon(
-                              size: 16,
-                              MdiIcons.unfoldMoreHorizontal,
-                              color: color,
-                            ),
-                          ),
-                        ],
-                        style: TextStyle(color: color),
-                      ),
+                        ),
+                      ],
+                      style: TextStyle(color: color),
                     ),
                   ),
-                  itemBuilder: (BuildContext context) => [
-                    const PopupMenuItem(
-                      value: false,
-                      child: Text('最近添加'),
-                    ),
-                    const PopupMenuItem(
-                      value: true,
-                      child: Text('最早添加'),
+                ),
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: false,
+                    child: Text('最近添加'),
+                  ),
+                  const PopupMenuItem(
+                    value: true,
+                    child: Text('最早添加'),
+                  ),
+                ],
+              );
+            },
+          ),
+          PopupMenuButton(
+            tooltip: '清空',
+            borderRadius: const .all(.circular(20)),
+            child: Padding(
+              padding: const .symmetric(horizontal: 12, vertical: 6),
+              child: Text.rich(
+                style: TextStyle(fontSize: 14, height: 1, color: color),
+                strutStyle: const StrutStyle(
+                  leading: 0,
+                  height: 1,
+                  fontSize: 14,
+                ),
+                TextSpan(
+                  children: [
+                    const TextSpan(text: '清空'),
+                    WidgetSpan(
+                      alignment: .middle,
+                      child: Icon(
+                        size: 14,
+                        MdiIcons.unfoldMoreHorizontal,
+                        color: color,
+                      ),
                     ),
                   ],
-                );
-              },
-            ),
-          ),
-          Material(
-            clipBehavior: Clip.hardEdge,
-            type: MaterialType.transparency,
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
-            child: PopupMenuButton(
-              tooltip: '清空',
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      const TextSpan(
-                        text: '清空',
-                      ),
-                      WidgetSpan(
-                        child: Icon(
-                          size: 16,
-                          MdiIcons.unfoldMoreHorizontal,
-                          color: color,
-                        ),
-                      ),
-                    ],
-                    style: TextStyle(color: color),
-                  ),
+                  style: TextStyle(color: color),
                 ),
               ),
-              itemBuilder: (BuildContext context) => [
-                PopupMenuItem(
-                  onTap: () => currCtr().toViewClear(context, 1),
-                  child: const Text('清空失效'),
-                ),
-                PopupMenuItem(
-                  onTap: () => currCtr().toViewClear(context, 2),
-                  child: const Text('清空看完'),
-                ),
-                PopupMenuItem(
-                  onTap: () => currCtr().toViewClear(context),
-                  child: const Text('清空全部'),
-                ),
-              ],
             ),
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                onTap: () => currCtr().toViewClear(context, 1),
+                child: const Text('清空失效'),
+              ),
+              PopupMenuItem(
+                onTap: () => currCtr().toViewClear(context, 2),
+                child: const Text('清空看完'),
+              ),
+              PopupMenuItem(
+                onTap: () => currCtr().toViewClear(context),
+                child: const Text('清空全部'),
+              ),
+            ],
           ),
           const SizedBox(width: 8),
         ],

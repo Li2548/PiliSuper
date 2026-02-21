@@ -1,5 +1,5 @@
 import 'package:PiliSuper/models/model_owner.dart';
-import 'package:PiliSuper/models/model_video.dart';
+import 'package:PiliSuper/models_new/video/video_detail/dimension.dart';
 import 'package:PiliSuper/models_new/video/video_detail/rights.dart';
 import 'package:PiliSuper/models_new/video/video_detail/stat.dart';
 

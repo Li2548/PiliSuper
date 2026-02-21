@@ -1,6 +1,6 @@
 import 'package:PiliSuper/models_new/article/article_info/share_channel.dart';
 import 'package:PiliSuper/models_new/article/article_info/stats.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class ArticleInfoData {
   int? like;

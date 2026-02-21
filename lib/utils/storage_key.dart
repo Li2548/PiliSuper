@@ -1,9 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
-abstract class SettingBoxKey {
+abstract final class SettingBoxKey {
   static const String btmProgressBehavior = 'btmProgressBehavior',
-      defaultVideoSpeed = 'defaultVideoSpeed',
-      autoUpgradeEnable = 'autoUpgradeEnable',
       defaultVideoQa = 'defaultVideoQa',
       defaultVideoQaCellular = 'defaultVideoQaCellular',
       defaultAudioQa = 'defaultAudioQa',
@@ -15,16 +13,16 @@ abstract class SettingBoxKey {
       defaultToastOp = 'defaultToastOp',
       defaultPicQa = 'defaultPicQa',
       enableHA = 'enableHA',
-      useOpenSLES = 'useOpenSLES',
+      audioOutput = 'audioOutput',
       expandBuffer = 'expandBuffer',
       hardwareDecoding = 'hardwareDecoding',
       videoSync = 'videoSync',
+      autosync = 'autosync',
       p1080 = 'p1080',
-      enableAutoBrightness = 'enableAutoBrightness',
       enableAutoEnter = 'enableAutoEnter',
       enableAutoExit = 'enableAutoExit',
       enableOnlineTotal = 'enableOnlineTotal',
-      showSuperChat = 'showSuperChat',
+      superChatType = 'superChatType',
       keyboardControl = 'keyboardControl',
       pauseOnMinimize = 'pauseOnMinimize',
       pgcSkipType = 'pgcSkipType',
@@ -60,6 +58,7 @@ abstract class SettingBoxKey {
       defaultShowComment = 'defaultShowComment',
       replySortType = 'replySortType',
       defaultDynamicType = 'defaultDynamicType',
+      showDynInteraction = 'showDynInteraction',
       enableHotKey = 'enableHotKey',
       enableSearchRcmd = 'enableSearchRcmd',
       enableQuickFav = 'enableQuickFav',
@@ -146,7 +145,10 @@ abstract class SettingBoxKey {
       enableTapDm = 'enableTapDm',
       setSystemBrightness = 'setSystemBrightness',
       downloadPath = 'downloadPath',
-      followOrderType = 'followOrderType';
+      followOrderType = 'followOrderType',
+      enableImgMenu = 'enableImgMenu',
+      showDynDispute = 'showDynDispute',
+      touchSlopH = 'touchSlopH';
 
   static const String minimizeOnExit = 'minimizeOnExit',
       windowSize = 'windowSize',
@@ -154,7 +156,9 @@ abstract class SettingBoxKey {
       isWindowMaximized = 'isWindowMaximized',
       showWindowTitleBar = 'showWindowTitleBar',
       desktopVolume = 'desktopVolume',
-      showTrayIcon = 'showTrayIcon';
+      showTrayIcon = 'showTrayIcon',
+      uiScale = 'uiScale',
+      useSSD = 'useSSD';
 
   static const String subtitlePreferenceV2 = 'subtitlePreferenceV2',
       enableDragSubtitle = 'enableDragSubtitle',
@@ -194,9 +198,11 @@ abstract class SettingBoxKey {
       danmakuDuration = 'danmakuDuration',
       danmakuStaticDuration = 'danmakuStaticDuration',
       danmakuMassiveMode = 'danmakuMassiveMode',
+      danmakuFixedV = 'danmakuFixedV',
+      danmakuStatic2Scroll = 'danmakuStatic2Scroll',
       danmakuLineHeight = 'danmakuLineHeight',
-      strokeWidth = 'strokeWidth',
-      fontWeight = 'fontWeight';
+      danmakuStrokeWidth = 'strokeWidth',
+      danmakuFontWeight = 'fontWeight';
 
   static const String systemProxyHost = 'systemProxyHost',
       systemProxyPort = 'systemProxyPort';
@@ -205,7 +211,6 @@ abstract class SettingBoxKey {
       defaultTextScale = 'textScale',
       dynamicColor = 'dynamicColor',
       customColor = 'customColor',
-      enableSingleRow = 'enableSingleRow',
       displayMode = 'displayMode',
       smallCardWidth = 'smallCardWidth',
       recommendCardWidth = 'recommendCardWidth',
@@ -214,23 +219,20 @@ abstract class SettingBoxKey {
       dynamicsShowAllFollowedUp = 'dynamicsShowAllFollowedUp',
       useSideBar = 'useSideBar',
       enableMYBar = 'enableMYBar',
-      hideSearchBar = 'hideSearchBar',
-      hideTabBar = 'hideTabBar',
-      scrollThreshold = 'scrollThreshold',
-      enableScrollThreshold = 'enableScrollThreshold',
+      hideTopBar = 'hideSearchBar',
+      hideBottomBar = 'hideTabBar',
+      barHideType = 'barHideType',
       tabBarSort = 'tabBarSort',
       dynamicBadgeMode = 'dynamicBadgeMode',
       msgBadgeMode = 'msgBadgeMode',
       msgUnReadTypeV2 = 'msgUnReadTypeV2',
-      hiddenSettingUnlocked = 'hiddenSettingUnlocked',
-      enableGradientBg = 'enableGradientBg',
       navBarSort = 'navBarSort',
       tempPlayerConf = 'tempPlayerConf',
       reduceLuxColor = 'reduceLuxColor',
       liveCdnUrl = 'liveCdnUrl';
 }
 
-abstract class LocalCacheKey {
+abstract final class LocalCacheKey {
   static const String historyPause = 'historyPause',
       blackMids = 'blackMids',
       danmakuFilterRules = 'danmakuFilterRules',
@@ -239,11 +241,8 @@ abstract class LocalCacheKey {
       buvid = 'buvid';
 }
 
-abstract class VideoBoxKey {
-  static const String videoFit = 'videoFit',
-      videoBrightness = 'videoBrightness',
-      videoSpeed = 'videoSpeed',
-      playRepeat = 'playRepeat',
+abstract final class VideoBoxKey {
+  static const String playRepeat = 'playRepeat',
       playSpeedDefault = 'playSpeedDefault',
       longPressSpeedDefault = 'longPressSpeedDefault',
       speedsList = 'speedsList',

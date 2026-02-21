@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:PiliSuper/models_new/space/space/tab2.dart';
 import 'package:PiliSuper/pages/member/controller.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

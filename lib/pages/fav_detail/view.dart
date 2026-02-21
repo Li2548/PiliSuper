@@ -6,7 +6,6 @@ import 'package:PiliSuper/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliSuper/http/fav.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models/common/fav_order_type.dart';
-import 'package:PiliSuper/models_new/fav/fav_detail/data.dart';
 import 'package:PiliSuper/models_new/fav/fav_detail/media.dart';
 import 'package:PiliSuper/models_new/fav/fav_folder/list.dart';
 import 'package:PiliSuper/pages/dynamics_repost/view.dart';
@@ -28,16 +27,17 @@ class FavDetailPage extends StatefulWidget {
 }
 
 class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
-  late final FavDetailController _favDetailController = Get.put(
-    FavDetailController(),
-    tag: Utils.makeHeroTag(mediaId),
-  );
+  late final FavDetailController _favDetailController;
   late String mediaId;
 
   @override
   void initState() {
     super.initState();
     mediaId = Get.parameters['mediaId']!;
+    _favDetailController = Get.put(
+      FavDetailController(),
+      tag: Utils.makeHeroTag(mediaId),
+    );
   }
 
   late EdgeInsets padding;
@@ -127,8 +127,10 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
 
   Widget _buildHeader(bool enableMultiSelect, ThemeData theme) {
     return SliverAppBar.medium(
+      leadingWidth: enableMultiSelect ? 125 : null,
       leading: enableMultiSelect
           ? Row(
+              mainAxisSize: .min,
               children: [
                 IconButton(
                   tooltip: '取消',
@@ -278,11 +280,11 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                     title: '确定删除该收藏夹?',
                     onConfirm: () =>
                         FavHttp.deleteFolder(mediaIds: mediaId).then((res) {
-                          if (res['status']) {
+                          if (res.isSuccess) {
                             SmartDialog.showToast('删除成功');
                             Get.back(result: true);
                           } else {
-                            SmartDialog.showToast(res['msg']);
+                            res.toast();
                           }
                         }),
                   ),
@@ -302,64 +304,48 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
     ];
   }
 
-  List<Widget> _selectActions(ThemeData theme) => [
-    TextButton(
-      style: TextButton.styleFrom(
-        visualDensity: VisualDensity.compact,
+  List<Widget> _selectActions(ThemeData theme) {
+    final btnStyle = TextButton.styleFrom(visualDensity: .compact);
+    final textStyle = TextStyle(color: theme.colorScheme.onSurfaceVariant);
+    return [
+      TextButton(
+        style: btnStyle,
+        onPressed: () => _favDetailController.handleSelect(checked: true),
+        child: const Text('全选'),
       ),
-      onPressed: () => _favDetailController.handleSelect(checked: true),
-      child: const Text('全选'),
-    ),
-    TextButton(
-      style: TextButton.styleFrom(
-        visualDensity: VisualDensity.compact,
+      TextButton(
+        style: btnStyle,
+        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
+          context: context,
+          isCopy: true,
+          ctr: _favDetailController,
+          mediaId: _favDetailController.mediaId,
+          mid: _favDetailController.account.mid,
+        ),
+        child: Text('复制', style: textStyle),
       ),
-      onPressed: () =>
-          RequestUtils.onCopyOrMove<FavDetailData, FavDetailItemModel>(
-            context: context,
-            isCopy: true,
-            ctr: _favDetailController,
-            mediaId: _favDetailController.mediaId,
-            mid: _favDetailController.account.mid,
-          ),
-      child: Text(
-        '复制',
-        style: TextStyle(
-          color: theme.colorScheme.onSurfaceVariant,
+      TextButton(
+        style: btnStyle,
+        onPressed: () => RequestUtils.onCopyOrMove<FavDetailItemModel>(
+          context: context,
+          isCopy: false,
+          ctr: _favDetailController,
+          mediaId: _favDetailController.mediaId,
+          mid: _favDetailController.account.mid,
+        ),
+        child: Text('移动', style: textStyle),
+      ),
+      TextButton(
+        style: btnStyle,
+        onPressed: _favDetailController.onRemove,
+        child: Text(
+          '删除',
+          style: TextStyle(color: theme.colorScheme.error),
         ),
       ),
-    ),
-    TextButton(
-      style: TextButton.styleFrom(
-        visualDensity: VisualDensity.compact,
-      ),
-      onPressed: () =>
-          RequestUtils.onCopyOrMove<FavDetailData, FavDetailItemModel>(
-            context: context,
-            isCopy: false,
-            ctr: _favDetailController,
-            mediaId: _favDetailController.mediaId,
-            mid: _favDetailController.account.mid,
-          ),
-      child: Text(
-        '移动',
-        style: TextStyle(
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-      ),
-    ),
-    TextButton(
-      style: TextButton.styleFrom(
-        visualDensity: VisualDensity.compact,
-      ),
-      onPressed: _favDetailController.onRemove,
-      child: Text(
-        '删除',
-        style: TextStyle(color: theme.colorScheme.error),
-      ),
-    ),
-    const SizedBox(width: 10),
-  ];
+      const SizedBox(width: 10),
+    ];
+  }
 
   Widget _flexibleSpace(ThemeData theme) {
     final style = TextStyle(
@@ -485,7 +471,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
   ) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -514,7 +500,7 @@ class _FavDetailPageState extends State<FavDetailPage> with GridMixin {
                 itemCount: response.length + 1,
               )
             : HttpError(onReload: _favDetailController.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _favDetailController.onReload,
       ),

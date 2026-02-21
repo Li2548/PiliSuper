@@ -2,7 +2,7 @@
 
 if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
     echo "Stopping PiliSuper if running..."
-    pkill -x PiliSuper || true
+    pkill -x pilisuper || true
 fi
 
 exit 0

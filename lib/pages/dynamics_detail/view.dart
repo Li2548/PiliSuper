@@ -2,21 +2,28 @@ import 'dart:math';
 
 import 'package:PiliSuper/common/widgets/custom_icon.dart';
 import 'package:PiliSuper/common/widgets/flutter/refresh_indicator.dart';
+import 'package:PiliSuper/common/widgets/flutter/text_field/controller.dart';
+import 'package:PiliSuper/common/widgets/pair.dart';
 import 'package:PiliSuper/http/constants.dart';
+import 'package:PiliSuper/http/dynamics.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/models/common/reply/reply_option_type.dart';
 import 'package:PiliSuper/models/dynamics/result.dart';
 import 'package:PiliSuper/pages/common/dyn/common_dyn_page.dart';
 import 'package:PiliSuper/pages/dynamics/widgets/author_panel.dart';
 import 'package:PiliSuper/pages/dynamics/widgets/dynamic_panel.dart';
+import 'package:PiliSuper/pages/dynamics_create/view.dart';
 import 'package:PiliSuper/pages/dynamics_detail/controller.dart';
 import 'package:PiliSuper/pages/dynamics_repost/view.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/get_ext.dart';
 import 'package:PiliSuper/utils/grid.dart';
 import 'package:PiliSuper/utils/num_utils.dart';
 import 'package:PiliSuper/utils/request_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 
 class DynamicDetailPage extends StatefulWidget {
   const DynamicDetailPage({super.key});
@@ -66,6 +73,142 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
     );
   }
 
+  void _onEdit() {
+    final item = controller.dynItem;
+    List<RichTextItem>? items;
+    final moduleDynamic = item.modules.moduleDynamic;
+    final desc = moduleDynamic?.desc;
+    final opus = moduleDynamic?.major?.opus;
+
+    Pair<int, String>? topic;
+    if (moduleDynamic?.topic case final t?) {
+      try {
+        topic = Pair(first: t.id!, second: t.name!);
+      } catch (_) {
+        if (kDebugMode) rethrow;
+      }
+    }
+
+    final richTextNodes = desc?.richTextNodes ?? opus?.summary?.richTextNodes;
+    if (richTextNodes != null && richTextNodes.isNotEmpty) {
+      items = <RichTextItem>[];
+      final buffer = StringBuffer();
+      try {
+        for (final e in richTextNodes) {
+          if (e.type == 'RICH_TEXT_NODE_TYPE_EMOJI') {
+            const placeHolder = '\uFFFC';
+            items.add(
+              RichTextItem(
+                text: placeHolder,
+                rawText: e.origText,
+                type: .emoji,
+                range: TextRange(
+                  start: buffer.length,
+                  end: buffer.length + placeHolder.length,
+                ),
+                emote: Emote(
+                  url: e.emoji!.url!,
+                  width: 22,
+                ),
+              ),
+            );
+            buffer.write(placeHolder);
+            continue;
+          }
+          final range = TextRange(
+            start: buffer.length,
+            end: buffer.length + e.origText!.length,
+          );
+          final item = switch (e.type) {
+            'RICH_TEXT_NODE_TYPE_AT' => RichTextItem(
+              text: e.origText!,
+              type: .at,
+              range: range,
+              id: e.rid,
+            ),
+            'RICH_TEXT_NODE_TYPE_BV' ||
+            'RICH_TEXT_NODE_TYPE_TOPIC' ||
+            'RICH_TEXT_NODE_TYPE_LOTTERY' ||
+            'RICH_TEXT_NODE_TYPE_VIEW_PICTURE' => RichTextItem(
+              text: e.origText!,
+              type: .common,
+              range: range,
+              id: e.rid,
+            ),
+            'RICH_TEXT_NODE_TYPE_VOTE' => RichTextItem(
+              text: e.origText!,
+              type: .vote,
+              range: range,
+              id: e.rid,
+            ),
+            _ => RichTextItem(
+              text: e.origText!,
+              range: range,
+            ),
+          };
+          items.add(item);
+          buffer.write(e.origText!);
+        }
+
+        bool isValid = true;
+        int cursor = 0;
+        for (final e in items) {
+          final range = e.range;
+          if (range.start == cursor) {
+            cursor = range.end;
+          } else {
+            isValid = false;
+            break;
+          }
+        }
+        assert(isValid);
+      } catch (e) {
+        if (kDebugMode) rethrow;
+      }
+    } else {
+      final text = desc?.text ?? opus?.summary?.text;
+      if (text != null && text.isNotEmpty) {
+        items = [
+          RichTextItem.fromStart(text),
+        ];
+      }
+    }
+    ReplyOptionType? replyOption;
+    if (controller.loadingState.value case Error(:final code)) {
+      if (code == 12061 || code == 12002) {
+        replyOption = .close;
+      }
+    }
+    CreateDynPanel.onCreateDyn(
+      context,
+      title: opus?.title,
+      items: items,
+      pics: opus?.pics,
+      topic: topic,
+      replyOption: replyOption ?? .allow,
+      isPrivate: item.modules.moduleAuthor?.badgeText != null,
+      editConfig: (
+        dynId: item.idStr,
+        repostDynId: item.orig?.idStr,
+      ),
+      onSuccess: () {
+        Future.delayed(
+          const Duration(milliseconds: 500),
+          () async {
+            if (!mounted) return;
+            final res = await DynamicsHttp.dynamicDetail(id: item.idStr);
+            if (res case Success(:final response)) {
+              if (mounted) {
+                controller.dynItem = response;
+                setState(() {});
+              }
+            }
+          },
+        );
+      },
+    );
+  }
+
   PreferredSizeWidget _buildAppBar() => AppBar(
     title: Padding(
       padding: const EdgeInsets.only(right: 12),
@@ -80,6 +223,9 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
               child: AuthorPanel(
                 item: controller.dynItem,
                 isDetail: true,
+                onSetPubSetting: controller.onSetPubSetting,
+                onEdit: _onEdit,
+                onSetReplySubject: controller.onSetReplySubject,
               ),
             ),
           );
@@ -88,10 +234,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
     ),
     actions: isPortrait
         ? null
-        : [
-            ratioWidget(maxWidth),
-            const SizedBox(width: 16),
-          ],
+        : [ratioWidget(maxWidth), const SizedBox(width: 16)],
   );
 
   Widget _buildBody(ThemeData theme) {
@@ -110,6 +253,9 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                 isDetail: true,
                 maxWidth: maxWidth - this.padding.horizontal - 2 * padding,
                 isDetailPortraitW: isPortrait,
+                onSetPubSetting: controller.onSetPubSetting,
+                onEdit: _onEdit,
+                onSetReplySubject: controller.onSetReplySubject,
               ),
             ),
             buildReplyHeader(theme),
@@ -143,6 +289,9 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                               (flex / (flex + flex1)) -
                           padding,
                       isDetailPortraitW: isPortrait,
+                      onSetPubSetting: controller.onSetPubSetting,
+                      onEdit: _onEdit,
+                      onSetReplySubject: controller.onSetReplySubject,
                     ),
                   ),
                 ),
@@ -210,6 +359,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
             final primary = theme.colorScheme.primary;
             final outline = theme.colorScheme.outline;
             final btnStyle = TextButton.styleFrom(
+              tapTargetSize: .padded,
               padding: const EdgeInsets.symmetric(horizontal: 15),
               foregroundColor: outline,
             );
@@ -278,7 +428,7 @@ class _DynamicDetailPageState extends CommonDynPageState<DynamicDetailPage> {
                                 useSafeArea: true,
                                 builder: (context) => RepostPanel(
                                   item: controller.dynItem,
-                                  callback: () {
+                                  onSuccess: () {
                                     if (forward != null) {
                                       int count = forward.count ?? 0;
                                       forward.count = count + 1;

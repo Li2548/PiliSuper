@@ -1,3 +1,4 @@
+import 'package:PiliSuper/common/widgets/flutter/vertical_tabs.dart';
 import 'package:PiliSuper/models/common/rank_type.dart';
 import 'package:PiliSuper/pages/rank/controller.dart';
 import 'package:PiliSuper/pages/rank/zone/view.dart';
@@ -24,71 +25,7 @@ class _RankPageState extends State<RankPage>
     final theme = Theme.of(context);
     return Row(
       children: [
-        SizedBox(
-          width: 64,
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: 100),
-            children: List.generate(
-              RankType.values.length,
-              (index) => IntrinsicHeight(
-                child: Obx(
-                  () {
-                    final isCurr = index == _rankController.tabIndex.value;
-                    return Material(
-                      color: isCurr
-                          ? theme.colorScheme.onInverseSurface
-                          : theme.colorScheme.surface,
-                      child: InkWell(
-                        onTap: () {
-                          if (isCurr) {
-                            _rankController.animateToTop();
-                          } else {
-                            _rankController
-                              ..tabIndex.value = index
-                              ..tabController.animateTo(index);
-                          }
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (isCurr)
-                              Container(
-                                height: double.infinity,
-                                width: 3,
-                                color: theme.colorScheme.primary,
-                              )
-                            else
-                              const SizedBox(width: 3),
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                alignment: Alignment.center,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 7,
-                                ),
-                                child: Text(
-                                  RankType.values[index].label,
-                                  style: TextStyle(
-                                    color: isCurr
-                                        ? theme.colorScheme.primary
-                                        : theme.colorScheme.onSurface,
-                                    fontSize: 15,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
+        _buildTab(theme),
         Expanded(
           child: TabBarView(
             physics: const NeverScrollableScrollPhysics(),
@@ -104,6 +41,27 @@ class _RankPageState extends State<RankPage>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTab(ThemeData theme) {
+    return VerticalTabBar(
+      dividerWidth: 0,
+      isScrollable: true,
+      indicatorWeight: 3,
+      indicatorSize: .tab,
+      controller: _rankController.tabController,
+      padding: .only(bottom: MediaQuery.paddingOf(context).bottom + 105),
+      tabs: RankType.values.map((e) => VerticalTab(text: e.label)).toList(),
+      onTap: (index) {
+        if (!_rankController.tabController.indexIsChanging) {
+          _rankController.animateToTop();
+        } else {
+          _rankController
+            ..tabIndex.value = index
+            ..tabController.animateTo(index);
+        }
+      },
     );
   }
 }

@@ -3,7 +3,8 @@ import 'package:PiliSuper/models/model_owner.dart';
 import 'package:PiliSuper/models/model_video.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
 import 'package:PiliSuper/utils/em.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
+import 'package:PiliSuper/utils/extension/string_ext.dart';
 
 abstract class SearchNumData<T> {
   SearchNumData({

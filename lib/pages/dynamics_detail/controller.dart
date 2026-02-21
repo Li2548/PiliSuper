@@ -1,8 +1,11 @@
 import 'package:PiliSuper/http/dynamics.dart';
+import 'package:PiliSuper/http/loading_state.dart';
+import 'package:PiliSuper/http/reply.dart';
 import 'package:PiliSuper/models/dynamics/result.dart';
 import 'package:PiliSuper/pages/common/dyn/common_dyn_controller.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 
 class DynamicDetailController extends CommonDynController {
@@ -21,8 +24,8 @@ class DynamicDetailController extends CommonDynController {
   void onInit() {
     super.onInit();
     dynItem = Get.arguments['item'];
-    var commentType = dynItem.basic?.commentType;
-    var commentIdStr = dynItem.basic?.commentIdStr;
+    final commentType = dynItem.basic?.commentType;
+    final commentIdStr = dynItem.basic?.commentIdStr;
     if (commentType != null &&
         commentType != 0 &&
         commentIdStr != null &&
@@ -30,9 +33,8 @@ class DynamicDetailController extends CommonDynController {
       _init(commentIdStr, commentType);
     } else {
       DynamicsHttp.dynamicDetail(id: dynItem.idStr).then((res) {
-        if (res.isSuccess) {
-          final data = res.data;
-          _init(data.basic!.commentIdStr!, data.basic!.commentType!);
+        if (res case Success(:final response)) {
+          _init(response.basic!.commentIdStr!, response.basic!.commentType!);
         } else {
           res.toast();
         }
@@ -44,5 +46,34 @@ class DynamicDetailController extends CommonDynController {
     oid = int.parse(commentIdStr);
     replyType = commentType;
     queryData();
+  }
+
+  Future<LoadingState> onSetPubSetting(bool isPrivate, Object dynId) async {
+    final res = await DynamicsHttp.dynPrivatePubSetting(
+      dynId: dynId,
+      action: isPrivate ? 'public_pub' : 'private_pub',
+    );
+    if (res.isSuccess) {
+      dynItem.modules.moduleAuthor?.badgeText = isPrivate ? null : '仅自己可见';
+      SmartDialog.showToast('设置成功');
+    } else {
+      res.toast();
+    }
+    return res;
+  }
+
+  Future<void> onSetReplySubject(int action) async {
+    final res = await ReplyHttp.replySubjectModify(
+      oid: oid,
+      type: replyType,
+      action: action,
+    );
+    if (res.isSuccess) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!isClosed) {
+          onReload();
+        }
+      });
+    }
   }
 }

@@ -7,7 +7,6 @@ import 'package:PiliSuper/common/widgets/flutter/page/tabs.dart';
 import 'package:PiliSuper/common/widgets/image/image_save.dart';
 import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/common/widgets/keep_alive_wrapper.dart';
-import 'package:PiliSuper/common/widgets/scroll_physics.dart';
 import 'package:PiliSuper/common/widgets/stat/stat.dart';
 import 'package:PiliSuper/http/fav.dart';
 import 'package:PiliSuper/http/loading_state.dart';
@@ -25,8 +24,10 @@ import 'package:PiliSuper/pages/video/introduction/ugc/widgets/page.dart';
 import 'package:PiliSuper/utils/accounts.dart';
 import 'package:PiliSuper/utils/date_utils.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/scroll_controller_ext.dart';
 import 'package:PiliSuper/utils/id_utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/foundation.dart';
@@ -85,11 +86,7 @@ class EpisodePanel extends CommonSlidePage {
 class _EpisodePanelState extends State<EpisodePanel>
     with TickerProviderStateMixin, CommonSlideMixin {
   // tab
-  late final TabController _tabController = TabController(
-    initialIndex: widget.initialTabIndex,
-    length: widget.list.length,
-    vsync: this,
-  )..addListener(listener);
+  late final TabController _tabController;
   late final RxInt _currentTabIndex = _tabController.index.obs;
 
   late final showTitle = widget.showTitle;
@@ -153,6 +150,12 @@ class _EpisodePanelState extends State<EpisodePanel>
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(
+      initialIndex: widget.initialTabIndex,
+      length: widget.list.length,
+      vsync: this,
+    )..addListener(listener);
+
     _currentItemIndex = _findCurrentItemIndex;
     _itemScrollController = List.generate(
       widget.list.length,
@@ -168,14 +171,24 @@ class _EpisodePanelState extends State<EpisodePanel>
     _isReversed = List.filled(widget.list.length, false);
 
     if (widget.type == EpisodeType.season && Accounts.main.isLogin) {
-      _favState = LoadingState<bool>.loading().obs;
-      VideoHttp.videoRelation(bvid: widget.bvid).then(
-        (result) {
-          if (result case Success(:var response)) {
-            _favState!.value = Success(response.seasonFav ?? false);
-          }
-        },
-      );
+      final favState =
+          widget.ugcIntroController?.seasonFavState[widget.seasonId];
+      if (favState != null) {
+        _favState = Success(favState).obs;
+      } else {
+        _favState = LoadingState<bool>.loading().obs;
+        VideoHttp.videoRelation(bvid: widget.bvid).then(
+          (result) {
+            if (!mounted) return;
+            if (result case Success(:final response)) {
+              final seasonFav = response.seasonFav ?? false;
+              _favState!.value = Success(seasonFav);
+              widget.ugcIntroController?.seasonFavState[widget.seasonId] =
+                  seasonFav;
+            }
+          },
+        );
+      }
     }
   }
 
@@ -185,37 +198,45 @@ class _EpisodePanelState extends State<EpisodePanel>
       ..removeListener(listener)
       ..dispose();
     _favState?.close();
-    for (var e in _itemScrollController) {
+    for (final e in _itemScrollController) {
       e.dispose();
     }
     super.dispose();
   }
 
+  late final _isMulti =
+      widget.type == EpisodeType.season && widget.list.length > 1;
+
   @override
   Widget buildPage(ThemeData theme) {
-    final isMulti = widget.type == EpisodeType.season && widget.list.length > 1;
-
-    Widget tabBar() => TabBar(
-      controller: _tabController,
-      padding: const EdgeInsets.only(right: 60),
-      isScrollable: true,
-      tabs: widget.list.map((item) => Tab(text: item.title)).toList(),
-      dividerHeight: 1,
-      dividerColor: theme.dividerColor.withValues(alpha: 0.1),
+    return Material(
+      color: showTitle ? theme.colorScheme.surface : null,
+      type: showTitle ? MaterialType.canvas : MaterialType.transparency,
+      child: Column(
+        children: [
+          _buildToolbar(theme),
+          if (_isMulti)
+            TabBar(
+              controller: _tabController,
+              padding: const EdgeInsets.only(right: 60),
+              isScrollable: true,
+              tabs: widget.list.map((item) => Tab(text: item.title)).toList(),
+              dividerHeight: 1,
+              dividerColor: theme.dividerColor.withValues(alpha: 0.1),
+            ),
+          Expanded(child: enableSlide ? slideList(theme) : buildList(theme)),
+        ],
+      ),
     );
+  }
 
-    if (isMulti && enableSlide) {
-      return CustomTabBarView(
+  @override
+  Widget buildList(ThemeData theme) {
+    if (_isMulti) {
+      return TabBarView<TabBarDragGestureRecognizer>(
         controller: _tabController,
-        physics: const CustomTabBarViewScrollPhysics(),
-        bgColor: theme.colorScheme.surface,
-        header: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildToolbar(theme),
-            tabBar(),
-          ],
-        ),
+        horizontalDragGestureRecognizer: () =>
+            TabBarDragGestureRecognizer(isDxAllowed: isDxAllowed),
         children: List.generate(
           widget.list.length,
           (index) => _buildBody(
@@ -226,37 +247,6 @@ class _EpisodePanelState extends State<EpisodePanel>
         ),
       );
     }
-
-    return Material(
-      color: showTitle ? theme.colorScheme.surface : null,
-      type: showTitle ? MaterialType.canvas : MaterialType.transparency,
-      child: Column(
-        children: [
-          _buildToolbar(theme),
-          if (isMulti) ...[
-            tabBar(),
-            Expanded(
-              child: tabBarView(
-                controller: _tabController,
-                children: List.generate(
-                  widget.list.length,
-                  (index) => _buildBody(
-                    theme,
-                    index,
-                    widget.list[index].episodes,
-                  ),
-                ),
-              ),
-            ),
-          ] else
-            Expanded(child: enableSlide ? slideList(theme) : buildList(theme)),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget buildList(ThemeData theme) {
     return _buildBody(theme, 0, _getCurrEpisodes);
   }
 
@@ -383,6 +373,7 @@ class _EpisodePanelState extends State<EpisodePanel>
     int? view;
     int? danmaku;
     bool? isCharging;
+    bool? cacheWidth;
 
     switch (episode) {
       case Part part:
@@ -390,15 +381,21 @@ class _EpisodePanelState extends State<EpisodePanel>
         title = part.part!;
         duration = part.duration;
         pubdate = part.ctime;
+        cacheWidth = part.dimension?.cacheWidth;
         break;
       case ugc.EpisodeItem item:
         title = item.title!;
-        cover = item.arc?.pic;
         bvid = item.bvid;
-        duration = item.arc?.duration;
-        pubdate = item.arc?.pubdate;
-        view = item.arc?.stat?.view;
-        danmaku = item.arc?.stat?.danmaku;
+        if (item.arc case final arc?) {
+          cover = arc.pic;
+          duration = arc.duration;
+          pubdate = arc.pubdate;
+          if (arc.stat case final stat?) {
+            view = stat.view;
+            danmaku = stat.danmaku;
+          }
+          cacheWidth = arc.dimension?.cacheWidth;
+        }
         if (item.attribute == 8) {
           isCharging = true;
         }
@@ -414,6 +411,7 @@ class _EpisodePanelState extends State<EpisodePanel>
           duration = item.duration == null ? null : item.duration! ~/ 1000;
         }
         pubdate = item.pubTime;
+        cacheWidth = item.dimension?.cacheWidth;
         break;
     }
     late final Color primary = theme.colorScheme.primary;
@@ -457,7 +455,7 @@ class _EpisodePanelState extends State<EpisodePanel>
               });
             },
             onLongPress: onLongPress,
-            onSecondaryTap: Utils.isMobile ? null : onLongPress,
+            onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: StyleString.safeSpace,
@@ -474,6 +472,7 @@ class _EpisodePanelState extends State<EpisodePanel>
                           src: cover,
                           width: 140.8,
                           height: 88,
+                          cacheWidth: cacheWidth,
                         ),
                         if (duration != null && duration > 0)
                           PBadge(
@@ -507,6 +506,7 @@ class _EpisodePanelState extends State<EpisodePanel>
                       'assets/images/live.png',
                       color: primary,
                       height: 12,
+                      cacheHeight: 12.cacheSize(context),
                       semanticLabel: "正在播放：",
                     ),
                   Expanded(
@@ -573,22 +573,24 @@ class _EpisodePanelState extends State<EpisodePanel>
 
   Widget _buildFavBtn(LoadingState<bool> loadingState) {
     return switch (loadingState) {
-      Success(:var response) => iconButton(
+      Success(:final response) => iconButton(
         iconSize: 22,
         tooltip: response ? '取消订阅' : '订阅',
         icon: response
             ? const Icon(Icons.notifications_off_outlined)
             : const Icon(Icons.notifications_active_outlined),
         onPressed: () async {
-          var result = await FavHttp.seasonFav(
+          final res = await FavHttp.seasonFav(
             isFav: response,
             seasonId: widget.seasonId,
           );
-          if (result['status']) {
+          if (res.isSuccess) {
             SmartDialog.showToast('${response ? '取消' : ''}订阅成功');
             _favState!.value = Success(!response);
+            widget.ugcIntroController?.seasonFavState[widget.seasonId] =
+                !response;
           } else {
-            SmartDialog.showToast(result['msg']);
+            res.toast();
           }
         },
       ),

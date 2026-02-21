@@ -5,6 +5,7 @@ import 'package:PiliSuper/common/widgets/view_sliver_safe_area.dart';
 import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models_new/login_devices/device.dart';
 import 'package:PiliSuper/pages/login_devices/controller.dart';
+import 'package:PiliSuper/utils/extension/widget_ext.dart';
 import 'package:flutter/material.dart' hide ListTile;
 import 'package:get/get.dart';
 
@@ -22,27 +23,21 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(title: const Text('登录设备')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 650),
-          child: refreshIndicator(
-            onRefresh: _controller.onRefresh,
-            child: CustomScrollView(
-              slivers: [
-                ViewSliverSafeArea(
-                  sliver: Obx(
-                    () => _buildBody(
-                      colorScheme,
-                      _controller.loadingState.value,
-                    ),
-                  ),
-                ),
-              ],
+      body: refreshIndicator(
+        onRefresh: _controller.onRefresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            ViewSliverSafeArea(
+              sliver: Obx(
+                () => _buildBody(colorScheme, _controller.loadingState.value),
+              ),
             ),
-          ),
+          ],
         ),
-      ),
+      ).constraintWidth(),
     );
   }
 
@@ -56,7 +51,7 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
     );
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
-      Success<List<LoginDevice>?>(:var response) =>
+      Success<List<LoginDevice>?>(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemBuilder: (context, index) {
@@ -66,7 +61,7 @@ class LoginDevicesPageState extends State<LoginDevicesPage> {
                 separatorBuilder: (_, _) => divider,
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),

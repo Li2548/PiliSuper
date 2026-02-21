@@ -3,7 +3,9 @@ import 'dart:io' show File;
 
 import 'package:PiliSuper/grpc/bilibili/community/service/dm/v1.pb.dart';
 import 'package:PiliSuper/grpc/dm.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/plugin/pl_player/controller.dart';
+import 'package:PiliSuper/plugin/pl_player/utils/danmaku_options.dart';
 import 'package:PiliSuper/utils/accounts.dart';
 import 'package:PiliSuper/utils/path_utils.dart';
 import 'package:PiliSuper/utils/utils.dart';
@@ -23,9 +25,9 @@ class PlDanmakuController {
 
   late final _isLogin = Accounts.main.isLogin;
 
-  final Map<int, List<DanmakuElem>> _dmSegMap = {};
+  final Map<int, List<DanmakuElem>> _dmSegMap = HashMap();
   // 已请求的段落标记
-  late final Set<int> _requestedSeg = {};
+  late final Set<int> _requestedSeg = HashSet();
 
   static const int segmentLength = 60 * 6 * 1000;
 
@@ -46,17 +48,16 @@ class PlDanmakuController {
       return;
     }
     _requestedSeg.add(segmentIndex);
-    final result = await DmGrpc.dmSegMobile(
+    final res = await DmGrpc.dmSegMobile(
       cid: _cid,
       segmentIndex: segmentIndex + 1,
     );
 
-    if (result.isSuccess) {
-      final data = result.data;
-      if (data.state == 1) {
+    if (res case Success(:final response)) {
+      if (response.state == 1) {
         _plPlayerController.dmState.add(_cid);
       }
-      handleDanmaku(data.elems);
+      handleDanmaku(response.elems);
     } else {
       _requestedSeg.remove(segmentIndex);
     }
@@ -67,7 +68,7 @@ class PlDanmakuController {
     final uniques = HashMap<String, DanmakuElem>();
 
     final shouldFilter = _plPlayerController.filters.count != 0;
-    final danmakuWeight = _plPlayerController.danmakuWeight;
+    final danmakuWeight = DanmakuOptions.danmakuWeight;
     for (final element in elems) {
       if (_isLogin) {
         element.isSelf = element.midHash == _plPlayerController.midHash;

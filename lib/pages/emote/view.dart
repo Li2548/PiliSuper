@@ -8,6 +8,8 @@ import 'package:PiliSuper/models/common/image_type.dart';
 import 'package:PiliSuper/models_new/emote/emote.dart';
 import 'package:PiliSuper/models_new/emote/package.dart';
 import 'package:PiliSuper/pages/emote/controller.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -49,7 +51,7 @@ class _EmotePanelState extends State<EmotePanel>
     );
     return switch (loadingState) {
       Loading() => loadingWidget,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? Column(
                 children: [
@@ -66,6 +68,7 @@ class _EmotePanelState extends State<EmotePanel>
                           final size = flag ? 40.0 : 60.0;
                           final isTextEmote = e.type == 4;
                           return GridView.builder(
+                            physics: const ClampingScrollPhysics(),
                             padding: const EdgeInsets.only(
                               left: 12,
                               right: 12,
@@ -96,14 +99,14 @@ class _EmotePanelState extends State<EmotePanel>
                                         width: size,
                                         height: size,
                                         type: ImageType.emote,
-                                        boxFit: BoxFit.contain,
+                                        fit: BoxFit.contain,
                                       ),
                               );
                               if (!isTextEmote) {
                                 child = CustomTooltip(
-                                  indicator: () => CustomPaint(
+                                  indicator: () => Triangle(
+                                    color: color,
                                     size: const Size(14, 8),
-                                    painter: TrianglePainter(color),
                                   ),
                                   overlayWidget: () => Container(
                                     padding: const EdgeInsets.all(8),
@@ -122,7 +125,7 @@ class _EmotePanelState extends State<EmotePanel>
                                           width: 65,
                                           height: 65,
                                           type: ImageType.emote,
-                                          boxFit: BoxFit.contain,
+                                          fit: BoxFit.contain,
                                         ),
                                         Text(
                                           item.meta?.alias ??
@@ -175,42 +178,36 @@ class _EmotePanelState extends State<EmotePanel>
                           iconSize: 20,
                           iconColor: theme.colorScheme.onSurfaceVariant
                               .withValues(alpha: 0.8),
-                          onPressed: () {
-                            final isDark = Get.isDarkMode;
-                            Get.toNamed(
-                              '/webview',
-                              parameters: {
-                                'url':
-                                    'https://www.bilibili.com/h5/mall/emoji-package/home?navhide=1&native.theme=${isDark ? 2 : 1}&night=${isDark ? 1 : 0}',
-                              },
-                            );
-                          },
+                          onPressed: () => Get.toNamed(
+                            '/webview',
+                            parameters: {
+                              'url':
+                                  'https://www.bilibili.com/h5/mall/emoji-package/home?navhide=1&${Utils.themeUrl(theme.colorScheme.isDark)}',
+                            },
+                          ),
                           icon: const Icon(Icons.settings),
                         ),
                       ),
                       Expanded(
-                        child: Material(
-                          type: MaterialType.transparency,
-                          child: TabBar(
-                            controller: _emotePanelController.tabController,
-                            padding: const EdgeInsets.only(right: 60),
-                            dividerColor: Colors.transparent,
-                            dividerHeight: 0,
-                            isScrollable: true,
-                            tabs: response
-                                .map(
-                                  (e) => Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: NetworkImgLayer(
-                                      width: 24,
-                                      height: 24,
-                                      type: ImageType.emote,
-                                      src: e.url,
-                                    ),
+                        child: TabBar(
+                          controller: _emotePanelController.tabController,
+                          padding: const EdgeInsets.only(right: 60),
+                          dividerColor: Colors.transparent,
+                          dividerHeight: 0,
+                          isScrollable: true,
+                          tabs: response
+                              .map(
+                                (e) => Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: NetworkImgLayer(
+                                    width: 24,
+                                    height: 24,
+                                    type: ImageType.emote,
+                                    src: e.url,
                                   ),
-                                )
-                                .toList(),
-                          ),
+                                ),
+                              )
+                              .toList(),
                         ),
                       ),
                     ],
@@ -219,7 +216,7 @@ class _EmotePanelState extends State<EmotePanel>
                 ],
               )
             : _errorWidget(),
-      Error(:var errMsg) => _errorWidget(errMsg),
+      Error(:final errMsg) => _errorWidget(errMsg),
     };
   }
 

@@ -1,8 +1,9 @@
 import 'package:PiliSuper/models/common/account_type.dart';
+import 'package:PiliSuper/models/common/settings_type.dart';
 import 'package:PiliSuper/pages/mine/controller.dart';
 import 'package:PiliSuper/pages/setting/models/model.dart';
 import 'package:PiliSuper/utils/accounts.dart';
-import 'package:PiliSuper/utils/accounts/account_manager/account_mgr.dart';
+import 'package:PiliSuper/utils/accounts/api_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -35,20 +36,18 @@ List<SettingsModel> get privacySettings => [
     onTap: (context, setState) {
       showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('账号模式详情'),
-            content: SingleChildScrollView(
-              child: _getAccountDetail(context),
+        builder: (context) => AlertDialog(
+          title: const Text('账号模式详情'),
+          content: SingleChildScrollView(
+            child: _getAccountDetail(context),
+          ),
+          actions: [
+            TextButton(
+              onPressed: Get.back,
+              child: const Text('确认'),
             ),
-            actions: [
-              TextButton(
-                onPressed: Get.back,
-                child: const Text('确认'),
-              ),
-            ],
-          );
-        },
+          ],
+        ),
       );
     },
     leading: const Icon(Icons.flag_outlined),
@@ -60,8 +59,8 @@ List<SettingsModel> get privacySettings => [
 Widget _getAccountDetail(BuildContext context) {
   final slivers = <Widget>[];
   final theme = TextTheme.of(context);
-  for (var i in AccountType.values) {
-    final url = AccountManager.apiTypeSet[i];
+  for (final i in AccountType.values) {
+    final url = ApiType.apiTypeSet[i];
     if (url == null) continue;
 
     slivers

@@ -1,15 +1,21 @@
+import 'dart:io' show Platform;
+
 import 'package:PiliSuper/common/widgets/color_palette.dart';
+import 'package:PiliSuper/main.dart' show MyApp;
 import 'package:PiliSuper/models/common/nav_bar_config.dart';
 import 'package:PiliSuper/models/common/theme/theme_color_type.dart';
 import 'package:PiliSuper/models/common/theme/theme_type.dart';
 import 'package:PiliSuper/pages/home/view.dart';
 import 'package:PiliSuper/pages/mine/controller.dart';
+import 'package:PiliSuper/pages/setting/widgets/popup_item.dart';
 import 'package:PiliSuper/pages/setting/widgets/select_dialog.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/storage.dart';
 import 'package:PiliSuper/utils/storage_key.dart';
 import 'package:PiliSuper/utils/storage_pref.dart';
 import 'package:flex_seed_scheme/flex_seed_scheme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 
@@ -32,19 +38,26 @@ class Item {
   bool isExpanded;
 }
 
-List<Item> generateItems(int count) {
-  return List<Item>.generate(count, (int index) {
-    return Item(
-      headerValue: 'Panel $index',
-      expandedValue: 'This is item number $index',
-    );
-  });
-}
-
 class _ColorSelectPageState extends State<ColorSelectPage> {
-  final ColorSelectController ctr = Get.put(ColorSelectController());
-  FlexSchemeVariant _dynamicSchemeVariant =
-      FlexSchemeVariant.values[Pref.schemeVariant];
+  final ctr = Get.put(_ColorSelectController());
+  FlexSchemeVariant _dynamicSchemeVariant = Pref.schemeVariant;
+
+  Future<void> _onChanged([bool? val]) async {
+    val ??= !ctr.dynamicColor.value;
+    if (val) {
+      if (await MyApp.initPlatformState()) {
+        Get.forceAppUpdate();
+      } else {
+        SmartDialog.showToast('该设备可能不支持动态取色');
+        return;
+      }
+    } else {
+      Get.forceAppUpdate();
+    }
+    ctr
+      ..dynamicColor.value = val
+      ..setting.put(SettingBoxKey.dynamicColor, val);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,13 +79,11 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             onTap: () async {
               final result = await showDialog<ThemeType>(
                 context: context,
-                builder: (context) {
-                  return SelectDialog<ThemeType>(
-                    title: '主题模式',
-                    value: ctr.themeType.value,
-                    values: ThemeType.values.map((e) => (e, e.desc)).toList(),
-                  );
-                },
+                builder: (context) => SelectDialog<ThemeType>(
+                  title: '主题模式',
+                  value: ctr.themeType.value,
+                  values: ThemeType.values.map((e) => (e, e.desc)).toList(),
+                ),
               );
               if (result != null) {
                 try {
@@ -83,11 +94,7 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                 Get.changeThemeMode(result.toThemeMode);
               }
             },
-            leading: Container(
-              width: 40,
-              alignment: Alignment.center,
-              child: const Icon(Icons.flashlight_on_outlined),
-            ),
+            leading: const Icon(Icons.flashlight_on_outlined),
             title: Text('主题模式', style: titleStyle),
             subtitle: Obx(
               () => Text(
@@ -97,85 +104,42 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
             ),
           ),
           Obx(
-            () => ListTile(
+            () => PopupListTile<FlexSchemeVariant>(
               enabled: !ctr.dynamicColor.value,
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('调色板风格'),
-                  PopupMenuButton(
-                    enabled: !ctr.dynamicColor.value,
-                    initialValue: _dynamicSchemeVariant,
-                    onSelected: (item) {
-                      _dynamicSchemeVariant = item;
-                      GStorage.setting.put(
-                        SettingBoxKey.schemeVariant,
-                        item.index,
-                      );
-                      Get.forceAppUpdate();
-                    },
-                    itemBuilder: (context) => FlexSchemeVariant.values
-                        .map(
-                          (item) => PopupMenuItem<FlexSchemeVariant>(
-                            value: item,
-                            child: Text(item.variantName),
-                          ),
-                        )
-                        .toList(),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _dynamicSchemeVariant.variantName,
-                          style: TextStyle(
-                            height: 1,
-                            fontSize: 13,
-                            color: ctr.dynamicColor.value
-                                ? theme.colorScheme.outline.withValues(
-                                    alpha: 0.8,
-                                  )
-                                : theme.colorScheme.secondary,
-                          ),
-                          strutStyle: const StrutStyle(leading: 0, height: 1),
-                        ),
-                        Icon(
-                          size: 20,
-                          Icons.keyboard_arrow_right,
-                          color: ctr.dynamicColor.value
-                              ? theme.colorScheme.outline.withValues(
-                                  alpha: 0.8,
-                                )
-                              : theme.colorScheme.secondary,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              leading: Container(
-                width: 40,
-                alignment: Alignment.center,
-                child: const Icon(Icons.palette_outlined),
-              ),
-              subtitle: Text(
-                _dynamicSchemeVariant.description,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ),
-          ),
-          Obx(
-            () => CheckboxListTile(
-              title: const Text('动态取色'),
-              controlAffinity: ListTileControlAffinity.leading,
-              value: ctr.dynamicColor.value,
-              onChanged: (val) {
-                ctr
-                  ..dynamicColor.value = val!
-                  ..setting.put(SettingBoxKey.dynamicColor, val);
+              leading: const Icon(Icons.palette_outlined),
+              title: const Text('调色板风格'),
+              value: () =>
+                  (_dynamicSchemeVariant, _dynamicSchemeVariant.variantName),
+              itemBuilder: (_) => FlexSchemeVariant.values
+                  .map(
+                    (e) => PopupMenuItem(value: e, child: Text(e.variantName)),
+                  )
+                  .toList(),
+              onSelected: (value, setState) {
+                _dynamicSchemeVariant = value;
+                GStorage.setting.put(SettingBoxKey.schemeVariant, value.index);
                 Get.forceAppUpdate();
               },
             ),
           ),
+          if (!Platform.isIOS)
+            Obx(
+              () => ListTile(
+                title: const Text('动态取色'),
+                leading: ExcludeFocus(
+                  child: Checkbox(
+                    value: ctr.dynamicColor.value,
+                    onChanged: _onChanged,
+                    materialTapTargetSize: .shrinkWrap,
+                    visualDensity: const VisualDensity(
+                      horizontal: -4,
+                      vertical: -4,
+                    ),
+                  ),
+                ),
+                onTap: _onChanged,
+              ),
+            ),
           Padding(
             padding: padding,
             child: AnimatedSize(
@@ -184,9 +148,8 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
               duration: const Duration(milliseconds: 200),
               child: Obx(
                 () => ctr.dynamicColor.value
-                    ? const SizedBox.shrink(key: ValueKey(false))
+                    ? const SizedBox.shrink()
                     : Padding(
-                        key: const ValueKey(true),
                         padding: const EdgeInsets.all(12),
                         child: Wrap(
                           alignment: WrapAlignment.center,
@@ -211,7 +174,10 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
                                   spacing: 3,
                                   children: [
                                     ColorPalette(
-                                      color: item.color,
+                                      colorScheme: item.color.asColorSchemeSeed(
+                                        _dynamicSchemeVariant,
+                                        theme.brightness,
+                                      ),
                                       selected: ctr.currentColor.value == index,
                                     ),
                                     Text(
@@ -235,25 +201,29 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
           ),
           Padding(
             padding: padding,
-            child: IgnorePointer(
-              child: Container(
-                height: size.height / 2,
-                width: size.width,
-                color: theme.colorScheme.surface,
-                child: const HomePage(),
+            child: ExcludeFocus(
+              child: IgnorePointer(
+                child: Container(
+                  height: size.height / 2,
+                  width: size.width,
+                  color: theme.colorScheme.surface,
+                  child: const HomePage(),
+                ),
               ),
             ),
           ),
-          IgnorePointer(
-            child: NavigationBar(
-              destinations: NavigationBarType.values
-                  .map(
-                    (item) => NavigationDestination(
-                      icon: item.icon,
-                      label: item.label,
-                    ),
-                  )
-                  .toList(),
+          ExcludeFocus(
+            child: IgnorePointer(
+              child: NavigationBar(
+                destinations: NavigationBarType.values
+                    .map(
+                      (item) => NavigationDestination(
+                        icon: item.icon,
+                        label: item.label,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
           ),
         ],
@@ -262,11 +232,10 @@ class _ColorSelectPageState extends State<ColorSelectPage> {
   }
 }
 
-class ColorSelectController extends GetxController {
+class _ColorSelectController extends GetxController {
   final RxBool dynamicColor = Pref.dynamicColor.obs;
   final RxInt currentColor = Pref.customColor.obs;
-  final RxDouble currentTextScale = Pref.defaultTextScale.obs;
   final Rx<ThemeType> themeType = Pref.themeType.obs;
 
-  Box setting = GStorage.setting;
+  Box get setting => GStorage.setting;
 }

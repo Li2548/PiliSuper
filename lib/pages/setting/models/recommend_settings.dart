@@ -1,4 +1,5 @@
 import 'package:PiliSuper/http/video.dart';
+import 'package:PiliSuper/models/common/settings_type.dart';
 import 'package:PiliSuper/pages/rcmd/controller.dart';
 import 'package:PiliSuper/pages/setting/models/model.dart';
 import 'package:PiliSuper/utils/recommend_filter.dart';
@@ -21,7 +22,7 @@ List<SettingsModel> get recommendSettings => [
     subtitle: '下拉刷新时保留上次内容',
     leading: const Icon(Icons.refresh),
     setKey: SettingBoxKey.enableSaveLastData,
-    defaultVal: false,
+    defaultVal: true,
     onChanged: (value) {
       try {
         Get.find<RcmdController>()
@@ -55,7 +56,7 @@ List<SettingsModel> get recommendSettings => [
     values: [0, 1, 2, 3, 4],
     onChanged: (value) => RecommendFilter.minLikeRatioForRecommend = value,
   ),
-  getBanwordModel(
+  getBanWordModel(
     title: '标题关键词过滤',
     key: SettingBoxKey.banWordForRecommend,
     onChanged: (value) {
@@ -63,7 +64,7 @@ List<SettingsModel> get recommendSettings => [
       RecommendFilter.enableFilter = value.pattern.isNotEmpty;
     },
   ),
-  getBanwordModel(
+  getBanWordModel(
     title: 'App推荐/热门/排行榜: 视频分区关键词过滤',
     key: SettingBoxKey.banWordForZone,
     onChanged: (value) {
@@ -90,9 +91,7 @@ List<SettingsModel> get recommendSettings => [
     leading: const Icon(Icons.favorite_border_outlined),
     setKey: SettingBoxKey.exemptFilterForFollowed,
     defaultVal: true,
-    onChanged: (value) {
-      RecommendFilter.exemptFilterForFollowed = value;
-    },
+    onChanged: (value) => RecommendFilter.exemptFilterForFollowed = value,
   ),
   SwitchModel(
     title: '过滤器也应用于相关视频',
@@ -100,8 +99,6 @@ List<SettingsModel> get recommendSettings => [
     leading: const Icon(Icons.explore_outlined),
     setKey: SettingBoxKey.applyFilterToRelatedVideos,
     defaultVal: true,
-    onChanged: (value) {
-      RecommendFilter.applyFilterToRelatedVideos = value;
-    },
+    onChanged: (value) => RecommendFilter.applyFilterToRelatedVideos = value,
   ),
 ];

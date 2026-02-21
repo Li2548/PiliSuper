@@ -2,7 +2,8 @@ import 'package:PiliSuper/models/common/pgc_review_type.dart';
 import 'package:PiliSuper/pages/pgc_review/child/controller.dart';
 import 'package:PiliSuper/pages/pgc_review/child/view.dart';
 import 'package:PiliSuper/pages/pgc_review/post/view.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/scroll_controller_ext.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,10 +23,16 @@ class PgcReviewPage extends StatefulWidget {
 
 class _PgcReviewPageState extends State<PgcReviewPage>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
-  late final _tabController = TabController(
-    length: PgcReviewType.values.length,
-    vsync: this,
-  );
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: PgcReviewType.values.length,
+      vsync: this,
+    );
+  }
 
   @override
   void dispose() {
@@ -147,7 +154,7 @@ class _PgcReviewPageState extends State<PgcReviewPage>
                           '/webview',
                           parameters: {
                             'url':
-                                'https://member.bilibili.com/article-text/mobile?theme=${Get.isDarkMode ? 1 : 0}&media_id=${widget.mediaId}',
+                                'https://member.bilibili.com/article-text/mobile?theme=${theme.brightness.isDark ? 1 : 0}&media_id=${widget.mediaId}',
                           },
                         ),
                     ),

@@ -1,6 +1,6 @@
 import 'package:PiliSuper/http/live.dart';
 import 'package:PiliSuper/http/loading_state.dart';
-import 'package:PiliSuper/models/common/live_search_type.dart';
+import 'package:PiliSuper/models/common/live/live_search_type.dart';
 import 'package:PiliSuper/models_new/live/live_search/data.dart';
 import 'package:PiliSuper/pages/common/common_list_controller.dart';
 import 'package:PiliSuper/pages/live_search/controller.dart';

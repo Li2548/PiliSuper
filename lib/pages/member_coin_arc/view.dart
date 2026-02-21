@@ -28,10 +28,16 @@ class MemberCoinArcPage extends StatefulWidget {
 
 class _MemberCoinArcPageState extends State<MemberCoinArcPage> {
   late final mid = Accounts.main.mid;
-  late final _ctr = Get.put(
-    MemberCoinArcController(mid: widget.mid),
-    tag: Utils.makeHeroTag(widget.mid),
-  );
+  late final MemberCoinArcController _ctr;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctr = Get.put(
+      MemberCoinArcController(mid: widget.mid),
+      tag: Utils.makeHeroTag(widget.mid),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +84,7 @@ class _MemberCoinArcPageState extends State<MemberCoinArcPage> {
         itemCount: 16,
         itemBuilder: (context, index) => const VideoCardVSkeleton(),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -91,7 +97,7 @@ class _MemberCoinArcPageState extends State<MemberCoinArcPage> {
                 },
               )
             : HttpError(onReload: _ctr.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _ctr.onReload,
       ),

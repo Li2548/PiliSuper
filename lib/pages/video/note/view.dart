@@ -9,7 +9,9 @@ import 'package:PiliSuper/pages/common/slide/common_slide_page.dart';
 import 'package:PiliSuper/pages/video/note/controller.dart';
 import 'package:PiliSuper/pages/webview/view.dart';
 import 'package:PiliSuper/utils/accounts.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/num_ext.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
+import 'package:PiliSuper/utils/utils.dart';
 import 'package:extended_nested_scroll_view/extended_nested_scroll_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -36,10 +38,16 @@ class NoteListPage extends CommonSlidePage {
 
 class _NoteListPageState extends State<NoteListPage>
     with SingleTickerProviderStateMixin, CommonSlideMixin {
-  late final _controller = Get.put(
-    NoteListPageCtr(oid: widget.oid),
-    tag: widget.heroTag,
-  );
+  late final NoteListPageCtr _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(
+      NoteListPageCtr(oid: widget.oid),
+      tag: widget.heroTag,
+    );
+  }
 
   @override
   void dispose() {
@@ -186,7 +194,7 @@ class _NoteListPageState extends State<NoteListPage>
         itemBuilder: (_, _) => const VideoReplySkeleton(),
         itemCount: 8,
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverList.separated(
                 itemBuilder: (context, index) {
@@ -199,7 +207,7 @@ class _NoteListPageState extends State<NoteListPage>
                 separatorBuilder: (context, index) => divider,
               )
             : HttpError(onReload: _controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _controller.onReload,
       ),
@@ -256,8 +264,12 @@ class _NoteListPageState extends State<NoteListPage>
                           ),
                           const SizedBox(width: 6),
                           Image.asset(
-                            'assets/images/lv/lv${item.author!.isSeniorMember == 1 ? '6_s' : item.author!.level}.png',
+                            Utils.levelName(
+                              item.author!.level!,
+                              isSeniorMember: item.author!.isSeniorMember == 1,
+                            ),
                             height: 11,
+                            cacheHeight: 11.cacheSize(context),
                           ),
                         ],
                       ),

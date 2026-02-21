@@ -1,6 +1,4 @@
-import 'dart:math';
-
-import 'package:PiliSuper/pages/video/introduction/ugc/widgets/action_item.dart';
+import 'package:PiliSuper/common/widgets/custom_arc.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -26,27 +24,20 @@ class LoadingWidget extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(15)),
       ),
       child: Column(
+        spacing: 20,
         mainAxisSize: MainAxisSize.min,
         children: [
           //loading animation
-          RepaintBoundary.wrap(
-            Obx(
-              () => CustomPaint(
-                size: const Size.square(40),
-                painter: ArcPainter(
-                  color: onSurfaceVariant,
-                  strokeWidth: 3,
-                  sweepAngle: progress.value * 2 * pi,
-                ),
-              ),
+          Obx(
+            () => Arc(
+              size: 40,
+              color: onSurfaceVariant,
+              strokeWidth: 3,
+              progress: progress.value,
             ),
-            0,
           ),
           //msg
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Text(msg, style: TextStyle(color: onSurfaceVariant)),
-          ),
+          Text(msg, style: TextStyle(color: onSurfaceVariant)),
         ],
       ),
     );

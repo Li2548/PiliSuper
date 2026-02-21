@@ -15,9 +15,10 @@ import 'package:PiliSuper/pages/download/detail/view.dart';
 import 'package:PiliSuper/pages/download/detail/widgets/item.dart';
 import 'package:PiliSuper/pages/download/search/view.dart';
 import 'package:PiliSuper/services/download/download_service.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart' show IterableExt;
 import 'package:PiliSuper/utils/grid.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:PiliSuper/utils/storage.dart';
-import 'package:PiliSuper/utils/utils.dart';
 import 'package:flutter/material.dart'
     hide SliverGridDelegateWithMaxCrossAxisExtent;
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -33,7 +34,7 @@ class DownloadPage extends StatefulWidget {
 class _DownloadPageState extends State<DownloadPage> {
   final _downloadService = Get.find<DownloadService>();
   final _controller = Get.put(DownloadPageController());
-  final _progress = ValueNotifier(null);
+  final _progress = ChangeNotifier();
 
   @override
   void dispose() {
@@ -67,7 +68,7 @@ class _DownloadPageState extends State<DownloadPage> {
                   final allChecked = _controller.allChecked.toSet();
                   _controller.handleSelect();
                   final list = <BiliDownloadEntryInfo>[];
-                  for (var page in allChecked) {
+                  for (final page in allChecked) {
                     list.addAll(page.entries);
                   }
                   final res = await Future.wait(
@@ -197,7 +198,7 @@ class _DownloadPageState extends State<DownloadPage> {
                                     entry.cid.toString(),
                                   );
                                 },
-                                checked: item.checked ?? false,
+                                checked: item.checked,
                                 onSelect: (_) => _controller.onSelect(item),
                                 controller: _controller,
                               );
@@ -234,62 +235,60 @@ class _DownloadPageState extends State<DownloadPage> {
         ? null
         : showDialog(
             context: context,
-            builder: (context) {
-              return AlertDialog(
-                clipBehavior: Clip.hardEdge,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      onTap: () {
-                        Get.back();
-                        showConfirmDialog(
-                          context: context,
-                          title: '确定删除？',
-                          onConfirm: () async {
-                            await GStorage.watchProgress.deleteAll(
-                              pageInfo.entries.map((e) => e.cid.toString()),
-                            );
-                            _downloadService.deletePage(
-                              pageDirPath: pageInfo.dirPath,
-                            );
-                          },
-                        );
-                      },
-                      dense: true,
-                      title: const Text(
-                        '删除',
-                        style: TextStyle(fontSize: 14),
-                      ),
+            builder: (context) => AlertDialog(
+              clipBehavior: Clip.hardEdge,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    onTap: () {
+                      Get.back();
+                      showConfirmDialog(
+                        context: context,
+                        title: '确定删除？',
+                        onConfirm: () async {
+                          await GStorage.watchProgress.deleteAll(
+                            pageInfo.entries.map((e) => e.cid.toString()),
+                          );
+                          _downloadService.deletePage(
+                            pageDirPath: pageInfo.dirPath,
+                          );
+                        },
+                      );
+                    },
+                    dense: true,
+                    title: const Text(
+                      '删除',
+                      style: TextStyle(fontSize: 14),
                     ),
-                    ListTile(
-                      onTap: () async {
-                        Get.back();
-                        final res = await Future.wait(
-                          pageInfo.entries.map(
-                            (e) => _downloadService.downloadDanmaku(
-                              entry: e,
-                              isUpdate: true,
-                            ),
+                  ),
+                  ListTile(
+                    onTap: () async {
+                      Get.back();
+                      final res = await Future.wait(
+                        pageInfo.entries.map(
+                          (e) => _downloadService.downloadDanmaku(
+                            entry: e,
+                            isUpdate: true,
                           ),
-                        );
-                        if (res.every((e) => e)) {
-                          SmartDialog.showToast('更新成功');
-                        } else {
-                          SmartDialog.showToast('更新失败');
-                        }
-                      },
-                      dense: true,
-                      title: const Text(
-                        '更新弹幕',
-                        style: TextStyle(fontSize: 14),
-                      ),
+                        ),
+                      );
+                      if (res.every((e) => e)) {
+                        SmartDialog.showToast('更新成功');
+                      } else {
+                        SmartDialog.showToast('更新失败');
+                      }
+                    },
+                    dense: true,
+                    title: const Text(
+                      '更新弹幕',
+                      style: TextStyle(fontSize: 14),
                     ),
-                  ],
-                ),
-              );
-            },
+                  ),
+                ],
+              ),
+            ),
           );
     final first = pageInfo.entries.first;
     return Material(
@@ -309,7 +308,7 @@ class _DownloadPageState extends State<DownloadPage> {
           );
         },
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,
@@ -354,7 +353,7 @@ class _DownloadPageState extends State<DownloadPage> {
                       top: 6.0,
                     ),
                   Positioned.fill(
-                    child: selectMask(theme, pageInfo.checked ?? false),
+                    child: selectMask(theme, pageInfo.checked),
                   ),
                 ],
               ),

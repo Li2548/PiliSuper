@@ -7,7 +7,7 @@ import 'package:PiliSuper/grpc/bilibili/main/community/reply/v1.pb.dart'
 import 'package:PiliSuper/models/common/badge_type.dart';
 import 'package:PiliSuper/models/common/reply/reply_search_type.dart';
 import 'package:PiliSuper/utils/duration_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -57,7 +57,7 @@ class ReplySearchItem extends StatelessWidget {
       child: InkWell(
         onTap: () => Get.back(result: (title: title, url: item.url)),
         onLongPress: onLongPress,
-        onSecondaryTap: Utils.isMobile ? null : onLongPress,
+        onSecondaryTap: PlatformUtils.isMobile ? null : onLongPress,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: StyleString.safeSpace,

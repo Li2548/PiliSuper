@@ -4,9 +4,9 @@ import 'package:PiliSuper/models/common/search/article_search_type.dart';
 import 'package:PiliSuper/models/search/result.dart';
 import 'package:PiliSuper/pages/search/widgets/search_text.dart';
 import 'package:PiliSuper/pages/search_panel/controller.dart';
-import 'package:PiliSuper/utils/context_ext.dart';
+import 'package:PiliSuper/utils/extension/context_ext.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' hide ContextExtensionss;
+import 'package:get/get.dart';
 
 class SearchArticleController
     extends SearchPanelController<SearchArticleData, SearchArticleItemModel> {

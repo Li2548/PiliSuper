@@ -1,14 +1,14 @@
 import 'dart:io' show File;
 
+import 'package:PiliSuper/common/widgets/image/network_img_layer.dart';
 import 'package:PiliSuper/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliSuper/http/fav.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/http/msg.dart';
-import 'package:PiliSuper/models_new/fav/fav_folder/list.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/file_ext.dart';
+import 'package:PiliSuper/utils/extension/theme_ext.dart';
 import 'package:PiliSuper/utils/fav_utils.dart';
-import 'package:PiliSuper/utils/image_utils.dart';
-import 'package:PiliSuper/utils/utils.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:PiliSuper/utils/platform_utils.dart';
 import 'package:easy_debounce/easy_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
@@ -26,8 +26,8 @@ class CreateFavPage extends StatefulWidget {
 
 class _CreateFavPageState extends State<CreateFavPage> {
   dynamic _mediaId;
-  late final _titleController = TextEditingController();
-  late final _introController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _introController;
   String? _cover;
   bool _isPublic = true;
   late final _imagePicker = ImagePicker();
@@ -37,6 +37,8 @@ class _CreateFavPageState extends State<CreateFavPage> {
   @override
   void initState() {
     super.initState();
+    _titleController = TextEditingController();
+    _introController = TextEditingController();
     _mediaId = Get.parameters['mediaId'];
     if (_mediaId != null) {
       _getFolderInfo();
@@ -46,15 +48,14 @@ class _CreateFavPageState extends State<CreateFavPage> {
   void _getFolderInfo() {
     _errMsg = null;
     FavHttp.favFolderInfo(mediaId: _mediaId).then((res) {
-      if (res['status']) {
-        FavFolderInfo data = res['data'];
-        _titleController.text = data.title;
-        _introController.text = data.intro ?? '';
-        _isPublic = FavUtils.isPublicFav(data.attr);
-        _cover = data.cover;
-        _attr = data.attr;
+      if (res case Success(:final response)) {
+        _titleController.text = response.title;
+        _introController.text = response.intro ?? '';
+        _isPublic = FavUtils.isPublicFav(response.attr);
+        _cover = response.cover;
+        _attr = response.attr;
       } else {
-        _errMsg = res['msg'];
+        _errMsg = res.toString();
       }
       setState(() {});
     });
@@ -88,11 +89,11 @@ class _CreateFavPageState extends State<CreateFavPage> {
                 cover: _cover ?? '',
                 intro: _introController.text,
               ).then((res) {
-                if (res['status']) {
-                  Get.back(result: res['data']);
+                if (res case Success(:final response)) {
+                  Get.back(result: response);
                   SmartDialog.showToast('${_mediaId != null ? '编辑' : '创建'}成功');
                 } else {
-                  SmartDialog.showToast(res['msg']);
+                  res.toast();
                 }
               });
             },
@@ -119,7 +120,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
       );
       if (pickedFile != null && mounted) {
         String imgPath = pickedFile.path;
-        if (Utils.isMobile) {
+        if (PlatformUtils.isMobile) {
           final croppedFile = await ImageCropper.platform.cropImage(
             sourcePath: imgPath,
             uiSettings: [
@@ -153,14 +154,14 @@ class _CreateFavPageState extends State<CreateFavPage> {
           dir: 'cover',
         ).then((res) {
           if (context.mounted) {
-            if (res['status']) {
-              _cover = res['data']['location'];
+            if (res case Success(:final response)) {
+              _cover = response['location'];
               (context as Element).markNeedsBuild();
             } else {
-              SmartDialog.showToast(res['msg']);
+              res.toast();
             }
           }
-          if (Utils.isMobile) {
+          if (PlatformUtils.isMobile) {
             File(imgPath).tryDel();
           }
         });
@@ -173,12 +174,15 @@ class _CreateFavPageState extends State<CreateFavPage> {
   final leadingStyle = const TextStyle(fontSize: 14);
 
   Widget _buildBody(ThemeData theme) => SingleChildScrollView(
+    padding: .only(bottom: MediaQuery.viewPaddingOf(context).bottom + 25),
     child: Column(
+      spacing: 12,
       children: [
-        if (_attr == null || !FavUtils.isDefaultFav(_attr!)) ...[
+        if (_attr == null || !FavUtils.isDefaultFav(_attr!))
           Builder(
             builder: (context) {
               return ListTile(
+                visualDensity: .standard,
                 tileColor: theme.colorScheme.onInverseSurface,
                 onTap: () {
                   EasyThrottle.throttle(
@@ -188,42 +192,38 @@ class _CreateFavPageState extends State<CreateFavPage> {
                       if (_cover?.isNotEmpty == true) {
                         showDialog(
                           context: context,
-                          builder: (_) {
-                            return AlertDialog(
-                              clipBehavior: Clip.hardEdge,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                              ),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ListTile(
-                                    dense: true,
-                                    onTap: () {
-                                      Get.back();
-                                      _pickImg(context, theme);
-                                    },
-                                    title: const Text(
-                                      '替换封面',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
+                          builder: (_) => AlertDialog(
+                            clipBehavior: Clip.hardEdge,
+                            contentPadding: const .symmetric(vertical: 12),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  dense: true,
+                                  onTap: () {
+                                    Get.back();
+                                    _pickImg(context, theme);
+                                  },
+                                  title: const Text(
+                                    '替换封面',
+                                    style: TextStyle(fontSize: 14),
                                   ),
-                                  ListTile(
-                                    dense: true,
-                                    onTap: () {
-                                      Get.back();
-                                      _cover = null;
-                                      (context as Element).markNeedsBuild();
-                                    },
-                                    title: const Text(
-                                      '移除封面',
-                                      style: TextStyle(fontSize: 14),
-                                    ),
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  onTap: () {
+                                    Get.back();
+                                    _cover = null;
+                                    (context as Element).markNeedsBuild();
+                                  },
+                                  title: const Text(
+                                    '移除封面',
+                                    style: TextStyle(fontSize: 14),
                                   ),
-                                ],
-                              ),
-                            );
-                          },
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       } else {
                         _pickImg(context, theme);
@@ -242,15 +242,12 @@ class _CreateFavPageState extends State<CreateFavPage> {
                     if (_cover?.isNotEmpty == true)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: ClipRRect(
+                        child: NetworkImgLayer(
+                          src: _cover,
+                          height: 55,
+                          width: 88,
                           borderRadius: const BorderRadius.all(
                             Radius.circular(6),
-                          ),
-                          child: CachedNetworkImage(
-                            imageUrl: ImageUtils.thumbnailUrl(_cover!),
-                            height: 55,
-                            width: 88,
-                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
@@ -263,8 +260,6 @@ class _CreateFavPageState extends State<CreateFavPage> {
               );
             },
           ),
-          const SizedBox(height: 16),
-        ],
         ListTile(
           tileColor: theme.colorScheme.onInverseSurface,
           title: Row(
@@ -321,8 +316,7 @@ class _CreateFavPageState extends State<CreateFavPage> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        if (_attr == null || !FavUtils.isDefaultFav(_attr!)) ...[
+        if (_attr == null || !FavUtils.isDefaultFav(_attr!))
           ListTile(
             tileColor: theme.colorScheme.onInverseSurface,
             title: Row(
@@ -365,8 +359,6 @@ class _CreateFavPageState extends State<CreateFavPage> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-        ],
         Builder(
           builder: (context) {
             void onTap() {
@@ -392,7 +384,6 @@ class _CreateFavPageState extends State<CreateFavPage> {
             );
           },
         ),
-        const SizedBox(height: 16),
       ],
     ),
   );

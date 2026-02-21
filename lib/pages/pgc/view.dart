@@ -13,14 +13,13 @@ import 'package:PiliSuper/models/common/home_tab_type.dart';
 import 'package:PiliSuper/models_new/fav/fav_pgc/list.dart';
 import 'package:PiliSuper/models_new/pgc/pgc_index_result/list.dart';
 import 'package:PiliSuper/models_new/pgc/pgc_timeline/result.dart';
-import 'package:PiliSuper/pages/common/common_page.dart';
 import 'package:PiliSuper/pages/pgc/controller.dart';
 import 'package:PiliSuper/pages/pgc/widgets/pgc_card_v.dart';
 import 'package:PiliSuper/pages/pgc/widgets/pgc_card_v_timeline.dart';
 import 'package:PiliSuper/pages/pgc_index/controller.dart';
 import 'package:PiliSuper/pages/pgc_index/view.dart';
 import 'package:PiliSuper/pages/pgc_index/widgets/pgc_card_v_pgc_index.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 import 'package:PiliSuper/utils/grid.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -37,13 +36,17 @@ class PgcPage extends StatefulWidget {
   State<PgcPage> createState() => _PgcPageState();
 }
 
-class _PgcPageState extends CommonPageState<PgcPage, PgcController>
-    with AutomaticKeepAliveClientMixin {
+class _PgcPageState extends State<PgcPage> with AutomaticKeepAliveClientMixin {
+  late final PgcController controller;
+
   @override
-  late PgcController controller = Get.put(
-    PgcController(tabType: widget.tabType),
-    tag: widget.tabType.name,
-  );
+  void initState() {
+    controller = Get.put(
+      PgcController(tabType: widget.tabType),
+      tag: widget.tabType.name,
+    );
+    super.initState();
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -52,28 +55,26 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
   Widget build(BuildContext context) {
     super.build(context);
     final ThemeData theme = Theme.of(context);
-    return onBuild(
-      refreshIndicator(
-        onRefresh: controller.onRefresh,
-        child: CustomScrollView(
-          controller: controller.scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            _buildFollow(theme),
-            if (controller.showPgcTimeline)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height:
-                      Grid.smallCardWidth / 2 / 0.75 +
-                      MediaQuery.textScalerOf(context).scale(96),
-                  child: Obx(
-                    () => _buildTimeline(theme, controller.timelineState.value),
-                  ),
+    return refreshIndicator(
+      onRefresh: controller.onRefresh,
+      child: CustomScrollView(
+        controller: controller.scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          _buildFollow(theme),
+          if (controller.showPgcTimeline)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height:
+                    Grid.smallCardWidth / 2 / 0.75 +
+                    MediaQuery.textScalerOf(context).scale(96),
+                child: Obx(
+                  () => _buildTimeline(theme, controller.timelineState.value),
                 ),
               ),
-            ..._buildRcmd(theme),
-          ],
-        ),
+            ),
+          ..._buildRcmd(theme),
+        ],
       ),
     );
   }
@@ -83,7 +84,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
     LoadingState<List<TimelineResult>?> loadingState,
   ) => switch (loadingState) {
     Loading() => loadingWidget,
-    Success(:var response) =>
+    Success(:final response) =>
       response != null && response.isNotEmpty
           ? Builder(
               builder: (context) {
@@ -189,7 +190,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
               },
             )
           : const SizedBox.shrink(),
-    Error(:var errMsg) => GestureDetector(
+    Error(:final errMsg) => GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: controller.queryPgcTimeline,
       child: Container(
@@ -310,7 +311,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
   Widget _buildRcmdBody(LoadingState<List<PgcIndexItem>?> loadingState) {
     return switch (loadingState) {
       Loading() => const SliverToBoxAdapter(),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -323,7 +324,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
                 itemCount: response.length,
               )
             : HttpError(onReload: controller.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: controller.onReload,
       ),
@@ -397,7 +398,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
   Widget _buildFollowBody(LoadingState<List<FavPgcItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => loadingWidget,
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? ListView.builder(
                 controller: controller.followController,
@@ -427,7 +428,7 @@ class _PgcPageState extends CommonPageState<PgcPage, PgcController>
                   '还没有${widget.tabType == HomeTabType.bangumi ? '追番' : '追剧'}',
                 ),
               ),
-      Error(:var errMsg) => Container(
+      Error(:final errMsg) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         alignment: Alignment.center,
         child: Text(

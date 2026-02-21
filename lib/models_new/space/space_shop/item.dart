@@ -5,7 +5,7 @@ import 'package:PiliSuper/models_new/space/space_shop/net_price.dart';
 import 'package:PiliSuper/models_new/space/space_shop/report_params.dart';
 import 'package:PiliSuper/models_new/space/space_shop/source_desc.dart';
 import 'package:PiliSuper/models_new/space/space_shop/source_front_tag.dart';
-import 'package:PiliSuper/utils/extension.dart';
+import 'package:PiliSuper/utils/extension/iterable_ext.dart';
 
 class SpaceShopItem {
   String? contentId;

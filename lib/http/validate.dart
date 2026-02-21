@@ -1,10 +1,11 @@
 import 'package:PiliSuper/http/api.dart';
 import 'package:PiliSuper/http/init.dart';
+import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/utils/accounts.dart';
 import 'package:dio/dio.dart';
 
-class ValidateHttp {
-  static Future gaiaVgateRegister(String vVoucher) async {
+abstract final class ValidateHttp {
+  static Future<LoadingState<Map?>> gaiaVgateRegister(String vVoucher) async {
     final res = await Request().post(
       Api.gaiaVgateRegister,
       queryParameters: {
@@ -18,17 +19,17 @@ class ValidateHttp {
       ),
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return Success(res.data['data']);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 
-  static Future gaiaVgateValidate({
-    required challenge,
-    required seccode,
-    required token,
-    required validate,
+  static Future<LoadingState<Map?>> gaiaVgateValidate({
+    required dynamic challenge,
+    required dynamic seccode,
+    required dynamic token,
+    required dynamic validate,
   }) async {
     final res = await Request().post(
       Api.gaiaVgateValidate,
@@ -43,9 +44,9 @@ class ValidateHttp {
       },
     );
     if (res.data['code'] == 0) {
-      return {'status': true, 'data': res.data['data']};
+      return Success(res.data['data']);
     } else {
-      return {'status': false, 'msg': res.data['message']};
+      return Error(res.data['message']);
     }
   }
 }

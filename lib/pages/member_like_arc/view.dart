@@ -28,10 +28,16 @@ class MemberLikeArcPage extends StatefulWidget {
 
 class _MemberLikeArcPageState extends State<MemberLikeArcPage> {
   late final mid = Accounts.main.mid;
-  late final _ctr = Get.put(
-    MemberLikeArcController(mid: widget.mid),
-    tag: Utils.makeHeroTag(widget.mid),
-  );
+  late final MemberLikeArcController _ctr;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctr = Get.put(
+      MemberLikeArcController(mid: widget.mid),
+      tag: Utils.makeHeroTag(widget.mid),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +84,7 @@ class _MemberLikeArcPageState extends State<MemberLikeArcPage> {
         itemCount: 16,
         itemBuilder: (context, index) => const VideoCardVSkeleton(),
       ),
-      Success(:var response) =>
+      Success(:final response) =>
         response != null && response.isNotEmpty
             ? SliverGrid.builder(
                 gridDelegate: gridDelegate,
@@ -91,7 +97,7 @@ class _MemberLikeArcPageState extends State<MemberLikeArcPage> {
                 },
               )
             : HttpError(onReload: _ctr.onReload),
-      Error(:var errMsg) => HttpError(
+      Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _ctr.onReload,
       ),

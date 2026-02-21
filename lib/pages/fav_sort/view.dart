@@ -3,7 +3,6 @@ import 'package:PiliSuper/http/loading_state.dart';
 import 'package:PiliSuper/models_new/fav/fav_detail/media.dart';
 import 'package:PiliSuper/pages/fav_detail/controller.dart';
 import 'package:PiliSuper/pages/fav_detail/widget/fav_video_card.dart';
-import 'package:PiliSuper/utils/extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -32,10 +31,10 @@ class _FavSortPageState extends State<FavSortPage> {
     }
     _favDetailController.onLoadMore().whenComplete(() {
       try {
-        if (_favDetailController.loadingState.value.isSuccess) {
-          List<FavDetailItemModel> list =
-              _favDetailController.loadingState.value.data!;
-          sortList.addAll(list.skip(sortList.length));
+        if (_favDetailController.loadingState.value case Success(
+          :final response,
+        )) {
+          sortList.addAll(response!.skip(sortList.length));
           if (mounted) {
             setState(() {});
           }
@@ -57,16 +56,16 @@ class _FavSortPageState extends State<FavSortPage> {
                 Get.back();
                 return;
               }
-              var res = await FavHttp.sortFav(
+              final res = await FavHttp.sortFav(
                 mediaId: _favDetailController.mediaId,
                 sort: sort.join(','),
               );
-              if (res['status']) {
+              if (res.isSuccess) {
                 SmartDialog.showToast('排序完成');
                 _favDetailController.loadingState.value = Success(sortList);
                 Get.back();
               } else {
-                SmartDialog.showToast(res['msg']);
+                res.toast();
               }
             },
             child: const Text('完成'),
@@ -84,7 +83,7 @@ class _FavSortPageState extends State<FavSortPage> {
     }
 
     final oldItem = sortList[oldIndex];
-    final newItem = sortList.getOrNull(
+    final newItem = sortList.elementAtOrNull(
       oldIndex > newIndex ? newIndex - 1 : newIndex,
     );
     sort.add(
