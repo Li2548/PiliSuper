@@ -84,7 +84,7 @@ def _resolve_cmd(cmd: list) -> list:
     return cmd
 
 
-def run(cmd, cwd=None, check=True, capture=False, env=None):
+def run(cmd, cwd_i=None, check=True, capture=False, env=None):
     merged = {**os.environ, **(env or {})}
     if isinstance(cmd, str):
         cmd = cmd.split()
@@ -92,18 +92,18 @@ def run(cmd, cwd=None, check=True, capture=False, env=None):
     if not capture:
         info("$ " + " ".join(cmd))
     return subprocess.run(
-        cmd, cwd=cwd, check=check, capture_output=capture, text=True, env=merged
+        cmd, cwd=cwd_i, check=check, capture_output=capture, text=True, env=merged
     )
 
 
-def sh(cmd, cwd=None, check=True, capture=False, env=None):
+def sh(cmd, cwd_i=None, check=True, capture=False, env=None):
     merged = {**os.environ, **(env or {})}
     if not capture:
         info("$ " + cmd)
     return subprocess.run(
         cmd,
         shell=True,
-        cwd=cwd,
+        cwd=cwd_i,
         check=check,
         capture_output=capture,
         text=True,
@@ -318,38 +318,38 @@ def do_rename(args):
 # ══════════════════════════════════════════════════════════════════
 
 def git_revert(commit_hash: str, 
-               cwd: str = None , 
+               cwd_i: str = None , 
                finished_message: str = "已回滚", 
                bad_message: str = "回滚失败"
                ):
     try:
-        run(["git", "config", "user.name", "ci"],cwd=cwd)
-        run(["git", "config", "user.email", "ci@example.com"],cwd=cwd)
-        run(["git", "stash"],cwd=cwd, check=False)
-        run(["git", "revert", commit_hash, "--no-edit"],cwd=cwd)
-        run(["git", "stash", "pop"], cwd=cwd, check=False)
+        run(["git", "config", "user.name", "ci"],cwd=cwd_i)
+        run(["git", "config", "user.email", "ci@example.com"],cwd=cwd_i)
+        run(["git", "stash"],cwd=cwd_i, check=False)
+        run(["git", "revert", commit_hash, "--no-edit"],cwd=cwd_i)
+        run(["git", "stash", "pop"], cwd=cwd_i, check=False)
         ok(finished_message)
     except subprocess.CalledProcessError:
         warn(bad_message)
        
 def git_cherry_pick(commit_hash: str, 
-                    cwd: str = None, 
+                    cwd_i: str = None, 
                     finished_message: str = "已应用 cherry-pick", 
                     bad_message: str = "应用 cherry-pick 失败"
                     ):
     try:
-        run(["git", "config", "user.name", "ci"],cwd=cwd)
-        run(["git", "config", "user.email", "ci@example.com"],cwd=cwd)
-        run(["git", "stash"],cwd=cwd, check=False)
-        run(["git", "cherry-pick", commit_hash, "--no-edit"],cwd=cwd)
-        run(["git", "reset", "--soft", "HEAD~1"],cwd=cwd)
-        run(["git", "stash", "pop"], cwd=cwd, check=False)
+        run(["git", "config", "user.name", "ci"],cwd=cwd_i)
+        run(["git", "config", "user.email", "ci@example.com"],cwd=cwd_i)
+        run(["git", "stash"],cwd=cwd_i, check=False)
+        run(["git", "cherry-pick", commit_hash, "--no-edit"],cwd=cwd_i)
+        run(["git", "reset", "--soft", "HEAD~1"],cwd=cwd_i)
+        run(["git", "stash", "pop"], cwd=cwd_i, check=False)
         ok(finished_message)
     except subprocess.CalledProcessError:
         warn(bad_message)
         
 def git_patch(patch_file: str | Path, 
-              cwd: str = None, 
+              cwd_i: str = None, 
               notfound_message: str = "patch 不存在，跳过",
               finished_message: str = "已应用 patch", 
               bad_message: str = "应用 patch 失败"
@@ -359,7 +359,7 @@ def git_patch(patch_file: str | Path,
         warn(notfound_message)
         return
     try:
-        run(["git", "apply", str(patch_file), "--ignore-whitespace"], cwd=cwd)
+        run(["git", "apply", str(patch_file), "--ignore-whitespace"], cwd=cwd_i)
         ok(finished_message)
     except subprocess.CalledProcessError:
         warn(bad_message)
