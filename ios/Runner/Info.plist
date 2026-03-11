@@ -129,6 +129,7 @@
 		<array>
 			<string>audio</string>
 	    <string>picture-in-picture</string>
+			<string>airplay</string>
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
