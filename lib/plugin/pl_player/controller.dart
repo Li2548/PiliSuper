@@ -43,6 +43,7 @@ import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
 import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
+import 'package:PiliPlus/utils/pip_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
@@ -272,17 +273,39 @@ class PlPlayerController with BlockConfigMixin {
     return routeName == '/videoV' || routeName == '/liveRoom';
   }
 
-  void enterPip({bool autoEnter = false}) {
-    if (videoPlayerController != null) {
-      final state = videoPlayerController!.state;
-      PageUtils.enterPip(
-        autoEnter: autoEnter,
-        width: state.width == 0 ? width : state.width,
-        height: state.height == 0 ? height : state.height,
-        isLive: isLive,
+  Future<void> enterPip({bool autoEnter = false}) async {
+    if (videoPlayerController == null) return;
+
+    final state = videoPlayerController!.state;
+
+    if (Platform.isIOS) {
+      final shouldAutoEnter = PipUtils.shouldAutoEnterPiPOnBackground(
+        continuePlayInBackground: continuePlayInBackground.value,
         isPlaying: playerStatus.isPlaying,
+        isCurrentPage: _isCurrVideoPage,
+        isIOS: true,
       );
+      if (shouldAutoEnter || autoEnter) {
+        final pip = await PageUtils.enterPip(
+          autoEnter: true,
+          width: state.width == 0 ? width : state.width,
+          height: state.height == 0 ? height : state.height,
+          isLive: isLive,
+          isPlaying: playerStatus.isPlaying,
+        );
+        if (pip) {
+          return;
+        }
+      }
     }
+
+    await PageUtils.enterPip(
+      autoEnter: autoEnter,
+      width: state.width == 0 ? width : state.width,
+      height: state.height == 0 ? height : state.height,
+      isLive: isLive,
+      isPlaying: playerStatus.isPlaying,
+    );
   }
 
   void _disableAutoEnterPip() {

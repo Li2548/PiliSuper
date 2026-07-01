@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:PiliPlus/common/widgets/fractionally_sized_box.dart';
@@ -31,6 +32,7 @@ import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/url_utils.dart';
 import 'package:PiliPlus/utils/utils.dart';
 import 'package:collection/collection.dart';
+import 'package:fl_pip/fl_pip.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
@@ -194,13 +196,28 @@ abstract final class PageUtils {
     return (min <= aspectRatio) && (aspectRatio <= max);
   }
 
-  static void enterPip({
+  static Future<bool> enterPip({
     int? width,
     int? height,
     bool autoEnter = false,
     required bool isLive,
     required bool isPlaying,
-  }) {
+  }) async {
+    if (Platform.isIOS) {
+      try {
+        final pip = FlPiP();
+        return pip.enable(
+          ios: const FlPiPiOSConfig(
+            enableControls: true,
+            enablePlayback: true,
+            enabledWhenBackground: true,
+          ),
+        );
+      } catch (_) {
+        return false;
+      }
+    }
+
     if (width != null &&
         height != null &&
         !_fitsInAndroidRequirements(width, height)) {
@@ -219,6 +236,7 @@ abstract final class PageUtils {
       isLive: isLive,
       isPlaying: isPlaying,
     );
+    return true;
   }
 
   static Future<void> pushDynDetail(
