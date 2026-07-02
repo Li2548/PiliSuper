@@ -329,18 +329,21 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!plPlayerController.continuePlayInBackground.value) {
-      late final player = plPlayerController.videoPlayerController;
-      if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
-        if (player != null && player.state.playing) {
-          _pauseDueToPauseUponEnteringBackgroundMode = true;
-          player.pause();
+    late final player = plPlayerController.videoPlayerController;
+    if (const <AppLifecycleState>[.paused, .detached].contains(state)) {
+      if (player != null && player.state.playing) {
+        if (plPlayerController.continuePlayInBackground.value ||
+            plPlayerController.autoPiP) {
+          plPlayerController.enterPip(autoEnter: true);
+          return;
         }
-      } else {
-        if (_pauseDueToPauseUponEnteringBackgroundMode) {
-          _pauseDueToPauseUponEnteringBackgroundMode = false;
-          player?.play();
-        }
+        _pauseDueToPauseUponEnteringBackgroundMode = true;
+        player.pause();
+      }
+    } else {
+      if (_pauseDueToPauseUponEnteringBackgroundMode) {
+        _pauseDueToPauseUponEnteringBackgroundMode = false;
+        player?.play();
       }
     }
   }

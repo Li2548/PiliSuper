@@ -29,6 +29,7 @@ import 'package:PiliPlus/plugin/pl_player/models/heart_beat_type.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_repeat.dart';
 import 'package:PiliPlus/plugin/pl_player/models/play_status.dart';
 import 'package:PiliPlus/plugin/pl_player/models/video_fit_type.dart';
+import 'package:PiliPlus/plugin/pl_player/pip_player_page.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/services/service_locator.dart';
 import 'package:PiliPlus/utils/accounts.dart';
@@ -41,7 +42,6 @@ import 'package:PiliPlus/utils/extension/box_ext.dart';
 import 'package:PiliPlus/utils/extension/num_ext.dart';
 import 'package:PiliPlus/utils/feed_back.dart';
 import 'package:PiliPlus/utils/image_utils.dart';
-import 'package:PiliPlus/utils/page_utils.dart';
 import 'package:PiliPlus/utils/path_utils.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
 import 'package:PiliPlus/utils/storage.dart';
@@ -259,6 +259,7 @@ class PlPlayerController with BlockConfigMixin {
 
   late bool _isAutoEnterPip = false;
   bool get isAutoEnterPip => _isAutoEnterPip;
+  bool _pipRouteActive = false;
 
   static bool get _isCurrVideoPage {
     final routing = Get.routing;
@@ -272,17 +273,32 @@ class PlPlayerController with BlockConfigMixin {
     return routeName == '/videoV' || routeName == '/liveRoom';
   }
 
-  void enterPip({bool autoEnter = false}) {
-    if (videoPlayerController != null) {
-      final state = videoPlayerController!.state;
-      PageUtils.enterPip(
-        autoEnter: autoEnter,
-        width: state.width == 0 ? width : state.width,
-        height: state.height == 0 ? height : state.height,
+  Future<void> enterPip({bool autoEnter = false}) async {
+    if (_pipRouteActive || isDesktopPip || isPipMode) return;
+    if (videoPlayerController == null) return;
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+
+    final source = dataSource.videoSource;
+    if (source.isEmpty) return;
+
+    _pipRouteActive = true;
+    await Get.to(
+      () => PipPlayerPage(
+        videoUrl: source,
         isLive: isLive,
+        aspectRatio: width != null && height != null && height != 0
+            ? width! / height!
+            : null,
+        startAt: positionInMilliseconds > 0
+            ? Duration(milliseconds: positionInMilliseconds)
+            : null,
         isPlaying: playerStatus.isPlaying,
-      );
-    }
+        onClosed: () {
+          _pipRouteActive = false;
+        },
+      ),
+      preventDuplicates: false,
+    );
   }
 
   void _disableAutoEnterPip() {
@@ -1560,6 +1576,7 @@ class PlPlayerController with BlockConfigMixin {
       AndroidHelper$ToDart.onUserLeaveHint?.release();
       AndroidHelper$ToDart.onUserLeaveHint = null;
     }
+    _pipRouteActive = false;
     _timer?.cancel();
     // _position.close();
     // _playerEventSubs?.cancel();
