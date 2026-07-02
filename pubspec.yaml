@@ -176,9 +176,8 @@ dependencies:
 
 dependency_overrides:
   visibility_detector: ^0.4.0+2
-  wakelock: ^0.6.0
-  wakelock_windows: ^0.2.0
-  win32: ^3.0.0
+  pip_flutter:
+    path: patches/pip_flutter-0.0.3
   flutter_inappwebview_android:
     git:
       url: https://github.com/bggRGjQaUbCoE/flutter_inappwebview.git

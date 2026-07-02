@@ -1,0 +1,14 @@
+name: pip_flutter
+version: 0.0.3
+description: Patched version for Flutter 3.44.4 compatibility.
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_widget_from_html_core: ^0.14.0
+  collection: ^1.15.0
+  visibility_detector: ^0.4.0+2
+  path_provider: ^2.1.5
+  xml: ^6.5.0
+  wakelock_plus: ^1.2.8
